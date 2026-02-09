@@ -27,6 +27,7 @@ public class AppView {
             case Login -> new LoginPage(controller);
             case Register -> new RegisterPage(controller);
             case Dashboard -> new DashboardPage();
+            case Notify -> new PartnerNotifyPage();
             case Settings -> new SettingsPage();
             case LegalOnboard -> new LegalOnboardPage();
             default -> throw new IllegalStateException("Invalid state: " + state);
