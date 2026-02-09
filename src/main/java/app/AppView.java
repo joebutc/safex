@@ -1,6 +1,8 @@
 package app;
 
 import app.model.State;
+import javafx.application.Platform;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 import app.view.DashboardPage;
 import app.view.LoginPage;
@@ -9,6 +11,7 @@ import app.view.RegisterPage;
 import app.view.PartnerNotifyPage;
 import app.view.SettingsPage;
 import app.view.LegalOnboardPage;
+import app.view.AppStyles;
 
 public class AppView {
     private Stage primaryStage;
@@ -23,17 +26,23 @@ public class AppView {
     }
 
     public void updateView(State state) {
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(() -> updateView(state));
+            return;
+        }
+
         Page page = switch (state) {
-            // 'this' refers to the instance of the class this method belongs to
             case Login -> new LoginPage(controller);
             case Register -> new RegisterPage(controller);
             case Dashboard -> new DashboardPage(controller);
-            case Notify -> new PartnerNotifyPage();
-            case Settings -> new SettingsPage();
-            case LegalOnboard -> new LegalOnboardPage();
-            default -> throw new IllegalStateException("Invalid state: " + state);
+            case Notify -> new PartnerNotifyPage(controller);
+            case Settings -> new SettingsPage(controller);
+            case LegalOnboard -> new LegalOnboardPage(controller);
         };
-        primaryStage.setScene(page.createScene());
+
+        Scene scene = page.createScene();
+        AppStyles.apply(scene);
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 }

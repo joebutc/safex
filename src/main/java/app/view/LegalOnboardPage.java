@@ -1,5 +1,6 @@
 package app.view;
 
+import app.AppController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -8,7 +9,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -16,44 +22,61 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import app.util.PdfOpener;
 
+import java.util.Objects;
+
 public class LegalOnboardPage implements Page {
-    private VBox content;
+    private final AppController controller;
+
+    public LegalOnboardPage(AppController controller) {
+        this.controller = controller;
+    }
+
+    public LegalOnboardPage() {
+        this(null);
+    }
 
     @Override
     public Scene createScene() {
-        content = new VBox(12);
-        content.setPadding(new Insets(24));
-        content.setMaxWidth(520);
+        VBox content = new VBox(12);
+        content.getStyleClass().addAll("card", "card-padding");
+        content.setMaxWidth(620);
 
-        ScrollPane scrollPane = new ScrollPane(content);
+        StackPane wrapper = new StackPane(content);
+        wrapper.setPadding(new Insets(24));
+        wrapper.setAlignment(Pos.TOP_CENTER);
+
+        ScrollPane scrollPane = new ScrollPane(wrapper);
         scrollPane.setFitToWidth(true);
         scrollPane.setPannable(true);
+        scrollPane.setStyle("-fx-background-color: transparent;");
 
         BorderPane root = new BorderPane(scrollPane);
-        BorderPane.setAlignment(scrollPane, Pos.TOP_CENTER);
+        root.setTop(buildHeader());
 
-        showPrivacyPolicy();
+        showPrivacyPolicy(content);
 
-        return new Scene(root, 600, 400);
-    }
-
-    private Label buildBullet(String text) {
-        Label label = new Label("• " + text);
-        label.setWrapText(true);
-        label.setMaxWidth(520);
-        return label;
+        return new Scene(root, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
     }
 
     private void onAgree() {
-        System.out.println("agreed");
+        if (controller != null) {
+            controller.goToDashboard();
+        }
     }
 
-    private void showPrivacyPolicy() {
+    private void goToDashboard() {
+        if (controller != null) {
+            controller.goToDashboard();
+        }
+    }
+
+    private void showPrivacyPolicy(VBox content) {
         Label title = new Label("Privacy Policy Summary");
         title.setFont(Font.font("System", FontWeight.BOLD, 22));
 
         Label intro = new Label("This summary provides key points from our Privacy Notice, but you can find out more details about any of these topics by using the table of contents in the full notice or reading the full sections.");
         intro.setFont(Font.font("System", FontPosture.ITALIC, 12));
+        intro.getStyleClass().add("muted-text");
         intro.setWrapText(true);
         intro.setMaxWidth(520);
 
@@ -77,7 +100,7 @@ public class LegalOnboardPage implements Page {
         HBox pdfRow = buildPdfRow("Privacy Notice (full) (PDF)", "privacy.pdf");
 
         Button continueButton = new Button("By continuing, you acknowledge that you have read our Privacy Policy.");
-        continueButton.setOnAction(event -> showTermsAndConditions());
+        continueButton.setOnAction(event -> showTermsAndConditions(content));
         continueButton.setWrapText(true);
         continueButton.setMaxWidth(520);
 
@@ -87,7 +110,7 @@ public class LegalOnboardPage implements Page {
         content.getChildren().setAll(title, intro, bullets, closing, pdfRow, actions);
     }
 
-    private void showTermsAndConditions() {
+    private void showTermsAndConditions(VBox content) {
         Label title = new Label("Terms & Conditions Summary");
         title.setFont(Font.font("System", FontWeight.BOLD, 22));
 
@@ -115,6 +138,7 @@ public class LegalOnboardPage implements Page {
         );
 
         Label closing = new Label("Want to learn more? Review the full Terms in the app or the Terms document.");
+        closing.getStyleClass().add("muted-text");
         closing.setWrapText(true);
         closing.setMaxWidth(520);
 
@@ -122,6 +146,7 @@ public class LegalOnboardPage implements Page {
 
         Button agreeButton = new Button("I Agree");
         agreeButton.setDefaultButton(true);
+        agreeButton.getStyleClass().add("primary-button");
         agreeButton.setOnAction(event -> onAgree());
         agreeButton.setWrapText(true);
         agreeButton.setMaxWidth(520);
@@ -130,11 +155,42 @@ public class LegalOnboardPage implements Page {
         actions.setAlignment(Pos.CENTER_LEFT);
 
         content.getChildren().setAll(title, intro, bullets, closing, pdfRow, actions);
-        }
+    }
+
+    private HBox buildHeader() {
+        Button homeButton = buildHomeButton();
+
+        Label headerTitle = new Label("Privacy & Terms");
+        headerTitle.getStyleClass().add("app-header-title");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox header = new HBox(10, homeButton, headerTitle, spacer);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.getStyleClass().add("app-header");
+        return header;
+    }
+
+    private Button buildHomeButton() {
+        Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/Home.png")));
+        ImageView icon = new ImageView(image);
+        icon.setFitWidth(28);
+        icon.setFitHeight(28);
+        icon.setPreserveRatio(true);
+
+        Button homeButton = new Button();
+        homeButton.setGraphic(icon);
+        homeButton.getStyleClass().add("icon-button");
+        homeButton.setFocusTraversable(false);
+        homeButton.setOnAction(event -> goToDashboard());
+        return homeButton;
+    }
 
     private HBox buildPdfRow(String labelText, String resourceName) {
         Label label = new Label(labelText);
         Button openPdfButton = new Button("Open PDF");
+        openPdfButton.getStyleClass().add("secondary-button");
         openPdfButton.setOnAction(event -> PdfOpener.openResourcePdf(resourceName));
 
         HBox row = new HBox(10, label, openPdfButton);

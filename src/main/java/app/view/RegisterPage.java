@@ -9,8 +9,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
@@ -28,95 +30,91 @@ public class RegisterPage implements Page {
 
     @Override
     public Scene createScene() {
+        BorderPane root = new BorderPane();
+        root.setPadding(new Insets(24));
 
-        // 1. Setup the Root Layout
-        VBox root = new VBox();
-        root.setAlignment(Pos.CENTER);
-        root.setSpacing(15);
-        root.setPadding(new Insets(40));
-        root.setStyle("-fx-background-color: #ffffff;");
+        VBox card = new VBox(14);
+        card.getStyleClass().addAll("card", "card-padding");
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setMaxWidth(440);
 
-        // 2. Styling Constants (Matching Login Page)
-        String INPUT_STYLE = "-fx-background-radius: 50; " +
-                "-fx-border-radius: 50; " +
-                "-fx-border-color: #cccccc; " +
-                "-fx-padding: 12 20 12 20; " +
-                "-fx-font-size: 14px;";
-
-        String BTN_PRIMARY_STYLE = "-fx-background-radius: 50; " +
-                "-fx-background-color: #000000; " +
-                "-fx-text-fill: white; " +
-                "-fx-font-weight: bold; " +
-                "-fx-font-size: 16px;";
-
-        String LINK_STYLE = "-fx-background-color: transparent; " +
-                "-fx-text-fill: #666666; " +
-                "-fx-underline: true; " +
-                "-fx-font-size: 14px;";
-
-        // 3. Title Section
-        Label titleLabel = new Label("Create Account");
-        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 36));
+        Label titleLabel = new Label("Create account");
+        titleLabel.setFont(Font.font("System", FontWeight.EXTRA_BOLD, 28));
 
         Label subtitleLabel = new Label("Join our secure community.");
-        subtitleLabel.setFont(Font.font("System", FontWeight.NORMAL, 18));
-        subtitleLabel.setTextFill(Color.GRAY);
+        subtitleLabel.getStyleClass().add("muted-text");
+        subtitleLabel.setWrapText(true);
 
-        // 4. Input Fields
+        Label userLabel = new Label("Username");
+        userLabel.setFont(Font.font("System", FontWeight.SEMI_BOLD, 13));
         TextField usernameField = new TextField();
-        usernameField.setPromptText("Choose a Username");
-        usernameField.setStyle(INPUT_STYLE);
-        usernameField.setMaxWidth(350);
+        usernameField.setPromptText("Choose a username");
+        usernameField.setMaxWidth(Double.MAX_VALUE);
 
+        VBox userBox = new VBox(4, userLabel, usernameField);
+        userBox.setMaxWidth(Double.MAX_VALUE);
+
+        Label passwordLabel = new Label("Password");
+        passwordLabel.setFont(Font.font("System", FontWeight.SEMI_BOLD, 13));
         PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Choose a Password");
-        passwordField.setStyle(INPUT_STYLE);
-        passwordField.setMaxWidth(350);
+        passwordField.setPromptText("Choose a password");
+        passwordField.setMaxWidth(Double.MAX_VALUE);
 
+        VBox passBox = new VBox(4, passwordLabel, passwordField);
+        passBox.setMaxWidth(Double.MAX_VALUE);
+
+        Label confirmLabel = new Label("Confirm password");
+        confirmLabel.setFont(Font.font("System", FontWeight.SEMI_BOLD, 13));
         PasswordField confirmPasswordField = new PasswordField();
-        confirmPasswordField.setPromptText("Confirm Password");
-        confirmPasswordField.setStyle(INPUT_STYLE);
-        confirmPasswordField.setMaxWidth(350);
+        confirmPasswordField.setPromptText("Confirm your password");
+        confirmPasswordField.setMaxWidth(Double.MAX_VALUE);
 
-        // 5. Feedback Label
+        VBox confirmBox = new VBox(4, confirmLabel, confirmPasswordField);
+        confirmBox.setMaxWidth(Double.MAX_VALUE);
+
         Label feedbackLabel = new Label();
         feedbackLabel.setWrapText(true);
-        feedbackLabel.setMaxWidth(350);
         feedbackLabel.setVisible(false);
+        feedbackLabel.setManaged(false);
 
-        // 6. Buttons
-        Button registerBtn = new Button("Sign Up");
-        registerBtn.setStyle(BTN_PRIMARY_STYLE);
-        registerBtn.setMinWidth(200);
-        registerBtn.setMinHeight(45);
+        Button registerBtn = new Button("Create account");
+        registerBtn.getStyleClass().add("primary-button");
+        registerBtn.setDefaultButton(true);
+        registerBtn.setMaxWidth(Double.MAX_VALUE);
+        registerBtn.setMinHeight(42);
 
-        Button loginLink = new Button("Already have an account? Log In");
-        loginLink.setStyle(LINK_STYLE);
-
-        // --- LOGIC SECTION ---
+        Button loginLink = new Button("Already have an account? Log in");
+        loginLink.getStyleClass().add("link-button");
 
         registerBtn.setOnAction(e -> handleRegister(usernameField, passwordField, confirmPasswordField, feedbackLabel));
-
-        loginLink.setOnAction(e -> {
-            if (controller != null) {
-                // Assuming your controller has a method to show the login page
-                // controller.showLoginPage();
+        confirmPasswordField.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                handleRegister(usernameField, passwordField, confirmPasswordField, feedbackLabel);
             }
         });
 
-        // 7. Add components
-        root.getChildren().addAll(
+        loginLink.setOnAction(e -> {
+            if (controller != null) {
+                controller.goToLogin();
+            }
+        });
+
+        card.getChildren().addAll(
                 titleLabel,
                 subtitleLabel,
-                new Label(""),
-                usernameField,
-                passwordField,
-                confirmPasswordField,
+                userBox,
+                passBox,
+                confirmBox,
                 feedbackLabel,
                 registerBtn,
-                loginLink);
+                loginLink
+        );
 
-        return new Scene(root, 800, 600);
+        StackPane center = new StackPane(card);
+        center.setPadding(new Insets(24));
+        root.setCenter(center);
+
+        return new Scene(root, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
     }
 
     private void handleRegister(TextField userField, PasswordField passField, PasswordField confirmField,
@@ -127,16 +125,12 @@ public class RegisterPage implements Page {
 
         // Basic Validation
         if (username.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
-            feedbackLabel.setText("Please fill in all fields.");
-            feedbackLabel.setTextFill(Color.RED);
-            feedbackLabel.setVisible(true);
+            showFeedback(feedbackLabel, "Please fill in all fields.", false);
             return;
         }
 
         if (!password.equals(confirm)) {
-            feedbackLabel.setText("Passwords do not match.");
-            feedbackLabel.setTextFill(Color.RED);
-            feedbackLabel.setVisible(true);
+            showFeedback(feedbackLabel, "Passwords do not match.", false);
             return;
         }
 
@@ -144,25 +138,27 @@ public class RegisterPage implements Page {
         if (controller != null) {
             boolean success = controller.attemptRegister(username, password);
             if (success) {
-                feedbackLabel.setText("Registration successful! You can now log in.");
-                feedbackLabel.setTextFill(Color.GREEN);
+                showFeedback(feedbackLabel, "Registration successful! You can now log in.", true);
             } else {
-                feedbackLabel.setText("Username already exists or database error.");
-                feedbackLabel.setTextFill(Color.RED);
+                showFeedback(feedbackLabel, "Username already exists or database error.", false);
             }
-            feedbackLabel.setVisible(true);
         } else {
             // Fallback for manual testing (assuming DatabaseHandler has a register method)
             System.out.println("Warning: Controller is null. Calling DatabaseHandler directly.");
             boolean success = DatabaseHandler.registerUser(username, password);
             if (success) {
-                feedbackLabel.setText("User registered successfully.");
-                feedbackLabel.setTextFill(Color.GREEN);
+                showFeedback(feedbackLabel, "User registered successfully.", true);
             } else {
-                feedbackLabel.setText("Registration failed.");
-                feedbackLabel.setTextFill(Color.RED);
+                showFeedback(feedbackLabel, "Registration failed.", false);
             }
-            feedbackLabel.setVisible(true);
         }
+    }
+
+    private void showFeedback(Label label, String message, boolean success) {
+        label.setText(message);
+        label.getStyleClass().removeAll("error-text", "success-text");
+        label.getStyleClass().add(success ? "success-text" : "error-text");
+        label.setVisible(true);
+        label.setManaged(true);
     }
 }

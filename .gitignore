@@ -1,4 +1,6 @@
 .vscode/
+.idea/
+*.iml
 target/
 src/main/resources/config.properties
 useraccounts.db

@@ -28,14 +28,16 @@ public class DatabaseHandler {
                 + "password TEXT NOT NULL"
                 + ");";
 
-        try (Connection conn = connect();
-                Statement stmt = conn.createStatement()) {
+        try (Connection conn = connect()) {
+            if (conn == null) {
+                System.out.println("Error initialising database: connection unavailable.");
+                return;
+            }
 
-            if (conn != null) {
+            try (Statement stmt = conn.createStatement()) {
                 stmt.execute(sql);
                 System.out.println("Table 'users' is ready.");
             }
-
         } catch (SQLException e) {
             System.out.println("Error initialising database: " + e.getMessage());
         }
@@ -45,13 +47,18 @@ public class DatabaseHandler {
     public static boolean registerUser(String username, String password) {
         String sql = "INSERT INTO users(username, password) VALUES(?, ?)";
 
-        try (Connection conn = connect();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = connect()) {
+            if (conn == null) {
+                System.out.println("Database Insert Error: connection unavailable.");
+                return false;
+            }
 
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
-            pstmt.executeUpdate();
-            return true;
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, username);
+                pstmt.setString(2, password);
+                pstmt.executeUpdate();
+                return true;
+            }
 
         } catch (SQLException e) {
             System.out.println("Database Insert Error: " + e.getMessage());
@@ -63,15 +70,19 @@ public class DatabaseHandler {
     public static boolean checkLogin(String username, String password) {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
 
-        try (Connection conn = connect();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = connect()) {
+            if (conn == null) {
+                System.out.println("Database Login Check Error: connection unavailable.");
+                return false;
+            }
 
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
-            ResultSet rs = pstmt.executeQuery();
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, username);
+                pstmt.setString(2, password);
+                ResultSet rs = pstmt.executeQuery();
 
-            // matched
-            return rs.next();
+                return rs.next();
+            }
 
         } catch (SQLException e) {
             System.out.println("Database Login Check Error: " + e.getMessage());

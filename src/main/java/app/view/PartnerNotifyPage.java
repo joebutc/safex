@@ -1,10 +1,10 @@
 package app.view;
 
+import app.AppController;
 import app.service.EmailService;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -14,9 +14,11 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
@@ -26,19 +28,29 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PartnerNotifyPage implements Page {
-    private static final String PILL_STYLE = "-fx-background-radius: 50; "
-            + "-fx-border-radius: 50; "
-            + "-fx-border-color: #cccccc; ";
+    private static final String PILL_STYLE = "-fx-background-color: #ffffff; "
+            + "-fx-background-radius: 999; "
+            + "-fx-border-radius: 999; "
+            + "-fx-border-color: #CBD5E1; "
+            + "-fx-border-width: 1; ";
     private static final double TITLE_FONT_SIZE = 36.0;
     private static final double ACTION_FONT_SIZE = 20.0;
     private static final double BODY_FONT_SIZE = 18.0;
     private static final double ROW_MIN_HEIGHT = 100.0;
 
+    private final AppController controller;
+
+    public PartnerNotifyPage(AppController controller) {
+        this.controller = controller;
+    }
+
+    public PartnerNotifyPage() {
+        this(null);
+    }
+
     @Override
     public Scene createScene() {
-        VBox root = new VBox();
-        root.setSpacing(20);
-        root.setPadding(new Insets(20));
+        BorderPane pageRoot = new BorderPane();
 
         Image bellImage = loadImage("/images/Bell.png", 25, 25);
         Image plusImage = loadImage("/images/+.png", 30, 30);
@@ -46,167 +58,139 @@ public class PartnerNotifyPage implements Page {
         Image homeImage = loadImage("/images/Home.png", 25, 25);
         List<ContactEntry> contacts = new ArrayList<>();
 
-        HBox firstRow = new HBox();
-        firstRow.setAlignment(Pos.CENTER);
-
-        Button backButton = new Button("Back");
-        backButton.setAlignment(Pos.CENTER);
-        backButton.setStyle(PILL_STYLE);
-        backButton.setFont(new Font(ACTION_FONT_SIZE));
-        backButton.setPrefWidth(150);
-        backButton.setPrefHeight(10);
-        backButton.setOnAction(event -> navigateToDashboard(backButton));
-
-        Region spacer1 = new Region();
-        HBox.setHgrow(spacer1, Priority.ALWAYS);
+        Button homeButton = buildHomeButton(homeImage);
 
         Label title = new Label("Notify Partners");
-        title.setAlignment(Pos.CENTER_RIGHT);
-        title.setFont(new Font("System Bold", TITLE_FONT_SIZE));
+        title.getStyleClass().add("app-header-title");
 
-        firstRow.getChildren().addAll(backButton, spacer1, title);
+        Region headerSpacer = new Region();
+        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
 
-        HBox secondRow = new HBox();
+        HBox header = new HBox(10, homeButton, title, headerSpacer);
+        header.getStyleClass().add("app-header");
+        header.setAlignment(Pos.CENTER_LEFT);
+        pageRoot.setTop(header);
+
+        VBox content = new VBox(18);
+        content.setPadding(new Insets(20));
+        content.setFillWidth(true);
+
+        HBox secondRow = new HBox(12);
         secondRow.setAlignment(Pos.TOP_LEFT);
-        secondRow.setMinHeight(ROW_MIN_HEIGHT);
 
-        Label prompt = new Label("Sends an anonymous Email to chosen partners.");
+        Label prompt = new Label("Send anonymous email notifications to chosen partners.");
         prompt.setStyle(PILL_STYLE);
         prompt.setFont(new Font("System Bold", ACTION_FONT_SIZE));
-        prompt.setPadding(new Insets(10, 0, 10, 10));
+        prompt.setPadding(new Insets(10, 16, 10, 16));
         prompt.setMaxWidth(Double.MAX_VALUE);
         prompt.setWrapText(true);
-
-        Region spacer2 = new Region();
-        spacer2.setPrefWidth(100);
         HBox.setHgrow(prompt, Priority.ALWAYS);
 
         Button plusButton = new Button();
         plusButton.setGraphic(new ImageView(plusImage));
         plusButton.setAlignment(Pos.CENTER);
         plusButton.setStyle(PILL_STYLE);
-        plusButton.setPadding(new Insets(15));
+        plusButton.setPadding(new Insets(12));
+        plusButton.setFocusTraversable(false);
 
-        secondRow.getChildren().addAll(prompt, spacer2, plusButton);
+        secondRow.getChildren().addAll(prompt, plusButton);
 
         ScrollPane contactsList = new ScrollPane();
         contactsList.setMinViewportHeight(ROW_MIN_HEIGHT);
+        contactsList.setFitToWidth(true);
+        contactsList.setPannable(true);
+        contactsList.setStyle("-fx-background-color: transparent;");
         VBox.setVgrow(contactsList, Priority.ALWAYS);
 
-        VBox container = new VBox();
-        contactsList.setContent(container);
-        contactsList.setFitToWidth(true);
+        VBox contactsContainer = new VBox(12);
+        contactsContainer.setPadding(new Insets(12));
+        contactsList.setContent(contactsContainer);
 
-        plusButton.setOnAction(event -> addContactRow(container, contacts, binImage));
+        plusButton.setOnAction(event -> addContactRow(contactsContainer, contacts, binImage));
 
-        HBox lastRow = new HBox();
-        lastRow.setStyle("-fx-border-color: #000000;");
-        lastRow.setAlignment(Pos.CENTER);
-        lastRow.setPadding(new Insets(20));
-        lastRow.setMinHeight(ROW_MIN_HEIGHT);
+        HBox lastRow = new HBox(16);
+        lastRow.getStyleClass().add("card");
+        lastRow.setAlignment(Pos.CENTER_LEFT);
+        lastRow.setPadding(new Insets(18));
 
-        Label disclaimerLabel = new Label("Note: The following message will be sent " +
-                "anonymously to all contacts in the list above.");
+        Label disclaimerLabel = new Label(
+                "Note: the following message will be sent anonymously to all contacts in the list above."
+        );
+        disclaimerLabel.getStyleClass().add("muted-text");
         disclaimerLabel.setWrapText(true);
-        disclaimerLabel.setPadding(new Insets(0, 0, 0, 10));
         disclaimerLabel.setFont(new Font(BODY_FONT_SIZE));
-
         HBox.setHgrow(disclaimerLabel, Priority.ALWAYS);
         disclaimerLabel.setMaxWidth(Double.MAX_VALUE);
 
         Button notifyButton = new Button("Notify");
+        notifyButton.getStyleClass().add("primary-button");
         notifyButton.setFont(new Font("System Bold", ACTION_FONT_SIZE));
-        notifyButton.setMinWidth(120);
         notifyButton.setGraphic(new ImageView(bellImage));
-        notifyButton.setAlignment(Pos.CENTER);
-        notifyButton.setStyle(PILL_STYLE);
+        notifyButton.setMinWidth(140);
 
         notifyButton.setOnAction(event -> {
-            VBox confirmRoot = buildConfirmationRoot(contacts, bellImage, homeImage);
-            notifyButton.getScene().setRoot(confirmRoot);
+            VBox confirmCard = buildConfirmationRoot(contacts, bellImage);
+            StackPane wrapper = new StackPane(confirmCard);
+            wrapper.setPadding(new Insets(20));
+            pageRoot.setCenter(wrapper);
         });
 
         lastRow.getChildren().addAll(disclaimerLabel, notifyButton);
-        root.getChildren().addAll(firstRow, secondRow, contactsList, lastRow);
+        content.getChildren().addAll(secondRow, contactsList, lastRow);
+        pageRoot.setCenter(content);
 
-        return new Scene(root);
+        return new Scene(pageRoot, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
     }
 
-    private VBox buildConfirmationRoot(List<ContactEntry> contacts, Image bellImage, Image homeImage) {
-        VBox outer = new VBox(12);
-        outer.setPadding(new Insets(0, 20, 0, 20));
+    private VBox buildConfirmationRoot(List<ContactEntry> contacts, Image bellImage) {
+        VBox outer = new VBox(14);
+        outer.getStyleClass().addAll("card", "card-padding");
+        outer.setMaxWidth(520);
+        outer.setAlignment(Pos.TOP_LEFT);
 
-        Label confPageTitle = new Label("Notify Partners");
-        confPageTitle.setAlignment(Pos.CENTER_RIGHT);
-        confPageTitle.setMaxWidth(Double.MAX_VALUE);
-        confPageTitle.setFont(new Font("System Bold", TITLE_FONT_SIZE));
-
-        Label messageSentLabel = new Label("Ready to send notifications.");
-        messageSentLabel.setAlignment(Pos.CENTER_LEFT);
-        messageSentLabel.setMaxWidth(Double.MAX_VALUE);
-        messageSentLabel.setPrefHeight(50);
-        messageSentLabel.setPadding(new Insets(0, 0, 0, 10));
-        messageSentLabel.setFont(new Font("System Bold", ACTION_FONT_SIZE));
-        messageSentLabel.setStyle(PILL_STYLE + "-fx-background-color: #FFFFFF");
+        Label messageSentLabel = new Label("Ready to send notifications");
+        messageSentLabel.setFont(new Font("System Bold", 22));
 
         VBox inner = new VBox(12);
         VBox.setVgrow(inner, Priority.ALWAYS);
 
         Label label1 = new Label("We'll take it from here.");
-        label1.setFont(new Font("System Bold", BODY_FONT_SIZE));
-        label1.setPrefHeight(50);
+        label1.setFont(new Font(BODY_FONT_SIZE));
+        label1.getStyleClass().add("muted-text");
 
         Label label2 = new Label("Press \"Notify\" to send now.");
-        label2.setFont(new Font("System Bold", BODY_FONT_SIZE));
-        label2.setPrefHeight(50);
-
-        Label label3 = new Label("Or return to the dashboard.");
-        label3.setFont(new Font("System Bold", BODY_FONT_SIZE));
-        label3.setPrefHeight(50);
+        label2.setFont(new Font(BODY_FONT_SIZE));
+        label2.getStyleClass().add("muted-text");
 
         HBox sendRow = new HBox();
         sendRow.setAlignment(Pos.CENTER);
         sendRow.setPrefHeight(100.0);
-
-        HBox homeRow = new HBox();
-        homeRow.setAlignment(Pos.CENTER);
-        homeRow.setPrefHeight(100.0);
 
         Button confirmNotifyButton = new Button("Notify");
         confirmNotifyButton.setFont(new Font("System Bold", ACTION_FONT_SIZE));
         confirmNotifyButton.setMinWidth(120);
         confirmNotifyButton.setGraphic(new ImageView(bellImage));
         confirmNotifyButton.setAlignment(Pos.CENTER);
-        confirmNotifyButton.setStyle(PILL_STYLE);
-
-        Button homeButton = new Button("Home");
-        homeButton.setFont(new Font("System Bold", ACTION_FONT_SIZE));
-        homeButton.setMinWidth(120);
-        homeButton.setGraphic(new ImageView(homeImage));
-        homeButton.setAlignment(Pos.CENTER);
-        homeButton.setStyle(PILL_STYLE);
+        confirmNotifyButton.getStyleClass().add("primary-button");
 
         ProgressIndicator progressIndicator = new ProgressIndicator();
         progressIndicator.setMaxSize(64, 64);
         progressIndicator.setVisible(false);
 
         confirmNotifyButton.setOnAction(event ->
-                sendNotificationsAsync(contacts, progressIndicator, confirmNotifyButton, homeButton));
-        homeButton.setOnAction(event -> navigateToDashboard(homeButton));
+                sendNotificationsAsync(contacts, progressIndicator, confirmNotifyButton));
 
         sendRow.getChildren().add(confirmNotifyButton);
-        homeRow.getChildren().add(homeButton);
 
-        inner.getChildren().addAll(label1, label2, sendRow, label3, homeRow, progressIndicator);
-        outer.getChildren().addAll(confPageTitle, messageSentLabel, inner);
+        inner.getChildren().addAll(label1, label2, sendRow, progressIndicator);
+        outer.getChildren().addAll(messageSentLabel, inner);
         return outer;
     }
 
     private void sendNotificationsAsync(
             List<ContactEntry> contacts,
             ProgressIndicator progressIndicator,
-            Button confirmNotifyButton,
-            Button homeButton) {
+            Button confirmNotifyButton) {
 
         List<Recipient> recipients = collectRecipients(contacts);
         if (recipients.isEmpty()) {
@@ -220,7 +204,6 @@ public class PartnerNotifyPage implements Page {
 
         progressIndicator.setVisible(true);
         confirmNotifyButton.setDisable(true);
-        homeButton.setDisable(true);
 
         AtomicInteger pendingCount = new AtomicInteger(recipients.size());
         AtomicInteger successCount = new AtomicInteger(0);
@@ -254,8 +237,7 @@ public class PartnerNotifyPage implements Page {
                         successCount,
                         recipients.size(),
                         progressIndicator,
-                        confirmNotifyButton,
-                        homeButton
+                        confirmNotifyButton
                 );
             });
 
@@ -270,8 +252,7 @@ public class PartnerNotifyPage implements Page {
                         successCount,
                         recipients.size(),
                         progressIndicator,
-                        confirmNotifyButton,
-                        homeButton
+                        confirmNotifyButton
                 );
             });
 
@@ -286,8 +267,7 @@ public class PartnerNotifyPage implements Page {
             AtomicInteger successCount,
             int totalRecipients,
             ProgressIndicator progressIndicator,
-            Button confirmNotifyButton,
-            Button homeButton) {
+            Button confirmNotifyButton) {
 
         if (pendingCount.decrementAndGet() > 0) {
             return;
@@ -295,11 +275,10 @@ public class PartnerNotifyPage implements Page {
 
         progressIndicator.setVisible(false);
         confirmNotifyButton.setDisable(false);
-        homeButton.setDisable(false);
 
         if (successCount.get() == totalRecipients) {
             showAlert(Alert.AlertType.INFORMATION, "Notifications Complete", "All notifications were sent.");
-            navigateToDashboard(homeButton);
+            goToDashboard();
         } else {
             showAlert(
                     Alert.AlertType.WARNING,
@@ -362,12 +341,30 @@ public class PartnerNotifyPage implements Page {
         );
     }
 
-    private void navigateToDashboard(Node sourceNode) {
-        if (sourceNode.getScene() == null) {
+    private Button buildHomeButton(Image homeImage) {
+        ImageView icon = new ImageView(homeImage);
+        icon.setFitWidth(28);
+        icon.setFitHeight(28);
+        icon.setPreserveRatio(true);
+
+        Button homeButton = new Button();
+        homeButton.setGraphic(icon);
+        homeButton.getStyleClass().add("icon-button");
+        homeButton.setFocusTraversable(false);
+        homeButton.setOnAction(event -> goToDashboard());
+        return homeButton;
+    }
+
+    private void goToDashboard() {
+        if (controller == null) {
+            showAlert(
+                    Alert.AlertType.WARNING,
+                    "Navigation Unavailable",
+                    "Unable to return to the dashboard because the controller is not available."
+            );
             return;
         }
-        Scene dashboardScene = new DashboardPage().createScene();
-        sourceNode.getScene().setRoot(dashboardScene.getRoot());
+        controller.goToDashboard();
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {

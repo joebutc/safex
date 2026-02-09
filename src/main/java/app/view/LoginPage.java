@@ -10,8 +10,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
@@ -25,102 +26,84 @@ public class LoginPage implements Page {
 
     @Override
     public Scene createScene() {
+        BorderPane root = new BorderPane();
+        root.setPadding(new Insets(24));
 
-        // 1. Setup the Root Layout (VBox centers everything vertically)
-        VBox root = new VBox();
-        root.setAlignment(Pos.CENTER);
-        root.setSpacing(20);
-        root.setPadding(new Insets(40));
-        root.setStyle("-fx-background-color: #ffffff;"); // Clean white background
+        VBox card = new VBox(14);
+        card.getStyleClass().addAll("card", "card-padding");
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setMaxWidth(440);
 
-        // 2. Styling Constants
-        String INPUT_STYLE = "-fx-background-radius: 50; " +
-                "-fx-border-radius: 50; " +
-                "-fx-border-color: #cccccc; " +
-                "-fx-padding: 12 20 12 20; " +
-                "-fx-font-size: 14px;";
+        Label titleLabel = new Label("Welcome back");
+        titleLabel.setFont(Font.font("System", FontWeight.EXTRA_BOLD, 30));
 
-        String BTN_PRIMARY_STYLE = "-fx-background-radius: 50; " +
-                "-fx-background-color: #000000; " +
-                "-fx-text-fill: white; " +
-                "-fx-font-weight: bold; " +
-                "-fx-font-size: 16px;";
+        Label subtitleLabel = new Label("Sign in to continue.");
+        subtitleLabel.getStyleClass().add("muted-text");
+        subtitleLabel.setWrapText(true);
 
-        String LINK_STYLE = "-fx-background-color: transparent; " +
-                "-fx-text-fill: #666666; " +
-                "-fx-underline: true; " +
-                "-fx-font-size: 14px;";
-
-        // 3. Title Section
-        Label titleLabel = new Label("Welcome Back");
-        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 36));
-
-        Label subtitleLabel = new Label("Please enter your details.");
-        subtitleLabel.setFont(Font.font("System", FontWeight.NORMAL, 18));
-        subtitleLabel.setTextFill(Color.GRAY);
-
-        // 4. Input Fields
+        Label userLabel = new Label("Username");
+        userLabel.setFont(Font.font("System", FontWeight.SEMI_BOLD, 13));
         TextField usernameField = new TextField();
-        usernameField.setPromptText("Username");
-        usernameField.setStyle(INPUT_STYLE);
-        usernameField.setMaxWidth(350);
+        usernameField.setPromptText("Enter your username");
+        usernameField.setMaxWidth(Double.MAX_VALUE);
 
+        VBox userBox = new VBox(4, userLabel, usernameField);
+        userBox.setMaxWidth(Double.MAX_VALUE);
+
+        Label passLabel = new Label("Password");
+        passLabel.setFont(Font.font("System", FontWeight.SEMI_BOLD, 13));
         PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Password");
-        passwordField.setStyle(INPUT_STYLE);
-        passwordField.setMaxWidth(350);
+        passwordField.setPromptText("Enter your password");
+        passwordField.setMaxWidth(Double.MAX_VALUE);
 
-        // 5. Error Message Label (Hidden initially)
+        VBox passBox = new VBox(4, passLabel, passwordField);
+        passBox.setMaxWidth(Double.MAX_VALUE);
+
         Label errorLabel = new Label();
-        errorLabel.setTextFill(Color.RED);
+        errorLabel.getStyleClass().add("error-text");
+        errorLabel.setWrapText(true);
         errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
 
-        // 6. Login Button
-        Button loginBtn = new Button("Login");
-        loginBtn.setStyle(BTN_PRIMARY_STYLE);
-        loginBtn.setMinWidth(200);
-        loginBtn.setMinHeight(45);
+        Button loginBtn = new Button("Log in");
+        loginBtn.getStyleClass().add("primary-button");
+        loginBtn.setDefaultButton(true);
+        loginBtn.setMaxWidth(Double.MAX_VALUE);
+        loginBtn.setMinHeight(42);
 
-        // 7. Navigation (Switch to Register)
-        Button registerLink = new Button("Don't have an account? Sign Up");
-        registerLink.setStyle(LINK_STYLE);
+        Button registerLink = new Button("Create an account");
+        registerLink.getStyleClass().add("link-button");
 
-        // --- LOGIC SECTION ---
-
-        // Action: Click Login Button
         loginBtn.setOnAction(e -> handleLogin(usernameField, passwordField, errorLabel));
-
-        // Action: Press 'Enter' key inside password box
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
                 handleLogin(usernameField, passwordField, errorLabel);
             }
         });
 
-        // Go to register page
         registerLink.setOnAction(e -> {
             if (controller != null) {
                 controller.goToRegister();
-            } else {
-                System.out.println("Debug: Controller is null, cannot navigate.");
             }
         });
 
-        // 8. Add components to the VBox
-        root.getChildren().addAll(
+        card.getChildren().addAll(
                 titleLabel,
                 subtitleLabel,
-                new Label(""), // Spacer
-                usernameField,
-                passwordField,
+                userBox,
+                passBox,
                 errorLabel,
                 loginBtn,
-                registerLink);
+                registerLink
+        );
 
-        return new Scene(root, 800, 600);
+        StackPane center = new StackPane(card);
+        center.setPadding(new Insets(24));
+        root.setCenter(center);
+
+        return new Scene(root, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
     }
 
-    // Handles login
     private void handleLogin(TextField userField, PasswordField passField, Label errorLabel) {
         String username = userField.getText();
         String password = passField.getText();
@@ -128,30 +111,32 @@ public class LoginPage implements Page {
         if (username.isEmpty() || password.isEmpty()) {
             errorLabel.setText("Please fill in all fields.");
             errorLabel.setVisible(true);
+            errorLabel.setManaged(true);
             return;
         }
 
         if (controller != null) {
             boolean success = controller.attemptLogin(username, password);
-
             if (!success) {
-                // login failed :/
                 errorLabel.setText("Invalid username or password.");
                 errorLabel.setVisible(true);
+                errorLabel.setManaged(true);
+            } else {
+                errorLabel.setVisible(false);
+                errorLabel.setManaged(false);
             }
         } else {
-            // Testing stuff
             System.out.println("Warning: Controller is null. Running local check.");
             boolean isValid = DatabaseHandler.checkLogin(username, password);
-
             if (isValid) {
                 System.out.println("[TEST] Login Valid (No screen switch)");
                 errorLabel.setVisible(false);
+                errorLabel.setManaged(false);
             } else {
                 errorLabel.setText("Invalid username or password.");
                 errorLabel.setVisible(true);
+                errorLabel.setManaged(true);
             }
         }
     }
-
 }

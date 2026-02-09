@@ -1,9 +1,12 @@
 package app.view;
 
+import app.AppController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -12,14 +15,26 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.util.Objects;
+
 public class SettingsPage implements Page {
+    private final AppController controller;
+
+    public SettingsPage(AppController controller) {
+        this.controller = controller;
+    }
+
+    public SettingsPage() {
+        this(null);
+    }
+
     private void showDataCollectedDialog() {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
         a.setHeaderText("What data is collected");
         a.setContentText("""
-            • Account details (email, username)
-            • Usage activity (features used, time spent)
-            • Device info (OS, app version, IP range)
+            \u2022 Account details (email, username)
+            \u2022 Usage activity (features used, time spent)
+            \u2022 Device info (OS, app version, IP range)
         """);
         a.showAndWait();
     }
@@ -29,10 +44,10 @@ public class SettingsPage implements Page {
         a.setHeaderText("Why your data is used");
         a.setContentText("""
             We use your data to:
-            • Improve app performance
-            • Personalize your experience
-            • Ensure platform security
-            • Provide customer support
+            \u2022 Improve app performance
+            \u2022 Personalize your experience
+            \u2022 Ensure platform security
+            \u2022 Provide customer support
         """);
         a.showAndWait();
     }
@@ -58,7 +73,9 @@ public class SettingsPage implements Page {
                 save
         );
 
-        dialog.setScene(new Scene(box, 300, 240));
+        Scene dialogScene = new Scene(box, 300, 240);
+        AppStyles.apply(dialogScene);
+        dialog.setScene(dialogScene);
         dialog.showAndWait();
     }
 
@@ -75,9 +92,9 @@ public class SettingsPage implements Page {
         a.setHeaderText("Your Rights");
         a.setContentText("""
             You can:
-            • Request a copy of your data
-            • Correct inaccurate info
-            • Delete your account anytime
+            \u2022 Request a copy of your data
+            \u2022 Correct inaccurate info
+            \u2022 Delete your account anytime
         """);
         a.showAndWait();
     }
@@ -91,15 +108,17 @@ public class SettingsPage implements Page {
 
         Label b = new Label(subtitle);
         b.setWrapText(true);
-        b.setTextFill(Color.web("#6B7280"));
+        b.getStyleClass().add("muted-text");
         b.setFont(Font.font("System", 12));
 
         box.getChildren().addAll(h, b);
 
         Button btn = new Button();
+        btn.getStyleClass().add("card");
         btn.setGraphic(box);
         btn.setAlignment(Pos.TOP_LEFT);
         btn.setOnAction(e -> action.run());
+        btn.setStyle("-fx-background-insets: 0;");
 
         btn.setPrefWidth(300);
         btn.setPrefHeight(100);
@@ -134,31 +153,27 @@ public class SettingsPage implements Page {
     public Scene createScene() {
         // Root
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(18));
-        root.setStyle("-fx-background-color: #ffffff;");
+        root.setPadding(Insets.EMPTY);
 
         // Top bar
-        Label title = new Label("Settings Page");
-        title.setFont(Font.font("System", FontWeight.SEMI_BOLD, 16));
-        title.setTextFill(Color.web("#1F2937"));
+        Label title = new Label("Settings");
+        title.getStyleClass().add("app-header-title");
 
-        Button closeBtn = new Button("X");
-        closeBtn.setFocusTraversable(false);
-        // closeBtn.setOnAction(e -> {}); todo: link button to go back a page
+        Button homeButton = buildHomeButton();
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox topBar = new HBox(10, title, spacer, closeBtn);
+        HBox topBar = new HBox(10, homeButton, title, spacer);
         topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setPadding(new Insets(0, 0, 10, 0));
+        topBar.getStyleClass().add("app-header");
 
         root.setTop(topBar);
 
         // Middle content
         VBox content = new VBox(16);
         content.setAlignment(Pos.TOP_CENTER);
-        content.setPadding(new Insets(10, 20, 10, 20));
+        content.setPadding(new Insets(20));
 
         // Placeholder for doc icon on figma
         StackPane docIcon = new StackPane();
@@ -169,7 +184,7 @@ public class SettingsPage implements Page {
         iconBg.setArcHeight(14);
         iconBg.setFill(Color.web("#F3F4F6"));
 
-        Label iconGlyph = new Label("📄");
+        Label iconGlyph = new Label("DOC");
         iconGlyph.setFont(Font.font(22));
 
         docIcon.getChildren().addAll(iconBg, iconGlyph);
@@ -200,10 +215,16 @@ public class SettingsPage implements Page {
 
         // T&Cs button
         Button readFullBtn = new Button("Read full Terms & Conditions");
+        readFullBtn.getStyleClass().add("secondary-button");
         readFullBtn.setOnAction(e -> {
-            Alert a = new Alert(Alert.AlertType.INFORMATION);
-            a.setHeaderText("Full Terms & Conditions");
-            a.setContentText("Put stuff here");
+            if (controller != null) {
+                controller.goToLegalOnboard();
+                return;
+            }
+
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setHeaderText("Navigation unavailable");
+            a.setContentText("Unable to open Terms & Conditions because the controller is not available.");
             a.showAndWait();
         });
 
@@ -215,6 +236,7 @@ public class SettingsPage implements Page {
         agree.setTextFill(Color.web("#374151"));
 
         Button acceptBtn = new Button("Accept & Continue");
+        acceptBtn.getStyleClass().add("primary-button");
         acceptBtn.setPrefWidth(160);
         acceptBtn.disableProperty().bind(agree.selectedProperty().not());
 
@@ -223,6 +245,9 @@ public class SettingsPage implements Page {
             a.setHeaderText("Accepted");
             a.setContentText("You accepted the Terms & Conditions");
             a.showAndWait();
+            if (controller != null) {
+                controller.goToDashboard();
+            }
         });
 
         Region bottomSpacer = new Region();
@@ -234,13 +259,29 @@ public class SettingsPage implements Page {
 
         root.setBottom(bottom);
 
-        Scene scene = new Scene(root, 980, 560);
-        scene.setFill(Color.WHITE);
-        return scene;
+        return new Scene(root, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
+    }
+
+    private Button buildHomeButton() {
+        Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/Home.png")));
+        ImageView icon = new ImageView(image);
+        icon.setFitWidth(28);
+        icon.setFitHeight(28);
+        icon.setPreserveRatio(true);
+
+        Button homeButton = new Button();
+        homeButton.setGraphic(icon);
+        homeButton.getStyleClass().add("icon-button");
+        homeButton.setFocusTraversable(false);
+        homeButton.setOnAction(event -> {
+            if (controller != null) {
+                controller.goToDashboard();
+            }
+        });
+        return homeButton;
     }
 
     @Override
     public void onEnter() {
-        System.out.println("Entered settings page");
     }
 }

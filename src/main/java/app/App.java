@@ -1,23 +1,13 @@
 package app;
 
-import app.model.DatabaseHandler;
 import javafx.application.Application;
-import javafx.stage.Stage;
 
-public class App extends Application {
-    @Override
-    public void start(Stage primaryStage) {
-        DatabaseHandler.initialiseDatabase();
-        primaryStage.setTitle("SafeX");
-        AppModel model = new AppModel();
-        AppView view = new AppView(primaryStage);
-
-        AppController controller = new AppController(model, view);
-        view.setController(controller);
-        controller.updateView();
-    }
-
+public class App {
     public static void main(String[] args) {
-        launch(args);
+        if (System.getProperty("prism.order") == null) {
+            System.setProperty("prism.order", "sw");
+        }
+
+        Application.launch(FxApp.class, args);
     }
 }

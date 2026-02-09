@@ -12,22 +12,27 @@ public class AppController {
         this.view = view;
     }
 
-    // Called from view
     public void updateView() {
         view.updateView(model.getState());
     }
 
+    public String getCurrentUser() {
+        return model.getCurrentUser();
+    }
+
     public boolean attemptRegister(String username, String password) {
-        // Attempt to add the user to the database
         if (DatabaseHandler.registerUser(username, password)) {
-            // Automatically log them in or redirect to login page
             model.setCurrentUser(username);
-            model.setState(State.Dashboard); // Or keep them on login to verify
+            model.setState(State.Dashboard);
             updateView();
             return true;
         }
-        // Return false if the username is taken or a database error occurred
         return false;
+    }
+
+    public void goToDashboard() {
+        model.setState(State.Dashboard);
+        updateView();
     }
 
     public void goToRegister() {
@@ -36,12 +41,23 @@ public class AppController {
     }
 
     public void goToLogin() {
+        model.setCurrentUser(null);
         model.setState(State.Login);
-        view.updateView(State.Login);
+        updateView();
     }
 
     public void goToNotify() {
         model.setState(State.Notify);
+        updateView();
+    }
+
+    public void goToSettings() {
+        model.setState(State.Settings);
+        updateView();
+    }
+
+    public void goToLegalOnboard() {
+        model.setState(State.LegalOnboard);
         updateView();
     }
 
@@ -50,13 +66,10 @@ public class AppController {
         if (DatabaseHandler.checkLogin(username, password)) {
             model.setCurrentUser(username);
             model.setState(State.Dashboard);
-            updateView(); // (Switches to dashboard when we make it)
+            updateView();
             return true;
         }
         return false;
     }
-    public void goToNotify() {
-        model.setState(State.Notify);
-        view.updateView(State.Notify);
-    }
+    
 }
