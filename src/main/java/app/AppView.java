@@ -7,6 +7,7 @@ import app.view.LoginPage;
 import app.view.Page;
 import app.view.RegisterPage;
 import app.view.SettingsPage;
+import app.view.LegalOnboardPage;
 
 public class AppView {
     private Stage primaryStage;
@@ -27,6 +28,7 @@ public class AppView {
             case Register -> new RegisterPage(controller);
             case Dashboard -> new DashboardPage();
             case Settings -> new SettingsPage();
+            case LegalOnboard -> new LegalOnboardPage();
             default -> throw new IllegalStateException("Invalid state: " + state);
         };
         primaryStage.setScene(page.createScene());

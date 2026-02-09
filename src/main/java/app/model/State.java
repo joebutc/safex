@@ -4,5 +4,6 @@ public enum State {
     Login,
     Register,
     Dashboard,
-    Settings
+    Settings,
+    LegalOnboard
 }
