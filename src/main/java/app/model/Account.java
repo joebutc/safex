@@ -28,6 +28,14 @@ public abstract class Account {
         this.email = email;
     }
 
+    public int[] getSettings() {
+        return settings;
+    }
+
+    public void setSettings(int[] settings) {
+        this.settings = settings;
+    }
+
     public Account(String username, String password, String email) {
         this.username = username;
         this.password = password;

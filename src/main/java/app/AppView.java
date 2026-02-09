@@ -5,6 +5,7 @@ import javafx.stage.Stage;
 import app.view.DashboardPage;
 import app.view.LoginPage;
 import app.view.Page;
+import app.view.PartnerNotifyPage;
 import app.view.SettingsPage;
 
 public class AppView {
@@ -14,6 +15,7 @@ public class AppView {
         Page page = switch (state) {
             case Login -> new LoginPage();
             case Dashboard -> new DashboardPage();
+            case Notify -> new PartnerNotifyPage();
             case Settings -> new SettingsPage();
             default -> throw new IllegalStateException("Invalid state: " + state);
         };
