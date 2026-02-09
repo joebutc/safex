@@ -3,36 +3,132 @@ package app.view;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 public class SettingsPage implements Page {
-    private Pane infoCard(String header, String body) {
+    private void showDataCollectedDialog() {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setHeaderText("What data is collected");
+        a.setContentText("""
+            • Account details (email, username)
+            • Usage activity (features used, time spent)
+            • Device info (OS, app version, IP range)
+        """);
+        a.showAndWait();
+    }
+
+    private void showWhyUsedDialog() {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setHeaderText("Why your data is used");
+        a.setContentText("""
+            We use your data to:
+            • Improve app performance
+            • Personalize your experience
+            • Ensure platform security
+            • Provide customer support
+        """);
+        a.showAndWait();
+    }
+
+    private void showAccessControlDialog() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Who can access your data");
+
+        VBox box = new VBox(12);
+        box.setPadding(new Insets(16));
+
+        CheckBox staff = new CheckBox("Internal Support Staff");
+        CheckBox analytics = new CheckBox("Analytics Team");
+        CheckBox partners = new CheckBox("Trusted Partners");
+
+        Button save = new Button("Save");
+        save.setOnAction(e -> dialog.close());
+
+        box.getChildren().addAll(
+                new Label("Select who can access your data:"),
+                staff, analytics, partners,
+                save
+        );
+
+        dialog.setScene(new Scene(box, 300, 240));
+        dialog.showAndWait();
+    }
+
+    private void showRetentionDialog() {
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("While account is active",
+                "While account is active", "1 year", "6 months", "Delete immediately");
+        dialog.setTitle("Data Retention");
+        dialog.setHeaderText("How long should we keep your data?");
+        dialog.showAndWait();
+    }
+
+    private void showRightsDialog() {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setHeaderText("Your Rights");
+        a.setContentText("""
+            You can:
+            • Request a copy of your data
+            • Correct inaccurate info
+            • Delete your account anytime
+        """);
+        a.showAndWait();
+    }
+
+    private Button infoCard(String title, String subtitle, Runnable action) {
         VBox box = new VBox(6);
         box.setPadding(new Insets(14));
-        box.setPrefWidth(300);
-        box.setMinHeight(86);
 
-        Label h = new Label(header);
+        Label h = new Label(title);
         h.setFont(Font.font("System", FontWeight.SEMI_BOLD, 13));
-        h.setTextFill(Color.web("#111827"));
 
-        Label b = new Label(body);
+        Label b = new Label(subtitle);
         b.setWrapText(true);
         b.setTextFill(Color.web("#6B7280"));
         b.setFont(Font.font("System", 12));
 
         box.getChildren().addAll(h, b);
 
-        return box;
+        Button btn = new Button();
+        btn.setGraphic(box);
+        btn.setAlignment(Pos.TOP_LEFT);
+        btn.setOnAction(e -> action.run());
+
+        btn.setPrefWidth(300);
+        btn.setPrefHeight(100);
+        btn.setMinHeight(100);
+        btn.setMaxHeight(100);
+        btn.setPadding(Insets.EMPTY);
+
+        return btn;
     }
+
+//    private Pane infoCard(String header, String body) {
+//        VBox box = new VBox(6);
+//        box.setPadding(new Insets(14));
+//        box.setPrefWidth(300);
+//        box.setMinHeight(86);
+//
+//        Label h = new Label(header);
+//        h.setFont(Font.font("System", FontWeight.SEMI_BOLD, 13));
+//        h.setTextFill(Color.web("#111827"));
+//
+//        Label b = new Label(body);
+//        b.setWrapText(true);
+//        b.setTextFill(Color.web("#6B7280"));
+//        b.setFont(Font.font("System", 12));
+//
+//        box.getChildren().addAll(h, b);
+//
+//        return box;
+//    }
 
     @Override
     public Scene createScene() {
@@ -83,19 +179,23 @@ public class SettingsPage implements Page {
         cards.setHgap(14);
         cards.setVgap(14);
         cards.setAlignment(Pos.TOP_CENTER);
-        cards.setPrefWrapLength(900);
+        cards.setPrefWrapLength(940);
 
         cards.getChildren().addAll(
-                infoCard("What data is collected",
-                        "Basic account info, usage patterns, device information"),
-                infoCard("Why the data is used",
-                        "To provide and improve our services, ensure security"),
-                infoCard("Who can access it",
-                        "Only authorized personnel and trusted service providers"),
-                infoCard("How long data is kept",
-                        "Retained as long as your account is active"),
-                infoCard("User rights",
-                        "Access, modify, or delete your data anytime")
+                infoCard("What data is collected", "Basic account info, usage patterns, device information",
+                        this::showDataCollectedDialog),
+
+                infoCard("Why the data is used", "To provide and improve our services, ensure security",
+                        this::showWhyUsedDialog),
+
+                infoCard("Who can access it", "Authorized staff and service providers",
+                        this::showAccessControlDialog),
+
+                infoCard("How long data is kept", "Retained while your account is active",
+                        this::showRetentionDialog),
+
+                infoCard("User rights", "Access, modify, or delete your data",
+                        this::showRightsDialog)
         );
 
         // T&Cs button
