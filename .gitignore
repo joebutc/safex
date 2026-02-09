@@ -1,17 +1,2 @@
-# Maven
-/target/
-
-# IDEs
-/.idea/
-/.vscode/
-*.iml
-.classpath
-.project
-.settings/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Local secrets
-/src/main/resources/config.properties
+.vscode/
+target/

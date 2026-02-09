@@ -9,7 +9,9 @@ public class App extends Application {
         primaryStage.setTitle("SafeX");
         AppModel model = new AppModel();
         AppView view = new AppView(primaryStage);
+
         AppController controller = new AppController(model, view);
+        view.setController(controller);
         controller.updateView();
     }
 
