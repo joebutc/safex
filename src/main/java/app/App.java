@@ -6,9 +6,13 @@ import javafx.stage.Stage;
 public class App extends Application {
     @Override
     public void start(Stage primaryStage) {
+        app.model.DatabaseHandler.initialiseDatabase();
+
         AppModel model = new AppModel();
         AppView view = new AppView(primaryStage);
+
         AppController controller = new AppController(model, view);
+        view.setController(controller);
         controller.updateView();
     }
 

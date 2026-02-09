@@ -1,17 +1,24 @@
 package app;
 
 import app.model.State;
-import app.model.UserAccount;
-import java.util.ArrayList;
 
 public class AppModel {
     private State state = State.Login;
-    private ArrayList<UserAccount> users;
+    private String currentUser;
 
     public State getState() {
-        for (int x=0; x<5; x++) {
-
-        }
         return state;
+    }
+
+    public void setState(State newState) {
+        this.state = newState;
+    }
+
+    public void setCurrentUser(String username) {
+        this.currentUser = username;
+    }
+
+    public String getCurrentUser() {
+        return currentUser;
     }
 }
