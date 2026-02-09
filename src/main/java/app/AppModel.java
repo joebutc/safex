@@ -5,7 +5,7 @@ import app.model.UserAccount;
 import java.util.ArrayList;
 
 public class AppModel {
-    private State state = State.Login;
+    private State state = State.Notify;
     private ArrayList<UserAccount> users = new ArrayList<>();
 
     public State getState() {
