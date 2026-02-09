@@ -6,6 +6,7 @@ import app.view.DashboardPage;
 import app.view.LoginPage;
 import app.view.Page;
 import app.view.RegisterPage;
+import app.view.PartnerNotifyPage;
 import app.view.SettingsPage;
 import app.view.LegalOnboardPage;
 
@@ -26,7 +27,7 @@ public class AppView {
             // 'this' refers to the instance of the class this method belongs to
             case Login -> new LoginPage(controller);
             case Register -> new RegisterPage(controller);
-            case Dashboard -> new DashboardPage();
+            case Dashboard -> new DashboardPage(controller);
             case Notify -> new PartnerNotifyPage();
             case Settings -> new SettingsPage();
             case LegalOnboard -> new LegalOnboardPage();

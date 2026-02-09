@@ -8,14 +8,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DatabaseHandler {
-
     private static final String DB_URL = "jdbc:sqlite:useraccounts.db";
 
     private static Connection connect() {
-        String url = "jdbc:sqlite:useraccounts.db";
         Connection conn = null;
         try {
-            conn = DriverManager.getConnection(url);
+            conn = DriverManager.getConnection(DB_URL);
         } catch (SQLException e) {
             System.out.println("Connection error: " + e.getMessage());
         }

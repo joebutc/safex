@@ -1,11 +1,13 @@
 package app;
 
+import app.model.DatabaseHandler;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
 public class App extends Application {
     @Override
     public void start(Stage primaryStage) {
+        DatabaseHandler.initialiseDatabase();
         primaryStage.setTitle("SafeX");
         AppModel model = new AppModel();
         AppView view = new AppView(primaryStage);

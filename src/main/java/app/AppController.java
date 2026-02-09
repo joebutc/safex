@@ -40,6 +40,11 @@ public class AppController {
         view.updateView(State.Login);
     }
 
+    public void goToNotify() {
+        model.setState(State.Notify);
+        updateView();
+    }
+
     // Called by Log In Page
     public boolean attemptLogin(String username, String password) {
         if (DatabaseHandler.checkLogin(username, password)) {
@@ -49,5 +54,9 @@ public class AppController {
             return true;
         }
         return false;
+    }
+    public void goToNotify() {
+        model.setState(State.Notify);
+        view.updateView(State.Notify);
     }
 }
