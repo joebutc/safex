@@ -6,6 +6,7 @@ import javafx.stage.Stage;
 public class App extends Application {
     @Override
     public void start(Stage primaryStage) {
+        primaryStage.setTitle("SafeX");
         AppModel model = new AppModel();
         AppView view = new AppView(primaryStage);
         AppController controller = new AppController(model, view);

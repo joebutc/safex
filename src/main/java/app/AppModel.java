@@ -5,7 +5,7 @@ import app.model.UserAccount;
 import java.util.ArrayList;
 
 public class AppModel {
-    private State state = State.Login;
+    private State state = State.Settings;
     private ArrayList<UserAccount> users;
 
     public State getState() {
