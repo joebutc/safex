@@ -54,6 +54,10 @@
   -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.10), 20, 0.2, 0, 6);
 }
 
+.card-flat {
+  -fx-effect: null;
+}
+
 .card-padding {
   -fx-padding: 24;
 }
@@ -103,4 +107,28 @@
 .password-field:focused {
   -fx-border-color: #2563EB;
   -fx-border-width: 1.5;
+}
+
+.legal-title {
+  -fx-font-size: 22px;
+  -fx-font-weight: 700;
+  -fx-text-fill: #0F172A;
+}
+
+.legal-intro {
+  -fx-font-size: 12px;
+  -fx-font-style: italic;
+}
+
+.legal-question {
+  -fx-font-size: 13px;
+  -fx-font-weight: 600;
+}
+
+.legal-answer {
+  -fx-font-size: 13px;
+}
+
+.legal-closing {
+  -fx-font-size: 12px;
 }
