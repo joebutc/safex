@@ -73,7 +73,7 @@ public final class EmailService {
         return properties;
     }
 
-    private static Credentials loadCredentials() {
+    protected static Credentials loadCredentials() {
         Properties config = new Properties();
         try (InputStream inputStream = EmailService.class.getClassLoader().getResourceAsStream(CONFIG_FILE)) {
             if (inputStream == null) {
@@ -92,7 +92,7 @@ public final class EmailService {
         return new Credentials(emailAddress, emailPassword);
     }
 
-    private static String buildHtmlBody(String recipientName, String senderName) {
+    protected static String buildHtmlBody(String recipientName, String senderName) {
         String safeRecipientName = formatDisplayName(recipientName, "there");
         String safeSenderName = formatDisplayName(senderName, "a SafeX user");
 
@@ -115,14 +115,14 @@ public final class EmailService {
                 """.formatted(safeRecipientName, safeSenderName);
     }
 
-    private static String formatDisplayName(String value, String fallback) {
+    protected static String formatDisplayName(String value, String fallback) {
         if (value == null || value.isBlank()) {
             return fallback;
         }
         return escapeHtml(value.trim());
     }
 
-    private static String escapeHtml(String input) {
+    protected static String escapeHtml(String input) {
         return input
                 .replace("&", "&amp;")
                 .replace("<", "&lt;")
@@ -131,6 +131,6 @@ public final class EmailService {
                 .replace("'", "&#39;");
     }
 
-    private record Credentials(String emailAddress, String emailPassword) {
+    protected record Credentials(String emailAddress, String emailPassword) {
     }
 }
