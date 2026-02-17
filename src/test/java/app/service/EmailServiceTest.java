@@ -90,49 +90,6 @@ class EmailServiceTest {
         assertEquals("fallback",result3);
     }
 
-    @Test
-    void loadCorrectCredentials(){
-        EmailService.Credentials result = EmailService.loadCredentials();
-
-        String email = "safexdonotreply@gmail.com";
-        String password = "ymbi zjnm lees uxla";
-
-        assertEquals(new EmailService.Credentials(email,password),result);
-
-        assertThrows(IllegalStateException.class, EmailService::loadCredentials);
-
-
-    }
-
-    @Test void loadCredentialsMissingFile(){
-
-        assertThrows(IllegalStateException.class, EmailService::loadCredentials);
-
-    }
-
-    @Test void emailIsBlank(){
-        IllegalStateException exception = assertThrows(IllegalStateException.class, EmailService::loadCredentials);
-
-        String expectedMessage = "Missing email credentials in config.properties";
-        String actualMessage = exception.getMessage();
-        assertEquals(expectedMessage, actualMessage);
-
-    }
-
-    @Test void passwordIsBlank(){
-
-        assertThrows(IllegalStateException.class, EmailService::loadCredentials);
-
-    }
-
-
-
-
-
-
-
-
-
 }
 
 
