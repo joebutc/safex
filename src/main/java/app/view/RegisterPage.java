@@ -107,8 +107,7 @@ public class RegisterPage implements Page {
                 confirmBox,
                 feedbackLabel,
                 registerBtn,
-                loginLink
-        );
+                loginLink);
 
         StackPane center = new StackPane(card);
         center.setPadding(new Insets(24));
@@ -126,6 +125,19 @@ public class RegisterPage implements Page {
         // Basic Validation
         if (username.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
             showFeedback(feedbackLabel, "Please fill in all fields.", false);
+            return;
+        }
+
+        // Username validation: No spaces, alphabet characters only
+        if (!username.matches("^[a-zA-Z]+$")) {
+            showFeedback(feedbackLabel, "Username must contain only letters and no spaces.", false);
+            return;
+        }
+
+        // Password validation: Min length 8, numeric, upper, lower, and special character
+        String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
+        if (!password.matches(passwordPattern)) {
+            showFeedback(feedbackLabel, "Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.", false);
             return;
         }
 
