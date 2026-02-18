@@ -29,6 +29,7 @@ public final class AppController {
     }
 
     public static void updateView(State state) {
+        assertInitialised();
         if (state == State.LOGIN) {
             currentUser = null;
         }
@@ -39,6 +40,7 @@ public final class AppController {
 
     // Called by Log In Page
     public static boolean attemptLogin(String username, String password) {
+        assertInitialised();
         if (DatabaseHandler.checkLogin(username, password)) {
             currentUser = username;
             updateView(State.DASHBOARD);
@@ -48,6 +50,7 @@ public final class AppController {
     }
 
     public static boolean attemptRegister(String username, String password) {
+        assertInitialised();
         if (DatabaseHandler.registerUser(username, password)) {
             currentUser = username;
             updateView(State.DASHBOARD);
@@ -57,6 +60,7 @@ public final class AppController {
     }
 
     public static String getCurrentUser() {
+        assertInitialised();
         return currentUser;
     }
 
@@ -66,6 +70,12 @@ public final class AppController {
             return loader.load();
         } catch (IOException e) {
             throw new RuntimeException("Could not load FXML for " + state, e);
+        }
+    }
+
+    private static void assertInitialised() {
+        if (!initialised) {
+            throw new RuntimeException("AppController not initialised");
         }
     }
 
