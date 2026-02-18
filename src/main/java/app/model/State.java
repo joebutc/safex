@@ -1,18 +1,17 @@
 package app.model;
 
 public enum State {
-    Login,
-    ClinicLogin,
-    Register,
-    ClinicRegister,
-    Dashboard,
-    ClinicDashboard,
-    ClinicSchedule,
-    Notify,
-    Settings,
-    LegalOnboard,
-    StiTestTracker,
-    TreatmentTracker,
-    ClinicPatientTreatment,
-    StiTestBooking
+    LOGIN("/scenes/Login.fxml"),
+    REGISTER("/scenes/Register.fxml"),
+    DASHBOARD("/scenes/Dashboard.fxml");
+
+    private final String fxmlPath;
+
+    State(String fxmlPath) {
+        this.fxmlPath = fxmlPath;
+    }
+
+    public String getFxmlPath() {
+        return fxmlPath;
+    }
 }

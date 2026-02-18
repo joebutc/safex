@@ -9,8 +9,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseHandler {
+public final class DatabaseHandler {
     private static final String DB_URL = "jdbc:sqlite:useraccounts.db";
+
+    private DatabaseHandler() {
+    }
 
     private static Connection connect() {
         Connection conn = null;

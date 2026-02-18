@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.LoginPage">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+    <center>
+        <StackPane>
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24"/>
+            </padding>
+            <VBox spacing="14" alignment="CENTER_LEFT" maxWidth="440" styleClass="card-padding">
+                <Label text="Welcome back">
+                    <font>
+                        <Font name="System" size="30"/>
+                    </font>
+                </Label>
+                <Label text="Sign in to continue." wrapText="true" styleClass="muted-text"/>
+                <VBox spacing="4" maxWidth="Infinity">
+                    <Label text="Username">
+                        <font>
+                            <Font name="System" size="13"/>
+                        </font>
+                    </Label>
+                    <TextField fx:id="usernameField" promptText="Enter your username" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="4" maxWidth="Infinity">
+                    <Label text="Password">
+                        <font>
+                            <Font name="System" size="13"/>
+                        </font>
+                    </Label>
+                    <PasswordField fx:id="passwordField" promptText="Enter your password" maxWidth="Infinity"/>
+                </VBox>
+                <Label fx:id="errorLabel" wrapText="true" visible="false" managed="false" styleClass="error-text"/>
+                <Button text="Log in" onAction="#handleLogin" defaultButton="true" minHeight="42" maxWidth="Infinity" styleClass="primary-button"/>
+                <Button text="Create an account" onAction="#handleRegister" styleClass="link-button"/>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>
