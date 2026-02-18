@@ -1,9 +1,6 @@
 package app.view;
 
-import javafx.scene.Scene;
+import app.AppController;
 
-public interface Page {
-    Scene createScene();
-    default void onEnter() {
-    }
+public abstract class Page {
 }

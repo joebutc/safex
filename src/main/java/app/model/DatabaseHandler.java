@@ -7,8 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class DatabaseHandler {
+public final class DatabaseHandler {
     private static final String DB_URL = "jdbc:sqlite:useraccounts.db";
+
+    private DatabaseHandler() {
+    }
 
     private static Connection connect() {
         Connection conn = null;
