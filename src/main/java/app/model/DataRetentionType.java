@@ -5,3 +5,4 @@ public enum DataRetentionType {
     Balanced,
     Connected
 }
+// WHY

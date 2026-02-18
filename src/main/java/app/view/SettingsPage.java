@@ -17,7 +17,7 @@ import javafx.stage.Stage;
 
 import java.util.Objects;
 
-public class SettingsPage implements Page {
+public class SettingsPage {
     private final AppController controller;
 
     public SettingsPage(AppController controller) {
