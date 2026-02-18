@@ -46,7 +46,7 @@ public class PartnerNotifyPage implements Page {
 
     public PartnerNotifyPage() {
         this(null);
-    } // WHAT IS THE POINT
+    }
 
     @Override
     public Scene createScene() {
@@ -114,8 +114,7 @@ public class PartnerNotifyPage implements Page {
         lastRow.setPadding(new Insets(18));
 
         Label disclaimerLabel = new Label(
-                "Note: the following message will be sent anonymously to all contacts in the list above."
-        );
+                "Note: the following message will be sent anonymously to all contacts in the list above.");
         disclaimerLabel.getStyleClass().add("muted-text");
         disclaimerLabel.setWrapText(true);
         disclaimerLabel.setFont(new Font(BODY_FONT_SIZE));
@@ -177,14 +176,19 @@ public class PartnerNotifyPage implements Page {
         progressIndicator.setMaxSize(64, 64);
         progressIndicator.setVisible(false);
 
-        confirmNotifyButton.setOnAction(event ->
-                sendNotificationsAsync(contacts, progressIndicator, confirmNotifyButton));
+        confirmNotifyButton
+                .setOnAction(event -> sendNotificationsAsync(contacts, progressIndicator, confirmNotifyButton));
 
         sendRow.getChildren().add(confirmNotifyButton);
 
         inner.getChildren().addAll(label1, label2, sendRow, progressIndicator);
         outer.getChildren().addAll(messageSentLabel, inner);
         return outer;
+    }
+
+    private boolean isSyntaxValid(String email) {
+        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        return email != null && email.matches(regex);
     }
 
     private void sendNotificationsAsync(
@@ -197,9 +201,17 @@ public class PartnerNotifyPage implements Page {
             showAlert(
                     Alert.AlertType.WARNING,
                     "No Contacts",
-                    "Add at least one contact with an email address before sending notifications."
-            );
+                    "Add at least one contact with an email address before sending notifications.");
             return;
+        }
+        for (Recipient recipient : recipients) {
+            if (!isSyntaxValid(recipient.email())) {
+                showAlert(
+                        Alert.AlertType.ERROR,
+                        "Invalid Email Address",
+                        "The email '" + recipient.email() + "' is not formatted correctly.");
+                return;
+            }
         }
 
         progressIndicator.setVisible(true);
@@ -223,37 +235,32 @@ public class PartnerNotifyPage implements Page {
                     showAlert(
                             Alert.AlertType.INFORMATION,
                             "Notification Sent",
-                            "Notification sent to " + recipient.email() + "."
-                    );
+                            "Notification sent to " + recipient.email() + ".");
                 } else {
                     showAlert(
                             Alert.AlertType.ERROR,
                             "Send Failed",
-                            "SafeX could not send a notification to " + recipient.email() + "."
-                    );
+                            "SafeX could not send a notification to " + recipient.email() + ".");
                 }
                 completeSendBatch(
                         pendingCount,
                         successCount,
                         recipients.size(),
                         progressIndicator,
-                        confirmNotifyButton
-                );
+                        confirmNotifyButton);
             });
 
             sendTask.setOnFailed(event -> {
                 showAlert(
                         Alert.AlertType.ERROR,
                         "Send Failed",
-                        "SafeX could not send a notification to " + recipient.email() + "."
-                );
+                        "SafeX could not send a notification to " + recipient.email() + ".");
                 completeSendBatch(
                         pendingCount,
                         successCount,
                         recipients.size(),
                         progressIndicator,
-                        confirmNotifyButton
-                );
+                        confirmNotifyButton);
             });
 
             Thread emailThread = new Thread(sendTask, "safex-email-send");
@@ -283,8 +290,7 @@ public class PartnerNotifyPage implements Page {
             showAlert(
                     Alert.AlertType.WARNING,
                     "Notifications Complete",
-                    successCount.get() + " of " + totalRecipients + " notifications were sent."
-            );
+                    successCount.get() + " of " + totalRecipients + " notifications were sent.");
         }
     }
 
@@ -292,6 +298,7 @@ public class PartnerNotifyPage implements Page {
         List<Recipient> recipients = new ArrayList<>();
         for (ContactEntry contact : contacts) {
             String email = contact.emailField().getText() == null ? "" : contact.emailField().getText().trim();
+
             if (email.isBlank()) {
                 continue;
             }
@@ -337,8 +344,7 @@ public class PartnerNotifyPage implements Page {
                 width,
                 height,
                 true,
-                true
-        );
+                true);
     }
 
     private Button buildHomeButton(Image homeImage) {
@@ -360,8 +366,7 @@ public class PartnerNotifyPage implements Page {
             showAlert(
                     Alert.AlertType.WARNING,
                     "Navigation Unavailable",
-                    "Unable to return to the dashboard because the controller is not available."
-            );
+                    "Unable to return to the dashboard because the controller is not available.");
             return;
         }
         controller.goToDashboard();
@@ -378,7 +383,7 @@ public class PartnerNotifyPage implements Page {
     @Override
     public void onEnter() {
         Page.super.onEnter();
-    } //THIS DOES NOTHING
+    }
 
     private record ContactEntry(HBox row, TextField nameField, TextField emailField) {
     }

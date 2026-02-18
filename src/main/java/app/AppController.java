@@ -16,11 +16,12 @@ public final class AppController {
     private AppController() {
     }
 
-    public static void init(State state) {
+    public static void init(Stage stage, State state) {
         if (initialised) {
             System.err.println("AppController already initialised");
             return;
         }
+        primaryStage = stage;
         Parent root = loadRoot(state);
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
