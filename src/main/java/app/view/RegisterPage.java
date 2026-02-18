@@ -27,6 +27,19 @@ public class RegisterPage {
             return;
         }
 
+        // Username validation: No spaces, alphabet characters only
+        if (!username.matches("^[a-zA-Z]+$")) {
+            showFeedback("Username must contain only letters and no spaces.", false);
+            return;
+        }
+
+        // Password validation: Min length 8, numeric, upper, lower, and special character
+        String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
+        if (!password.matches(passwordPattern)) {
+            showFeedback("Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.", false);
+            return;
+        }
+
         if (!password.equals(confirm)) {
             showFeedback("Passwords do not match.", false);
             return;

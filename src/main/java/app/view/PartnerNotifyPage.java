@@ -45,7 +45,7 @@ public class PartnerNotifyPage implements Page {
 
     public PartnerNotifyPage() {
         this(null);
-    } // WHAT IS THE POINT
+    }
 
     @Override
     public Scene createScene() {
@@ -382,7 +382,7 @@ public class PartnerNotifyPage implements Page {
     @Override
     public void onEnter() {
         Page.super.onEnter();
-    } //THIS DOES NOTHING
+    }
 
     private record ContactEntry(HBox row, TextField nameField, TextField emailField) {
     }
