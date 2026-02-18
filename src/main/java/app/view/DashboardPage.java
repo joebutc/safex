@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class DashboardPage extends Page {
+public class DashboardPage {
     @FXML private Label welcomeLabel;
 
     @FXML

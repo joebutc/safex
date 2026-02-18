@@ -7,7 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
-public class LoginPage extends Page {
+public class LoginPage {
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
