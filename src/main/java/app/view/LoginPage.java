@@ -18,10 +18,17 @@ import javafx.scene.text.FontWeight;
 
 public class LoginPage implements Page {
 
-    private AppController controller;
+    public enum LoginType {
+        STANDARD,
+        CLINIC
+    }
 
-    public LoginPage(AppController controller) {
+    private AppController controller;
+    private LoginType loginType;
+
+    public LoginPage(AppController controller, LoginType loginType) {
         this.controller = controller;
+        this.loginType = loginType;
     }
 
     @Override
@@ -34,10 +41,13 @@ public class LoginPage implements Page {
         card.setAlignment(Pos.CENTER_LEFT);
         card.setMaxWidth(440);
 
-        Label titleLabel = new Label("Welcome back");
+        String greetingText = (loginType == LoginType.CLINIC) ? "Clinic Portal" : "Welcome back";
+        Label titleLabel = new Label(greetingText);
         titleLabel.setFont(Font.font("System", FontWeight.EXTRA_BOLD, 30));
 
-        Label subtitleLabel = new Label("Sign in to continue.");
+        String subtitleText = (loginType == LoginType.CLINIC) ? "Sign in to manage your clinic."
+                : "Sign in to continue.";
+        Label subtitleLabel = new Label(subtitleText);
         subtitleLabel.getStyleClass().add("muted-text");
         subtitleLabel.setWrapText(true);
 
@@ -71,8 +81,15 @@ public class LoginPage implements Page {
         loginBtn.setMaxWidth(Double.MAX_VALUE);
         loginBtn.setMinHeight(42);
 
-        Button registerLink = new Button("Create an account");
+        String registerText = (loginType == LoginType.CLINIC) ? "Register a new clinic" : "Create an account";
+        Button registerLink = new Button(registerText);
         registerLink.getStyleClass().add("link-button");
+
+        // NEW: The toggle button to switch between portal types
+        String switchPortalText = (loginType == LoginType.STANDARD) ? "Are you a clinic? Clinic Portal"
+                : "Are you a patient? Patient Portal";
+        Button switchPortalLink = new Button(switchPortalText);
+        switchPortalLink.getStyleClass().add("link-button");
 
         loginBtn.setOnAction(e -> handleLogin(usernameField, passwordField, errorLabel));
         passwordField.setOnKeyPressed(e -> {
@@ -83,7 +100,15 @@ public class LoginPage implements Page {
 
         registerLink.setOnAction(e -> {
             if (controller != null) {
-                controller.goToRegister();
+                controller.goToRegister(loginType);
+            }
+        });
+
+        // NEW: Action event to tell the controller to swap the login page
+        switchPortalLink.setOnAction(e -> {
+            if (controller != null) {
+                LoginType oppositeType = (loginType == LoginType.STANDARD) ? LoginType.CLINIC : LoginType.STANDARD;
+                controller.goToLogin(oppositeType);
             }
         });
 
@@ -94,7 +119,8 @@ public class LoginPage implements Page {
                 passBox,
                 errorLabel,
                 loginBtn,
-                registerLink
+                registerLink,
+                switchPortalLink // Added to the layout
         );
 
         StackPane center = new StackPane(card);
@@ -116,7 +142,7 @@ public class LoginPage implements Page {
         }
 
         if (controller != null) {
-            boolean success = controller.attemptLogin(username, password);
+            boolean success = controller.attemptLogin(username, password, loginType);
             if (!success) {
                 errorLabel.setText("Invalid username or password.");
                 errorLabel.setVisible(true);
@@ -127,9 +153,9 @@ public class LoginPage implements Page {
             }
         } else {
             System.out.println("Warning: Controller is null. Running local check.");
-            boolean isValid = DatabaseHandler.checkLogin(username, password);
+            boolean isValid = DatabaseHandler.checkLogin(username, password, loginType.name());
             if (isValid) {
-                System.out.println("[TEST] Login Valid (No screen switch)");
+                System.out.println("[TEST] Login Valid for " + loginType.name() + " (No screen switch)");
                 errorLabel.setVisible(false);
                 errorLabel.setManaged(false);
             } else {

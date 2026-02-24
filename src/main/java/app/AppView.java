@@ -6,11 +6,13 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import app.view.DashboardPage;
 import app.view.LoginPage;
+import app.view.LoginPage.LoginType;
 import app.view.Page;
 import app.view.RegisterPage;
 import app.view.PartnerNotifyPage;
 import app.view.SettingsPage;
 import app.view.LegalOnboardPage;
+// Import Clinic dashboard
 import app.view.AppStyles;
 
 public class AppView {
@@ -32,9 +34,12 @@ public class AppView {
         }
 
         Page page = switch (state) {
-            case Login -> new LoginPage(controller);
-            case Register -> new RegisterPage(controller);
+            case Login -> new LoginPage(controller, LoginType.STANDARD);
+            case ClinicLogin -> new LoginPage(controller, LoginType.CLINIC);
+            case Register -> new RegisterPage(controller, LoginType.STANDARD);
+            case ClinicRegister -> new RegisterPage(controller, LoginType.CLINIC);
             case Dashboard -> new DashboardPage(controller);
+            case ClinicDashboard -> new DashboardPage(controller);
             case Notify -> new PartnerNotifyPage(controller);
             case Settings -> new SettingsPage(controller);
             case LegalOnboard -> new LegalOnboardPage(controller);
