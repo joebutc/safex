@@ -2,6 +2,7 @@ package app.view;
 
 import app.AppController;
 import app.model.DatabaseHandler;
+import app.view.LoginPage.LoginType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -19,13 +20,18 @@ import javafx.scene.text.FontWeight;
 public class RegisterPage implements Page {
 
     private AppController controller;
+    private LoginType loginType;
 
-    public RegisterPage(AppController controller) {
+    // Updated constructor to require the LoginType
+    public RegisterPage(AppController controller, LoginType loginType) {
         this.controller = controller;
+        this.loginType = loginType;
     }
 
-    public RegisterPage() {
+    // Updated fallback constructor
+    public RegisterPage(LoginType loginType) {
         this.controller = null;
+        this.loginType = loginType;
     }
 
     @Override
@@ -38,14 +44,19 @@ public class RegisterPage implements Page {
         card.setAlignment(Pos.CENTER_LEFT);
         card.setMaxWidth(440);
 
-        Label titleLabel = new Label("Create account");
+        // Customise titles based on registration type
+        String titleText = (loginType == LoginType.CLINIC) ? "Register your clinic" : "Create account";
+        Label titleLabel = new Label(titleText);
         titleLabel.setFont(Font.font("System", FontWeight.EXTRA_BOLD, 28));
 
-        Label subtitleLabel = new Label("Join our secure community.");
+        String subtitleText = (loginType == LoginType.CLINIC) ? "Set up your clinic portal."
+                : "Join our secure community.";
+        Label subtitleLabel = new Label(subtitleText);
         subtitleLabel.getStyleClass().add("muted-text");
         subtitleLabel.setWrapText(true);
 
-        Label userLabel = new Label("Username");
+        String userLabelText = (loginType == LoginType.CLINIC) ? "Clinic ID / Username" : "Username";
+        Label userLabel = new Label(userLabelText);
         userLabel.setFont(Font.font("System", FontWeight.SEMI_BOLD, 13));
         TextField usernameField = new TextField();
         usernameField.setPromptText("Choose a username");
@@ -77,13 +88,16 @@ public class RegisterPage implements Page {
         feedbackLabel.setVisible(false);
         feedbackLabel.setManaged(false);
 
-        Button registerBtn = new Button("Create account");
+        String registerBtnText = (loginType == LoginType.CLINIC) ? "Register clinic" : "Create account";
+        Button registerBtn = new Button(registerBtnText);
         registerBtn.getStyleClass().add("primary-button");
         registerBtn.setDefaultButton(true);
         registerBtn.setMaxWidth(Double.MAX_VALUE);
         registerBtn.setMinHeight(42);
 
-        Button loginLink = new Button("Already have an account? Log in");
+        String loginLinkText = (loginType == LoginType.CLINIC) ? "Already registered? Log in to clinic"
+                : "Already have an account? Log in";
+        Button loginLink = new Button(loginLinkText);
         loginLink.getStyleClass().add("link-button");
 
         registerBtn.setOnAction(e -> handleRegister(usernameField, passwordField, confirmPasswordField, feedbackLabel));
@@ -95,7 +109,8 @@ public class RegisterPage implements Page {
 
         loginLink.setOnAction(e -> {
             if (controller != null) {
-                controller.goToLogin();
+                // Return the user to the correct login page based on their current path
+                controller.goToLogin(loginType);
             }
         });
 
@@ -134,10 +149,13 @@ public class RegisterPage implements Page {
             return;
         }
 
-        // Password validation: Min length 8, numeric, upper, lower, and special character
+        // Password validation: Min length 8, numeric, upper, lower, and special
+        // character
         String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
         if (!password.matches(passwordPattern)) {
-            showFeedback(feedbackLabel, "Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.", false);
+            showFeedback(feedbackLabel,
+                    "Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.",
+                    false);
             return;
         }
 
@@ -148,16 +166,17 @@ public class RegisterPage implements Page {
 
         // Logic for Database Insertion
         if (controller != null) {
-            boolean success = controller.attemptRegister(username, password);
+            // Pass the loginType to the controller
+            boolean success = controller.attemptRegister(username, password, loginType);
             if (success) {
                 showFeedback(feedbackLabel, "Registration successful! You can now log in.", true);
             } else {
                 showFeedback(feedbackLabel, "Username already exists or database error.", false);
             }
         } else {
-            // Fallback for manual testing (assuming DatabaseHandler has a register method)
+            // Fallback for manual testing
             System.out.println("Warning: Controller is null. Calling DatabaseHandler directly.");
-            boolean success = DatabaseHandler.registerUser(username, password);
+            boolean success = DatabaseHandler.registerUser(username, password, loginType.name());
             if (success) {
                 showFeedback(feedbackLabel, "User registered successfully.", true);
             } else {

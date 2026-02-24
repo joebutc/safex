@@ -2,6 +2,7 @@ package app;
 
 import app.model.DatabaseHandler;
 import app.model.State;
+import app.view.LoginPage.LoginType;
 
 public class AppController {
     private final AppModel model;
@@ -20,10 +21,16 @@ public class AppController {
         return model.getCurrentUser();
     }
 
-    public boolean attemptRegister(String username, String password) {
-        if (DatabaseHandler.registerUser(username, password)) {
+    public boolean attemptRegister(String username, String password, LoginType loginType) {
+        if (DatabaseHandler.registerUser(username, password, loginType.name())) {
             model.setCurrentUser(username);
-            model.setState(State.Dashboard);
+
+            if (loginType == LoginType.CLINIC) {
+                model.setState(State.ClinicDashboard); // Assuming a separate dashboard
+            } else {
+                model.setState(State.Dashboard);
+            }
+
             updateView();
             return true;
         }
@@ -35,15 +42,31 @@ public class AppController {
         updateView();
     }
 
+    public void goToRegister(LoginType loginType) {
+        if (loginType == LoginType.CLINIC) {
+            model.setState(State.ClinicRegister);
+        } else {
+            model.setState(State.Register);
+        }
+        updateView();
+    }
+
     public void goToRegister() {
-        model.setState(State.Register);
+        goToRegister(LoginType.STANDARD);
+    }
+
+    public void goToLogin(LoginType loginType) {
+        model.setCurrentUser(null);
+        if (loginType == LoginType.CLINIC) {
+            model.setState(State.ClinicLogin);
+        } else {
+            model.setState(State.Login);
+        }
         updateView();
     }
 
     public void goToLogin() {
-        model.setCurrentUser(null);
-        model.setState(State.Login);
-        updateView();
+        goToLogin(LoginType.STANDARD);
     }
 
     public void goToNotify() {
@@ -61,15 +84,19 @@ public class AppController {
         updateView();
     }
 
-    // Called by Log In Page
-    public boolean attemptLogin(String username, String password) {
-        if (DatabaseHandler.checkLogin(username, password)) {
+    public boolean attemptLogin(String username, String password, LoginType loginType) {
+        if (DatabaseHandler.checkLogin(username, password, loginType.name())) {
             model.setCurrentUser(username);
-            model.setState(State.Dashboard);
+
+            if (loginType == LoginType.CLINIC) {
+                model.setState(State.ClinicDashboard);
+            } else {
+                model.setState(State.Dashboard);
+            }
+
             updateView();
             return true;
         }
         return false;
     }
-    
 }

@@ -20,9 +20,16 @@ public class DatabaseHandler {
         return conn;
     }
 
-    // Creates the users table if it does not already exist
+    // Creates both the users and clinics tables if they do not already exist
     public static void initialiseDatabase() {
-        String sql = "CREATE TABLE IF NOT EXISTS users ("
+        String usersSql = "CREATE TABLE IF NOT EXISTS users ("
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "username TEXT NOT NULL UNIQUE,"
+                + "password TEXT NOT NULL"
+                + ");";
+
+        // Separate table allows for clinic-specific columns to be added later
+        String clinicsSql = "CREATE TABLE IF NOT EXISTS clinics ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "username TEXT NOT NULL UNIQUE,"
                 + "password TEXT NOT NULL"
@@ -35,17 +42,29 @@ public class DatabaseHandler {
             }
 
             try (Statement stmt = conn.createStatement()) {
-                stmt.execute(sql);
-                System.out.println("Table 'users' is ready.");
+                stmt.execute(usersSql);
+                stmt.execute(clinicsSql);
+                System.out.println("Tables 'users' and 'clinics' are ready.");
             }
         } catch (SQLException e) {
             System.out.println("Error initialising database: " + e.getMessage());
         }
     }
 
-    // Registers a new user into the database
-    public static boolean registerUser(String username, String password) {
-        String sql = "INSERT INTO users(username, password) VALUES(?, ?)";
+    // Safely maps the loginType string to the correct database table
+    private static String getTableName(String accountType) {
+        if ("CLINIC".equals(accountType)) {
+            return "clinics";
+        }
+        return "users";
+    }
+
+    // Registers a new user or clinic into the respective database table
+    public static boolean registerUser(String username, String password, String accountType) {
+        String tableName = getTableName(accountType);
+
+        // Dynamic table name insertion
+        String sql = "INSERT INTO " + tableName + "(username, password) VALUES(?, ?)";
 
         try (Connection conn = connect()) {
             if (conn == null) {
@@ -66,9 +85,12 @@ public class DatabaseHandler {
         }
     }
 
-    // Checks if a user exists (login)
-    public static boolean checkLogin(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+    // Checks if a user or clinic exists in the respective database table
+    public static boolean checkLogin(String username, String password, String accountType) {
+        String tableName = getTableName(accountType);
+
+        // Dynamic table name insertion
+        String sql = "SELECT * FROM " + tableName + " WHERE username = ? AND password = ?";
 
         try (Connection conn = connect()) {
             if (conn == null) {
