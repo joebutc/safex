@@ -8,7 +8,7 @@ Architecture is MVC + state routing:
 - `AppModel` stores current app `State` and current username.
 - `AppController` mutates model state and triggers view updates.
 - `AppView` maps `State` to `Page` implementations and replaces the `Scene`.
-- Each `Page` builds a new scene tree in `createScene()`.
+- Each `Page` builds a fresh scene tree in `createScene()`.
 
 ## Build + run
 
@@ -27,7 +27,7 @@ Architecture is MVC + state routing:
 
 - `src/main/java/app/App.java`
   - Main launcher.
-  - Sets `prism.order=sw` when not already provided to reduce Windows blank-window rendering issues.
+  - Sets `prism.order=sw` when not already provided (Windows blank-window mitigation).
   - Calls `Application.launch(FxApp.class, args)`.
 
 - `src/main/java/app/FxApp.java`
@@ -39,59 +39,82 @@ Architecture is MVC + state routing:
 - `src/main/java/app/AppView.java`
   - State router from `State` enum to page classes.
   - Ensures updates run on JavaFX thread.
+  - Routes standard vs clinic states to typed pages:
+    - `Login` / `ClinicLogin` -> `LoginPage(..., LoginType.STANDARD/CLINIC)`
+    - `Register` / `ClinicRegister` -> `RegisterPage(..., LoginType.STANDARD/CLINIC)`
+    - `Dashboard` / `ClinicDashboard` -> `DashboardPage`
   - Applies shared CSS via `AppStyles.apply(scene)`.
-  - New safety behavior: catches page-render exceptions and shows a diagnostic fallback scene instead of leaving a blank window.
+  - Catches render exceptions and shows a diagnostic fallback scene.
 
 - `src/main/java/app/view/AppStyles.java`
   - Scene defaults (`900x650`) and shared CSS attach (`/styles/app.css`).
-  - Missing stylesheet is now non-fatal (warns to stderr instead of throwing).
+  - Missing stylesheet is non-fatal (stderr warning).
 
 ### Model + persistence
 
 - `src/main/java/app/model/State.java`
-  - States: `Login`, `Register`, `Dashboard`, `Notify`, `Settings`, `LegalOnboard`.
+  - States: `Login`, `ClinicLogin`, `Register`, `ClinicRegister`, `Dashboard`, `ClinicDashboard`, `Notify`, `Settings`, `LegalOnboard`.
 
 - `src/main/java/app/model/DatabaseHandler.java`
-  - SQLite helper for user login/register.
-  - Creates table:
+  - SQLite helper for auth and registration.
+  - Creates tables:
     - `users(id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL)`
-  - Note: passwords are still stored in plaintext.
+    - `clinics(id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL)`
+  - Selects target table by account type (`STANDARD` -> `users`, `CLINIC` -> `clinics`).
+  - Methods:
+    - `registerUser(username, password, accountType)`
+    - `checkLogin(username, password, accountType)`
+  - Note: passwords are still plaintext.
 
 - Additional model classes:
-  - `Account.java`, `UserAccount.java`, `PrivacySettings.java`, `DataRetentionType.java`.
+  - `Account.java`, `UserAccount.java`, `ClinicAccount.java`, `PrivacySettings.java`, `DataRetentionType.java`.
+
+### Controller behavior
+
+- `src/main/java/app/AppController.java`
+  - Auth methods are type-aware:
+    - `attemptLogin(username, password, LoginType)`
+    - `attemptRegister(username, password, LoginType)`
+  - Navigation methods support both flows:
+    - `goToLogin(LoginType)` + `goToLogin()`
+    - `goToRegister(LoginType)` + `goToRegister()`
+  - Clinic auth routes to `State.ClinicDashboard`; standard auth routes to `State.Dashboard`.
 
 ### UI pages (`src/main/java/app/view`)
 
 - `LoginPage`
-  - Username/password login.
-  - Enter key support.
-  - Navigates to register page.
+  - Contains `LoginType` enum: `STANDARD`, `CLINIC`.
+  - Type-specific title/subtitle and register CTA.
+  - Includes a portal-switch link:
+    - Standard -> Clinic portal
+    - Clinic -> Patient portal
+  - Calls `controller.attemptLogin(..., loginType)`.
 
 - `RegisterPage`
-  - Registration with validation:
+  - Type-specific labels/button text for standard vs clinic registration.
+  - Calls `controller.attemptRegister(..., loginType)`.
+  - Returns to matching login route using `controller.goToLogin(loginType)`.
+  - Validation rules:
     - Username letters-only, no spaces.
-    - Password min 8 with uppercase/lowercase/number/special char.
-    - Confirm-password check.
-  - Navigates back to login.
+    - Password min 8 with upper/lower/number/special.
+    - Confirm-password match.
 
 - `DashboardPage`
-  - Cards for Notify, Settings, Legal, and NHS resources.
-  - Logout support.
+  - Main hub (currently reused for both standard and clinic dashboards).
+  - Cards: Notify, Settings, Terms, NHS resources.
 
 - `PartnerNotifyPage`
   - Contact list editor (email required, name optional).
   - Async email sending via background threads.
   - Email syntax validation before send.
-  - Per-recipient success/failure alerts and completion summary.
 
 - `SettingsPage`
-  - Privacy-related cards and dialogs.
-  - Links to legal page and back to dashboard.
+  - Privacy-related cards/dialogs.
+  - Links to legal page and dashboard.
 
 - `LegalOnboardPage`
-  - Privacy policy + terms summary flow.
+  - Privacy + terms summary flow.
   - Opens bundled PDFs (`privacy.pdf`, `tcs.pdf`) via `PdfOpener`.
-  - Agreement navigates to dashboard.
 
 ### Services/util
 
@@ -120,4 +143,5 @@ Architecture is MVC + state routing:
 ## Known issues / cleanup
 
 - `pom.xml` currently declares `sqlite-jdbc` twice with different versions.
+- `ClinicDashboard` currently reuses `DashboardPage` (no separate clinic dashboard page yet).
 - Real credentials and local DB must stay uncommitted (`config.properties`, `useraccounts.db`).

@@ -16,7 +16,6 @@ import app.view.RegisterPage;
 import app.view.PartnerNotifyPage;
 import app.view.SettingsPage;
 import app.view.LegalOnboardPage;
-// Import Clinic dashboard
 import app.view.AppStyles;
 
 public class AppView {
@@ -37,18 +36,18 @@ public class AppView {
             return;
         }
 
-        Page page = switch (state) {
-            case Login -> new LoginPage(controller, LoginType.STANDARD);
-            case ClinicLogin -> new LoginPage(controller, LoginType.CLINIC);
-            case Register -> new RegisterPage(controller, LoginType.STANDARD);
-            case ClinicRegister -> new RegisterPage(controller, LoginType.CLINIC);
-            case Dashboard -> new DashboardPage(controller);
-            case ClinicDashboard -> new DashboardPage(controller);
-            case Notify -> new PartnerNotifyPage(controller);
-            case Settings -> new SettingsPage(controller);
-            case LegalOnboard -> new LegalOnboardPage(controller);
-        };
-
+        try {
+            Page page = switch (state) {
+                case Login -> new LoginPage(controller, LoginType.STANDARD);
+                case ClinicLogin -> new LoginPage(controller, LoginType.CLINIC);
+                case Register -> new RegisterPage(controller, LoginType.STANDARD);
+                case ClinicRegister -> new RegisterPage(controller, LoginType.CLINIC);
+                case Dashboard -> new DashboardPage(controller);
+                case ClinicDashboard -> new DashboardPage(controller);
+                case Notify -> new PartnerNotifyPage(controller);
+                case Settings -> new SettingsPage(controller);
+                case LegalOnboard -> new LegalOnboardPage(controller);
+            };
             Scene scene = page.createScene();
             AppStyles.apply(scene);
             primaryStage.setScene(scene);
