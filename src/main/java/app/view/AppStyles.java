@@ -2,8 +2,6 @@ package app.view;
 
 import javafx.scene.Scene;
 
-import java.util.Objects;
-
 public final class AppStyles {
     public static final double SCENE_WIDTH = 900;
     public static final double SCENE_HEIGHT = 650;
@@ -18,14 +16,16 @@ public final class AppStyles {
             return;
         }
 
-        String stylesheetUrl = Objects.requireNonNull(
-                AppStyles.class.getResource(STYLESHEET_PATH),
-                "Missing stylesheet resource: " + STYLESHEET_PATH
-        ).toExternalForm();
+        var stylesheetResource = AppStyles.class.getResource(STYLESHEET_PATH);
+        if (stylesheetResource == null) {
+            System.err.println("Missing stylesheet resource: " + STYLESHEET_PATH);
+            return;
+        }
+
+        String stylesheetUrl = stylesheetResource.toExternalForm();
 
         if (!scene.getStylesheets().contains(stylesheetUrl)) {
             scene.getStylesheets().add(stylesheetUrl);
         }
     }
 }
-
