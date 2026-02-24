@@ -2,7 +2,11 @@ package app;
 
 import app.model.State;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import app.view.DashboardPage;
 import app.view.LoginPage;
@@ -31,18 +35,41 @@ public class AppView {
             return;
         }
 
-        Page page = switch (state) {
-            case Login -> new LoginPage(controller);
-            case Register -> new RegisterPage(controller);
-            case Dashboard -> new DashboardPage(controller);
-            case Notify -> new PartnerNotifyPage(controller);
-            case Settings -> new SettingsPage(controller);
-            case LegalOnboard -> new LegalOnboardPage(controller);
-        };
+        try {
+            Page page = switch (state) {
+                case Login -> new LoginPage(controller);
+                case Register -> new RegisterPage(controller);
+                case Dashboard -> new DashboardPage(controller);
+                case Notify -> new PartnerNotifyPage(controller);
+                case Settings -> new SettingsPage(controller);
+                case LegalOnboard -> new LegalOnboardPage(controller);
+            };
 
-        Scene scene = page.createScene();
-        AppStyles.apply(scene);
-        primaryStage.setScene(scene);
-        primaryStage.show();
+            Scene scene = page.createScene();
+            AppStyles.apply(scene);
+            primaryStage.setScene(scene);
+            primaryStage.show();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            primaryStage.setScene(buildErrorScene(state, exception));
+            primaryStage.show();
+        }
+    }
+
+    private Scene buildErrorScene(State state, Exception exception) {
+        Label title = new Label("SafeX could not render this page.");
+        title.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
+
+        Label details = new Label(
+                "State: " + state + "\n"
+                        + "Error: " + exception.getClass().getSimpleName() + "\n"
+                        + "Message: " + (exception.getMessage() == null ? "(no message)" : exception.getMessage())
+        );
+        details.setWrapText(true);
+
+        VBox root = new VBox(12, title, details);
+        root.setPadding(new Insets(24));
+        root.setAlignment(Pos.TOP_LEFT);
+        return new Scene(root, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
     }
 }
