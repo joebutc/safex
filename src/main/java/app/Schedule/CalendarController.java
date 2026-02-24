@@ -57,7 +57,7 @@ public class CalendarController {
 
             dayButton.setMaxSize(Double.MAX_VALUE,Double.MAX_VALUE);
 
-            //TODO set the buttons style if needed.
+            // Styling hook for day buttons can be applied here if needed.
             dayButton.setOnAction(this::openDaySchedule);
 
 

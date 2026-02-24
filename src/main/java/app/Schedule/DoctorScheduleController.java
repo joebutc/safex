@@ -50,7 +50,7 @@ public class DoctorScheduleController {
 
             timetableGrid.add(time, 0, rowNum );
 
-            //TODO @ Ryan you might want to add the logic for the clicking regions/selecting times here.
+            // Future enhancement: add interaction logic for selecting available time slots.
             timetableGrid.add(new Region(),1,rowNum );
 
             currentTime = currentTime.plusMinutes(intervalMinutes);

@@ -7,6 +7,7 @@ public enum State {
     ClinicRegister,
     Dashboard,
     ClinicDashboard,
+    ClinicSchedule,
     Notify,
     Settings,
     LegalOnboard

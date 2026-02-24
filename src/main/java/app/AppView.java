@@ -9,6 +9,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import app.view.DashboardPage;
+import app.view.ClinicDashboardPage;
+import app.view.DoctorSchedule;
 import app.view.LoginPage;
 import app.view.LoginPage.LoginType;
 import app.view.Page;
@@ -43,7 +45,8 @@ public class AppView {
                 case Register -> new RegisterPage(controller, LoginType.STANDARD);
                 case ClinicRegister -> new RegisterPage(controller, LoginType.CLINIC);
                 case Dashboard -> new DashboardPage(controller);
-                case ClinicDashboard -> new DashboardPage(controller);
+                case ClinicDashboard -> new ClinicDashboardPage(controller);
+                case ClinicSchedule -> new DoctorSchedule();
                 case Notify -> new PartnerNotifyPage(controller);
                 case Settings -> new SettingsPage(controller);
                 case LegalOnboard -> new LegalOnboardPage(controller);

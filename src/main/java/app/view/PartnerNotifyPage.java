@@ -33,7 +33,6 @@ public class PartnerNotifyPage implements Page {
             + "-fx-border-radius: 999; "
             + "-fx-border-color: #CBD5E1; "
             + "-fx-border-width: 1; ";
-    private static final double TITLE_FONT_SIZE = 36.0;
     private static final double ACTION_FONT_SIZE = 20.0;
     private static final double BODY_FONT_SIZE = 18.0;
     private static final double ROW_MIN_HEIGHT = 100.0;

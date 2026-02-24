@@ -1,5 +1,5 @@
 module safex {
-    requires javafx.controls;
+    requires transitive javafx.controls;
     requires java.desktop;
     requires java.sql;
     requires jakarta.mail;

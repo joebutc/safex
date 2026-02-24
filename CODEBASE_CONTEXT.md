@@ -5,7 +5,7 @@ SafeX is a Java 23 + JavaFX 25 desktop app built with Maven (JPMS module `safex`
 Architecture is MVC + state routing:
 - `App` launches JavaFX (`FxApp`) and sets a Prism software-render fallback.
 - `FxApp` bootstraps DB, stage, and MVC wiring.
-- `AppModel` stores current app `State` and current username.
+- `AppModel` stores current app `State`, current username, and whether the active session is clinic-mode.
 - `AppController` mutates model state and triggers view updates.
 - `AppView` maps `State` to `Page` implementations and replaces the `Scene`.
 - Each `Page` builds a fresh scene tree in `createScene()`.
@@ -42,7 +42,9 @@ Architecture is MVC + state routing:
   - Routes standard vs clinic states to typed pages:
     - `Login` / `ClinicLogin` -> `LoginPage(..., LoginType.STANDARD/CLINIC)`
     - `Register` / `ClinicRegister` -> `RegisterPage(..., LoginType.STANDARD/CLINIC)`
-    - `Dashboard` / `ClinicDashboard` -> `DashboardPage`
+    - `Dashboard` -> `DashboardPage`
+    - `ClinicDashboard` -> `ClinicDashboardPage`
+    - `ClinicSchedule` -> `DoctorSchedule`
   - Applies shared CSS via `AppStyles.apply(scene)`.
   - Catches render exceptions and shows a diagnostic fallback scene.
 
@@ -53,7 +55,7 @@ Architecture is MVC + state routing:
 ### Model + persistence
 
 - `src/main/java/app/model/State.java`
-  - States: `Login`, `ClinicLogin`, `Register`, `ClinicRegister`, `Dashboard`, `ClinicDashboard`, `Notify`, `Settings`, `LegalOnboard`.
+  - States: `Login`, `ClinicLogin`, `Register`, `ClinicRegister`, `Dashboard`, `ClinicDashboard`, `ClinicSchedule`, `Notify`, `Settings`, `LegalOnboard`.
 
 - `src/main/java/app/model/DatabaseHandler.java`
   - SQLite helper for auth and registration.
@@ -78,7 +80,9 @@ Architecture is MVC + state routing:
   - Navigation methods support both flows:
     - `goToLogin(LoginType)` + `goToLogin()`
     - `goToRegister(LoginType)` + `goToRegister()`
+    - `goToClinicSchedule()`
   - Clinic auth routes to `State.ClinicDashboard`; standard auth routes to `State.Dashboard`.
+  - `goToDashboard()` is session-aware and returns clinic users to clinic dashboard.
 
 ### UI pages (`src/main/java/app/view`)
 
@@ -100,8 +104,13 @@ Architecture is MVC + state routing:
     - Confirm-password match.
 
 - `DashboardPage`
-  - Main hub (currently reused for both standard and clinic dashboards).
+  - Main hub for patient users.
   - Cards: Notify, Settings, Terms, NHS resources.
+
+- `ClinicDashboardPage`
+  - Main hub for clinic users.
+  - Cards: Schedule GUI and Terms & Conditions.
+  - Schedule card routes to `ClinicSchedule`.
 
 - `PartnerNotifyPage`
   - Contact list editor (email required, name optional).
@@ -116,6 +125,27 @@ Architecture is MVC + state routing:
   - Privacy + terms summary flow.
   - Opens bundled PDFs (`privacy.pdf`, `tcs.pdf`) via `PdfOpener`.
 
+- `DoctorSchedule`
+  - FXML-backed calendar entry page (`/fxmlFiles/monthCalenderUI.fxml`).
+  - Loads monthly schedule UI via `FXMLLoader`.
+
+### Scheduling feature (FXML)
+
+- `src/main/java/app/Schedule/CalendarController.java`
+  - Controls `monthCalenderUI.fxml`.
+  - Renders month grid dynamically from `YearMonth`.
+  - Supports previous/next month navigation.
+  - Opens day view (`dayCalender.fxml`) when a date button is clicked.
+
+- `src/main/java/app/Schedule/DoctorScheduleController.java`
+  - Controls `dayCalender.fxml`.
+  - Builds 09:00 to 17:00 slots in 30-minute intervals.
+  - Supports back navigation to monthly calendar.
+
+- Status:
+  - Calendar pages are present and compile.
+  - They are routed from `State.ClinicSchedule` and reachable from `ClinicDashboardPage`.
+
 ### Services/util
 
 - `src/main/java/app/service/EmailService.java`
@@ -129,19 +159,22 @@ Architecture is MVC + state routing:
 ## Module descriptor
 
 - `src/main/java/module-info.java`
-  - Requires: `javafx.controls`, `javafx.graphics` (transitive), `java.desktop`, `java.sql`, `jakarta.mail`.
-  - Exports: `app`, `app.model`, `app.view`, `app.service`.
+  - Requires: `javafx.controls`, `javafx.fxml`, `java.desktop`, `java.sql`, `jakarta.mail`.
+  - Exports: `app`, `app.model`, `app.view`, `app.service`, `app.Schedule`.
+  - Opens: `app.view` and `app.Schedule` to `javafx.fxml`.
 
 ## Resources (`src/main/resources`)
 
 - `styles/app.css`
 - `images/Bell.png`, `images/+.png`, `images/deleteIcon.png`, `images/Home.png`
+- `images/arrow_back.png`
 - `privacy.pdf`, `tcs.pdf`
+- `fxmlFiles/monthCalenderUI.fxml`, `fxmlFiles/dayCalender.fxml`
 - Local-only: `config.properties` (gitignored)
 - Also present but likely redundant with Maven deps: `slf4j-api.jar`, `slf4j-simple.jar`, `sqlite-jdbc.jar`
 
 ## Known issues / cleanup
 
 - `pom.xml` currently declares `sqlite-jdbc` twice with different versions.
-- `ClinicDashboard` currently reuses `DashboardPage` (no separate clinic dashboard page yet).
+- Day/month schedule controllers currently handle navigation internally (FXML scene swaps), not through `AppController`.
 - Real credentials and local DB must stay uncommitted (`config.properties`, `useraccounts.db`).

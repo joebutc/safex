@@ -24,9 +24,10 @@ public class AppController {
     public boolean attemptRegister(String username, String password, LoginType loginType) {
         if (DatabaseHandler.registerUser(username, password, loginType.name())) {
             model.setCurrentUser(username);
+            model.setClinicSession(loginType == LoginType.CLINIC);
 
             if (loginType == LoginType.CLINIC) {
-                model.setState(State.ClinicDashboard); // Assuming a separate dashboard
+                model.setState(State.ClinicDashboard);
             } else {
                 model.setState(State.Dashboard);
             }
@@ -38,11 +39,16 @@ public class AppController {
     }
 
     public void goToDashboard() {
-        model.setState(State.Dashboard);
+        if (model.isClinicSession()) {
+            model.setState(State.ClinicDashboard);
+        } else {
+            model.setState(State.Dashboard);
+        }
         updateView();
     }
 
     public void goToRegister(LoginType loginType) {
+        model.setClinicSession(loginType == LoginType.CLINIC);
         if (loginType == LoginType.CLINIC) {
             model.setState(State.ClinicRegister);
         } else {
@@ -57,6 +63,7 @@ public class AppController {
 
     public void goToLogin(LoginType loginType) {
         model.setCurrentUser(null);
+        model.setClinicSession(loginType == LoginType.CLINIC);
         if (loginType == LoginType.CLINIC) {
             model.setState(State.ClinicLogin);
         } else {
@@ -84,9 +91,15 @@ public class AppController {
         updateView();
     }
 
+    public void goToClinicSchedule() {
+        model.setState(State.ClinicSchedule);
+        updateView();
+    }
+
     public boolean attemptLogin(String username, String password, LoginType loginType) {
         if (DatabaseHandler.checkLogin(username, password, loginType.name())) {
             model.setCurrentUser(username);
+            model.setClinicSession(loginType == LoginType.CLINIC);
 
             if (loginType == LoginType.CLINIC) {
                 model.setState(State.ClinicDashboard);
