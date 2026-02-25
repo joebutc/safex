@@ -1,6 +1,6 @@
 .vscode/
 .idea/
-.claude/
+.cl*/
 *.iml
 target/
 src/main/resources/config.properties
