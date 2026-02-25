@@ -1,6 +1,7 @@
 package app.Schedule;
 
 
+import app.AppController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -21,10 +22,16 @@ import java.util.Objects;
 
 public class CalendarController {
     private YearMonth displayedMonth = YearMonth.now();
+    private AppController appController;
+
     @FXML
     private GridPane calendarGrid;
     @FXML
     private Label monthLabel;
+
+    public void setAppController(AppController appController) {
+        this.appController = appController;
+    }
 
     @FXML
     public void initialize() {
@@ -74,15 +81,26 @@ public class CalendarController {
     }
 
     public void openDaySchedule(ActionEvent e)  {
-        Parent root;
         try {
-            root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/fxmlFiles/dayCalender.fxml")));
+            FXMLLoader loader = new FXMLLoader(
+                    Objects.requireNonNull(getClass().getResource("/fxmlFiles/dayCalender.fxml")));
+            Parent root = loader.load();
+            DoctorScheduleController dayController = loader.getController();
+            dayController.setAppController(appController);
+
+            Stage stage = (Stage)((Node)e.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        Stage stage = (Stage)((Node)e.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.show();
+    }
+
+    @FXML
+    private void handleHome() {
+        if (appController != null) {
+            appController.goToDashboard();
+        }
     }
 
 

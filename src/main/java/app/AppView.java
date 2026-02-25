@@ -49,7 +49,7 @@ public class AppView {
                 case ClinicRegister -> new RegisterPage(controller, LoginType.CLINIC);
                 case Dashboard -> new DashboardPage(controller);
                 case ClinicDashboard -> new ClinicDashboardPage(controller);
-                case ClinicSchedule -> new DoctorSchedule();
+                case ClinicSchedule -> new DoctorSchedule(controller);
                 case Notify -> new PartnerNotifyPage(controller);
                 case Settings -> new SettingsPage(controller);
                 case LegalOnboard -> new LegalOnboardPage(controller);

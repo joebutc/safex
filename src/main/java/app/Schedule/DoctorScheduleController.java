@@ -1,5 +1,6 @@
 package app.Schedule;
 
+import app.AppController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -18,8 +19,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class DoctorScheduleController {
+    private AppController appController;
+
     @FXML
     private GridPane timetableGrid;
+
+    public void setAppController(AppController appController) {
+        this.appController = appController;
+    }
 
     /**
      * The initialize method is automatically called by the FXMLLoader
@@ -66,7 +73,10 @@ public class DoctorScheduleController {
     // Logic for back Button in day app.Schedule.
     @FXML
     private void backToCalendar(ActionEvent e) throws IOException {
-        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/fxmlFiles/monthCalenderUI.fxml")));
+        FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource("/fxmlFiles/monthCalenderUI.fxml")));
+        Parent root = loader.load();
+        CalendarController calendarController = loader.getController();
+        calendarController.setAppController(appController);
         Stage stage = (Stage)((Node)e.getSource()).getScene().getWindow();
         stage.setScene(new Scene(root));
         stage.show();

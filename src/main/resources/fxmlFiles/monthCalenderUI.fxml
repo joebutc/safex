@@ -15,7 +15,7 @@
 <VBox alignment="TOP_CENTER" stylesheets="@../styles/app.css" xmlns="http://javafx.com/javafx/23.0.1"
       xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.Schedule.CalendarController">
     <HBox prefHeight="35.0" prefWidth="581.0" styleClass="app-header">
-        <Button mnemonicParsing="false" styleClass="icon-button">
+        <Button mnemonicParsing="false" onAction="#handleHome" styleClass="icon-button">
             <graphic>
                 <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
                     <Image url="@../images/Home.png"/>
