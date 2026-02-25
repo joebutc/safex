@@ -9,12 +9,17 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+
+import java.util.Objects;
 
 public class LoginPage implements Page {
 
@@ -34,16 +39,22 @@ public class LoginPage implements Page {
     @Override
     public Scene createScene() {
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(24));
 
+        // ── Left: dark branding panel ────────────────────────────────────────
+        String tagline = (loginType == LoginType.CLINIC)
+                ? "Managing care,\nprotecting privacy."
+                : "Safer choices,\nsmarter health.";
+        root.setLeft(buildBrandPanel(tagline));
+
+        // ── Right: login form ────────────────────────────────────────────────
         VBox card = new VBox(14);
         card.getStyleClass().addAll("card", "card-padding");
         card.setAlignment(Pos.CENTER_LEFT);
-        card.setMaxWidth(440);
+        card.setMaxWidth(400);
 
         String greetingText = (loginType == LoginType.CLINIC) ? "Clinic Portal" : "Welcome back";
         Label titleLabel = new Label(greetingText);
-        titleLabel.setFont(Font.font("System", FontWeight.EXTRA_BOLD, 30));
+        titleLabel.setFont(Font.font("System", FontWeight.EXTRA_BOLD, 28));
 
         String subtitleText = (loginType == LoginType.CLINIC) ? "Sign in to manage your clinic."
                 : "Sign in to continue.";
@@ -56,7 +67,6 @@ public class LoginPage implements Page {
         TextField usernameField = new TextField();
         usernameField.setPromptText("Enter your username");
         usernameField.setMaxWidth(Double.MAX_VALUE);
-
         VBox userBox = new VBox(4, userLabel, usernameField);
         userBox.setMaxWidth(Double.MAX_VALUE);
 
@@ -65,7 +75,6 @@ public class LoginPage implements Page {
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Enter your password");
         passwordField.setMaxWidth(Double.MAX_VALUE);
-
         VBox passBox = new VBox(4, passLabel, passwordField);
         passBox.setMaxWidth(Double.MAX_VALUE);
 
@@ -85,7 +94,6 @@ public class LoginPage implements Page {
         Button registerLink = new Button(registerText);
         registerLink.getStyleClass().add("link-button");
 
-        // NEW: The toggle button to switch between portal types
         String switchPortalText = (loginType == LoginType.STANDARD) ? "Are you a clinic? Clinic Portal"
                 : "Are you a patient? Patient Portal";
         Button switchPortalLink = new Button(switchPortalText);
@@ -93,42 +101,65 @@ public class LoginPage implements Page {
 
         loginBtn.setOnAction(e -> handleLogin(usernameField, passwordField, errorLabel));
         passwordField.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                handleLogin(usernameField, passwordField, errorLabel);
-            }
+            if (e.getCode() == KeyCode.ENTER) handleLogin(usernameField, passwordField, errorLabel);
         });
-
         registerLink.setOnAction(e -> {
-            if (controller != null) {
-                controller.goToRegister(loginType);
-            }
+            if (controller != null) controller.goToRegister(loginType);
         });
-
-        // NEW: Action event to tell the controller to swap the login page
         switchPortalLink.setOnAction(e -> {
             if (controller != null) {
-                LoginType oppositeType = (loginType == LoginType.STANDARD) ? LoginType.CLINIC : LoginType.STANDARD;
-                controller.goToLogin(oppositeType);
+                LoginType opposite = (loginType == LoginType.STANDARD) ? LoginType.CLINIC : LoginType.STANDARD;
+                controller.goToLogin(opposite);
             }
         });
 
-        card.getChildren().addAll(
-                titleLabel,
-                subtitleLabel,
-                userBox,
-                passBox,
-                errorLabel,
-                loginBtn,
-                registerLink,
-                switchPortalLink // Added to the layout
-        );
+        card.getChildren().addAll(titleLabel, subtitleLabel, userBox, passBox,
+                errorLabel, loginBtn, registerLink, switchPortalLink);
 
-        StackPane center = new StackPane(card);
-        center.setPadding(new Insets(24));
-        root.setCenter(center);
+        StackPane formArea = new StackPane(card);
+        formArea.setPadding(new Insets(32));
+        formArea.setStyle("-fx-background-color: #F8FAFC;");
+        root.setCenter(formArea);
 
         return new Scene(root, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
     }
+
+    // ── Brand panel ──────────────────────────────────────────────────────────
+
+    private VBox buildBrandPanel(String taglineText) {
+        VBox panel = new VBox(20);
+        panel.setAlignment(Pos.CENTER);
+        panel.setPrefWidth(310);
+        panel.setMinWidth(310);
+        panel.setMaxWidth(310);
+        panel.setPadding(new Insets(48, 28, 48, 28));
+        panel.setStyle("-fx-background-color: #0A0A0A;");
+
+        try {
+            Image logo = new Image(
+                    Objects.requireNonNull(getClass().getResourceAsStream("/images/safex_logo.png")),
+                    254, 200, true, true);
+            ImageView logoView = new ImageView(logo);
+            logoView.setPreserveRatio(true);
+            panel.getChildren().add(logoView);
+        } catch (Exception ignored) {
+            Label fallback = new Label("SafeX");
+            fallback.setFont(Font.font("System", FontWeight.EXTRA_BOLD, 36));
+            fallback.setTextFill(Color.WHITE);
+            panel.getChildren().add(fallback);
+        }
+
+        Label tagline = new Label(taglineText);
+        tagline.setFont(Font.font("System", 13));
+        tagline.setTextFill(Color.web("#94A3B8"));
+        tagline.setWrapText(true);
+        tagline.setMaxWidth(240);
+        panel.getChildren().add(tagline);
+
+        return panel;
+    }
+
+    // ── Login logic ──────────────────────────────────────────────────────────
 
     private void handleLogin(TextField userField, PasswordField passField, Label errorLabel) {
         String username = userField.getText();

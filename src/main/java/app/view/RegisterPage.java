@@ -10,25 +10,28 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+
+import java.util.Objects;
 
 public class RegisterPage implements Page {
 
     private AppController controller;
     private LoginType loginType;
 
-    // Updated constructor to require the LoginType
     public RegisterPage(AppController controller, LoginType loginType) {
         this.controller = controller;
         this.loginType = loginType;
     }
 
-    // Updated fallback constructor
     public RegisterPage(LoginType loginType) {
         this.controller = null;
         this.loginType = loginType;
@@ -37,14 +40,19 @@ public class RegisterPage implements Page {
     @Override
     public Scene createScene() {
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(24));
 
+        // ── Left: dark branding panel ────────────────────────────────────────
+        String tagline = (loginType == LoginType.CLINIC)
+                ? "Secure patient care\nstarts here."
+                : "Your health, your privacy,\nyour control.";
+        root.setLeft(buildBrandPanel(tagline));
+
+        // ── Right: register form ─────────────────────────────────────────────
         VBox card = new VBox(14);
         card.getStyleClass().addAll("card", "card-padding");
         card.setAlignment(Pos.CENTER_LEFT);
-        card.setMaxWidth(440);
+        card.setMaxWidth(400);
 
-        // Customise titles based on registration type
         String titleText = (loginType == LoginType.CLINIC) ? "Register your clinic" : "Create account";
         Label titleLabel = new Label(titleText);
         titleLabel.setFont(Font.font("System", FontWeight.EXTRA_BOLD, 28));
@@ -61,7 +69,6 @@ public class RegisterPage implements Page {
         TextField usernameField = new TextField();
         usernameField.setPromptText("Choose a username");
         usernameField.setMaxWidth(Double.MAX_VALUE);
-
         VBox userBox = new VBox(4, userLabel, usernameField);
         userBox.setMaxWidth(Double.MAX_VALUE);
 
@@ -70,7 +77,6 @@ public class RegisterPage implements Page {
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Choose a password");
         passwordField.setMaxWidth(Double.MAX_VALUE);
-
         VBox passBox = new VBox(4, passwordLabel, passwordField);
         passBox.setMaxWidth(Double.MAX_VALUE);
 
@@ -79,7 +85,6 @@ public class RegisterPage implements Page {
         PasswordField confirmPasswordField = new PasswordField();
         confirmPasswordField.setPromptText("Confirm your password");
         confirmPasswordField.setMaxWidth(Double.MAX_VALUE);
-
         VBox confirmBox = new VBox(4, confirmLabel, confirmPasswordField);
         confirmBox.setMaxWidth(Double.MAX_VALUE);
 
@@ -102,34 +107,60 @@ public class RegisterPage implements Page {
 
         registerBtn.setOnAction(e -> handleRegister(usernameField, passwordField, confirmPasswordField, feedbackLabel));
         confirmPasswordField.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
+            if (e.getCode() == KeyCode.ENTER)
                 handleRegister(usernameField, passwordField, confirmPasswordField, feedbackLabel);
-            }
         });
-
         loginLink.setOnAction(e -> {
-            if (controller != null) {
-                // Return the user to the correct login page based on their current path
-                controller.goToLogin(loginType);
-            }
+            if (controller != null) controller.goToLogin(loginType);
         });
 
-        card.getChildren().addAll(
-                titleLabel,
-                subtitleLabel,
-                userBox,
-                passBox,
-                confirmBox,
-                feedbackLabel,
-                registerBtn,
-                loginLink);
+        card.getChildren().addAll(titleLabel, subtitleLabel, userBox, passBox,
+                confirmBox, feedbackLabel, registerBtn, loginLink);
 
-        StackPane center = new StackPane(card);
-        center.setPadding(new Insets(24));
-        root.setCenter(center);
+        StackPane formArea = new StackPane(card);
+        formArea.setPadding(new Insets(32));
+        formArea.setStyle("-fx-background-color: #F8FAFC;");
+        root.setCenter(formArea);
 
         return new Scene(root, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
     }
+
+    // ── Brand panel ──────────────────────────────────────────────────────────
+
+    private VBox buildBrandPanel(String taglineText) {
+        VBox panel = new VBox(20);
+        panel.setAlignment(Pos.CENTER);
+        panel.setPrefWidth(310);
+        panel.setMinWidth(310);
+        panel.setMaxWidth(310);
+        panel.setPadding(new Insets(48, 28, 48, 28));
+        panel.setStyle("-fx-background-color: #0A0A0A;");
+
+        try {
+            Image logo = new Image(
+                    Objects.requireNonNull(getClass().getResourceAsStream("/images/safex_logo.png")),
+                    254, 200, true, true);
+            ImageView logoView = new ImageView(logo);
+            logoView.setPreserveRatio(true);
+            panel.getChildren().add(logoView);
+        } catch (Exception ignored) {
+            Label fallback = new Label("SafeX");
+            fallback.setFont(Font.font("System", FontWeight.EXTRA_BOLD, 36));
+            fallback.setTextFill(Color.WHITE);
+            panel.getChildren().add(fallback);
+        }
+
+        Label tagline = new Label(taglineText);
+        tagline.setFont(Font.font("System", 13));
+        tagline.setTextFill(Color.web("#94A3B8"));
+        tagline.setWrapText(true);
+        tagline.setMaxWidth(240);
+        panel.getChildren().add(tagline);
+
+        return panel;
+    }
+
+    // ── Register logic ───────────────────────────────────────────────────────
 
     private void handleRegister(TextField userField, PasswordField passField, PasswordField confirmField,
             Label feedbackLabel) {
@@ -137,20 +168,16 @@ public class RegisterPage implements Page {
         String password = passField.getText();
         String confirm = confirmField.getText();
 
-        // Basic Validation
         if (username.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
             showFeedback(feedbackLabel, "Please fill in all fields.", false);
             return;
         }
 
-        // Username validation: No spaces, alphabet characters only
         if (!username.matches("^[a-zA-Z]+$")) {
             showFeedback(feedbackLabel, "Username must contain only letters and no spaces.", false);
             return;
         }
 
-        // Password validation: Min length 8, numeric, upper, lower, and special
-        // character
         String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
         if (!password.matches(passwordPattern)) {
             showFeedback(feedbackLabel,
@@ -164,9 +191,7 @@ public class RegisterPage implements Page {
             return;
         }
 
-        // Logic for Database Insertion
         if (controller != null) {
-            // Pass the loginType to the controller
             boolean success = controller.attemptRegister(username, password, loginType);
             if (success) {
                 showFeedback(feedbackLabel, "Registration successful! You can now log in.", true);
@@ -174,7 +199,6 @@ public class RegisterPage implements Page {
                 showFeedback(feedbackLabel, "Username already exists or database error.", false);
             }
         } else {
-            // Fallback for manual testing
             System.out.println("Warning: Controller is null. Calling DatabaseHandler directly.");
             boolean success = DatabaseHandler.registerUser(username, password, loginType.name());
             if (success) {
