@@ -1,180 +1,140 @@
-# SafeX (safex) - Codebase context
+# SafeX (safex) - Codebase Context
 
 SafeX is a Java 23 + JavaFX 25 desktop app built with Maven (JPMS module `safex`).
 
 Architecture is MVC + state routing:
-- `App` launches JavaFX (`FxApp`) and sets a Prism software-render fallback.
-- `FxApp` bootstraps DB, stage, and MVC wiring.
-- `AppModel` stores current app `State`, current username, and whether the active session is clinic-mode.
-- `AppController` mutates model state and triggers view updates.
-- `AppView` maps `State` to `Page` implementations and replaces the `Scene`.
-- Each `Page` builds a fresh scene tree in `createScene()`.
+- `App` launches JavaFX (`FxApp`) and sets a software-render fallback (`prism.order=sw`) when needed.
+- `FxApp` initializes DB + stage and wires `AppModel`, `AppView`, `AppController`.
+- `AppModel` stores: current `State`, current username, clinic-session flag, clinic patient lookup username.
+- `AppController` mutates model state, delegates persistence calls, and triggers re-render.
+- `AppView` maps `State` to page classes and swaps the scene root.
+- Current routed states:
+  - `Login`, `ClinicLogin`
+  - `Register`, `ClinicRegister`
+  - `Dashboard`, `ClinicDashboard`
+  - `ClinicSchedule`
+  - `Notify`
+  - `Settings`
+  - `LegalOnboard`
+  - `StiTestTracker`
+  - `TreatmentTracker`
+  - `ClinicPatientTreatment`
 
-## Build + run
+## Treatment Tracker - Full Feature Summary
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `src/main/java/app/model/TreatmentEntry.java` | Treatment model (`medicationName`, `dose`, `frequency`, `quantityRemaining`, `lowStockThreshold`, `startDate`, `notes`, `active`) with helpers: `dosesPerDay()`, `daysRemaining()`, `isLowStock()` |
+| `src/main/java/app/view/TreatmentTrackerPage.java` | Patient treatment UI: medication cards with supply/days remaining and actions (`Log Dose`, `Refill`, `Edit`, `Remove`); low-stock cards highlighted |
+| `src/main/java/app/view/ClinicPatientTreatmentPage.java` | Clinic treatment management UI: patient lookup flow, permission check (`allow_clinic_access`), issue/update/discontinue prescriptions |
+
+### Modified files
+
+| File | What changed |
+|---|---|
+| `src/main/java/app/model/State.java` | Added `TreatmentTracker` and `ClinicPatientTreatment` |
+| `src/main/java/app/model/DatabaseHandler.java` | Added tables `treatment_plans` + `treatment_permissions`; added methods: `addTreatment`, `getTreatments`, `updateTreatmentQuantity`, `deleteTreatment`, `updateTreatmentPlan`, `getPatientTreatmentsForClinic`, `getTreatmentPermissions`, `saveTreatmentPermissions` |
+| `src/main/java/app/AppModel.java` | Added `clinicPatientUsername` field for clinic patient context |
+| `src/main/java/app/AppController.java` | Added treatment CRUD and clinic treatment delegates; added `getPendingNotifications()` to aggregate STI-overdue + treatment low-stock notifications |
+| `src/main/java/app/AppView.java` | Added routes for `TreatmentTracker` and `ClinicPatientTreatment` |
+| `src/main/java/app/view/DashboardPage.java` | Added `My Treatment Plan` card and upgraded bell with pending notification badge count |
+| `src/main/java/app/view/SettingsPage.java` | Added treatment permissions card/dialog (`allow_treatment_reminders`, `allow_clinic_access`) |
+| `src/main/java/app/view/ClinicDashboardPage.java` | Added `Patient Treatments` card with username lookup to open clinic patient treatment page |
+
+### Reminder bell behavior
+
+- `getPendingNotifications()` returns a combined `List<String>` of:
+  - overdue STI test reminders
+  - low-stock treatment reminders for active treatments where `allow_treatment_reminders = true`
+- Bell badge count:
+  - `1` to `9` shows exact count
+  - `9+` for anything above 9
+- Bell click behavior:
+  - opens one dialog listing all pending notifications in a single combined view
+
+## Build + Run
 
 - Compile: `mvn clean compile`
 - Run (recommended): `mvn clean javafx:run`
 - Alternative: `mvn exec:java`
 
-## Runtime data / local-only
+## Runtime Data / Local-Only
 
-- SQLite DB file: `useraccounts.db` (repo root, gitignored).
-- SMTP credentials: `src/main/resources/config.properties` (gitignored), read by `EmailService`.
+- SQLite DB file: `useraccounts.db` (repo root, gitignored)
+- Email credentials: `src/main/resources/config.properties` (gitignored)
 
-## Key files
+## Key Files
 
 ### Boot + routing
 
 - `src/main/java/app/App.java`
-  - Main launcher.
-  - Sets `prism.order=sw` when not already provided (Windows blank-window mitigation).
-  - Calls `Application.launch(FxApp.class, args)`.
-
 - `src/main/java/app/FxApp.java`
-  - JavaFX `Application` entrypoint.
-  - Initializes DB and stage (`SafeX`, min 900x650).
-  - Wires `AppModel`, `AppView`, `AppController`.
-  - Calls `controller.updateView()` for initial login page.
-
 - `src/main/java/app/AppView.java`
-  - State router from `State` enum to page classes.
-  - Ensures updates run on JavaFX thread.
-  - Routes standard vs clinic states to typed pages:
-    - `Login` / `ClinicLogin` -> `LoginPage(..., LoginType.STANDARD/CLINIC)`
-    - `Register` / `ClinicRegister` -> `RegisterPage(..., LoginType.STANDARD/CLINIC)`
-    - `Dashboard` -> `DashboardPage`
-    - `ClinicDashboard` -> `ClinicDashboardPage`
-    - `ClinicSchedule` -> `DoctorSchedule`
-  - Applies shared CSS via `AppStyles.apply(scene)`.
-  - Catches render exceptions and shows a diagnostic fallback scene.
-
 - `src/main/java/app/view/AppStyles.java`
-  - Scene defaults (`900x650`) and shared CSS attach (`/styles/app.css`).
-  - Missing stylesheet is non-fatal (stderr warning).
 
 ### Model + persistence
 
 - `src/main/java/app/model/State.java`
-  - States: `Login`, `ClinicLogin`, `Register`, `ClinicRegister`, `Dashboard`, `ClinicDashboard`, `ClinicSchedule`, `Notify`, `Settings`, `LegalOnboard`.
-
 - `src/main/java/app/model/DatabaseHandler.java`
-  - SQLite helper for auth and registration.
-  - Creates tables:
-    - `users(id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL)`
-    - `clinics(id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL)`
-  - Selects target table by account type (`STANDARD` -> `users`, `CLINIC` -> `clinics`).
-  - Methods:
-    - `registerUser(username, password, accountType)`
-    - `checkLogin(username, password, accountType)`
-  - Note: passwords are still plaintext.
+- `src/main/java/app/model/StiTestEntry.java`
+- `src/main/java/app/model/TreatmentEntry.java`
+- Other model classes: `Account`, `UserAccount`, `ClinicAccount`, `PrivacySettings`, `DataRetentionType`
 
-- Additional model classes:
-  - `Account.java`, `UserAccount.java`, `ClinicAccount.java`, `PrivacySettings.java`, `DataRetentionType.java`.
+`DatabaseHandler` tables:
+- `users`
+- `clinics`
+- `sti_tests`
+- `test_permissions` (includes reminder interval)
+- `treatment_plans`
+- `treatment_permissions`
 
 ### Controller behavior
 
-- `src/main/java/app/AppController.java`
-  - Auth methods are type-aware:
-    - `attemptLogin(username, password, LoginType)`
-    - `attemptRegister(username, password, LoginType)`
-  - Navigation methods support both flows:
-    - `goToLogin(LoginType)` + `goToLogin()`
-    - `goToRegister(LoginType)` + `goToRegister()`
-    - `goToClinicSchedule()`
-  - Clinic auth routes to `State.ClinicDashboard`; standard auth routes to `State.Dashboard`.
-  - `goToDashboard()` is session-aware and returns clinic users to clinic dashboard.
+`AppController` provides:
+- Type-aware auth and routing (`STANDARD` vs `CLINIC`)
+- STI test operations and permissions
+- Treatment operations for patient view
+- Treatment operations for clinic-on-patient view
+- Aggregated notification generation via `getPendingNotifications()`
 
 ### UI pages (`src/main/java/app/view`)
 
-- `LoginPage`
-  - Contains `LoginType` enum: `STANDARD`, `CLINIC`.
-  - Type-specific title/subtitle and register CTA.
-  - Includes a portal-switch link:
-    - Standard -> Clinic portal
-    - Clinic -> Patient portal
-  - Calls `controller.attemptLogin(..., loginType)`.
+- Patient dashboard: `DashboardPage`
+  - cards: Notify Partners, Track Your Tests, My Treatment Plan, Privacy & Settings, Terms & Conditions, Health Resources
+- Clinic dashboard: `ClinicDashboardPage`
+  - cards: Schedule GUI, Patient Treatments, Terms & Conditions
+- STI tracking: `StiTestTrackerPage`
+- Treatment tracking (patient): `TreatmentTrackerPage`
+- Treatment management (clinic): `ClinicPatientTreatmentPage`
+- Notify: `PartnerNotifyPage`
+- Settings: `SettingsPage`
+- Legal: `LegalOnboardPage`
+- Schedule entry page: `DoctorSchedule` (FXML-backed)
 
-- `RegisterPage`
-  - Type-specific labels/button text for standard vs clinic registration.
-  - Calls `controller.attemptRegister(..., loginType)`.
-  - Returns to matching login route using `controller.goToLogin(loginType)`.
-  - Validation rules:
-    - Username letters-only, no spaces.
-    - Password min 8 with upper/lower/number/special.
-    - Confirm-password match.
+### Scheduling feature (`src/main/java/app/Schedule`)
 
-- `DashboardPage`
-  - Main hub for patient users.
-  - Cards: Notify, Settings, Terms, NHS resources.
+- `CalendarController` for `monthCalenderUI.fxml`
+- `DoctorScheduleController` for `dayCalender.fxml`
 
-- `ClinicDashboardPage`
-  - Main hub for clinic users.
-  - Cards: Schedule GUI and Terms & Conditions.
-  - Schedule card routes to `ClinicSchedule`.
-
-- `PartnerNotifyPage`
-  - Contact list editor (email required, name optional).
-  - Async email sending via background threads.
-  - Email syntax validation before send.
-
-- `SettingsPage`
-  - Privacy-related cards/dialogs.
-  - Links to legal page and dashboard.
-
-- `LegalOnboardPage`
-  - Privacy + terms summary flow.
-  - Opens bundled PDFs (`privacy.pdf`, `tcs.pdf`) via `PdfOpener`.
-
-- `DoctorSchedule`
-  - FXML-backed calendar entry page (`/fxmlFiles/monthCalenderUI.fxml`).
-  - Loads monthly schedule UI via `FXMLLoader`.
-
-### Scheduling feature (FXML)
-
-- `src/main/java/app/Schedule/CalendarController.java`
-  - Controls `monthCalenderUI.fxml`.
-  - Renders month grid dynamically from `YearMonth`.
-  - Supports previous/next month navigation.
-  - Opens day view (`dayCalender.fxml`) when a date button is clicked.
-
-- `src/main/java/app/Schedule/DoctorScheduleController.java`
-  - Controls `dayCalender.fxml`.
-  - Builds 09:00 to 17:00 slots in 30-minute intervals.
-  - Supports back navigation to monthly calendar.
-
-- Status:
-  - Calendar pages are present and compile.
-  - They are routed from `State.ClinicSchedule` and reachable from `ClinicDashboardPage`.
-
-### Services/util
-
-- `src/main/java/app/service/EmailService.java`
-  - Sends anonymous notification emails with Jakarta Mail.
-  - Reads `email.address` and `email.password` from `config.properties`.
-  - Uses Gmail SMTP (`smtp.gmail.com:587`, STARTTLS).
-
-- `src/main/java/app/util/PdfOpener.java`
-  - Copies bundled PDF resource to temp file and opens it with `Desktop.open(...)`.
-
-## Module descriptor
+## Module Descriptor
 
 - `src/main/java/module-info.java`
-  - Requires: `javafx.controls`, `javafx.fxml`, `java.desktop`, `java.sql`, `jakarta.mail`.
-  - Exports: `app`, `app.model`, `app.view`, `app.service`, `app.Schedule`.
-  - Opens: `app.view` and `app.Schedule` to `javafx.fxml`.
+  - Requires: `javafx.controls` (transitive), `javafx.fxml`, `java.desktop`, `java.sql`, `jakarta.mail`
+  - Exports: `app`, `app.model`, `app.view`, `app.service`, `app.Schedule`
+  - Opens: `app.view`, `app.Schedule` to `javafx.fxml`
 
 ## Resources (`src/main/resources`)
 
-- `styles/app.css`
-- `images/Bell.png`, `images/+.png`, `images/deleteIcon.png`, `images/Home.png`
-- `images/arrow_back.png`
-- `privacy.pdf`, `tcs.pdf`
-- `fxmlFiles/monthCalenderUI.fxml`, `fxmlFiles/dayCalender.fxml`
-- Local-only: `config.properties` (gitignored)
-- Also present but likely redundant with Maven deps: `slf4j-api.jar`, `slf4j-simple.jar`, `sqlite-jdbc.jar`
+- Styles: `styles/app.css`
+- Images: `Bell.png`, `+.png`, `deleteIcon.png`, `Home.png`, `arrow_back.png`
+- FXML: `fxmlFiles/monthCalenderUI.fxml`, `fxmlFiles/dayCalender.fxml`
+- PDFs: `privacy.pdf`, `tcs.pdf`
+- Local-only: `config.properties`
 
-## Known issues / cleanup
+## Known Issues / Cleanup
 
 - `pom.xml` currently declares `sqlite-jdbc` twice with different versions.
-- Day/month schedule controllers currently handle navigation internally (FXML scene swaps), not through `AppController`.
-- Real credentials and local DB must stay uncommitted (`config.properties`, `useraccounts.db`).
+- Passwords are still stored in plaintext in SQLite.
+- Calendar controllers still perform internal scene swaps via FXML navigation rather than routing back through `AppController`.

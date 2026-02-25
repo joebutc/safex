@@ -99,6 +99,143 @@ public class SettingsPage implements Page {
         a.showAndWait();
     }
 
+    private void showTestingPermissionsDialog() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Testing Data Permissions");
+
+        VBox box = new VBox(16);
+        box.setPadding(new Insets(24));
+        box.setPrefWidth(420);
+
+        Label header = new Label("Testing Data Permissions");
+        header.setFont(Font.font("System", FontWeight.BOLD, 16));
+
+        Label description = new Label("Choose how SafeX can use your STI test log data:");
+        description.setFont(Font.font("System", 13));
+        description.setTextFill(Color.web("#475569"));
+        description.setWrapText(true);
+
+        boolean[] perms = (controller != null) ? controller.getTestPermissions() : new boolean[]{false, false};
+        int currentInterval = (controller != null) ? controller.getReminderIntervalMonths() : 3;
+
+        CheckBox remindersCb = new CheckBox("Send me reminders when it's time for my next STI test");
+        remindersCb.setWrapText(true);
+        remindersCb.setMaxWidth(380);
+        remindersCb.setSelected(perms[0]);
+
+        // Reminder frequency row
+        Label intervalLabel = new Label("Remind me every:");
+        intervalLabel.setFont(Font.font("System", 13));
+
+        ComboBox<String> intervalCombo = new ComboBox<>();
+        intervalCombo.getItems().addAll("Every month", "Every 3 months", "Every 6 months", "Every 12 months");
+        String[] intervalOptions = {"Every month", "Every 3 months", "Every 6 months", "Every 12 months"};
+        int[] intervalValues = {1, 3, 6, 12};
+        // Select the option matching the current saved value
+        String selectedInterval = "Every 3 months";
+        for (int i = 0; i < intervalValues.length; i++) {
+            if (intervalValues[i] == currentInterval) {
+                selectedInterval = intervalOptions[i];
+                break;
+            }
+        }
+        intervalCombo.setValue(selectedInterval);
+        intervalCombo.setMaxWidth(Double.MAX_VALUE);
+        intervalCombo.disableProperty().bind(remindersCb.selectedProperty().not());
+
+        HBox intervalRow = new HBox(12, intervalLabel, intervalCombo);
+        intervalRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        HBox.setHgrow(intervalCombo, javafx.scene.layout.Priority.ALWAYS);
+        intervalRow.disableProperty().bind(remindersCb.selectedProperty().not());
+
+        CheckBox shareCb = new CheckBox("Allow sharing my test log with my healthcare provider");
+        shareCb.setWrapText(true);
+        shareCb.setMaxWidth(380);
+        shareCb.setSelected(perms[1]);
+
+        Label note = new Label("You can change these preferences at any time.");
+        note.setFont(Font.font("System", 12));
+        note.setTextFill(Color.web("#64748B"));
+
+        Button saveBtn = new Button("Save Preferences");
+        saveBtn.getStyleClass().add("primary-button");
+        saveBtn.setMaxWidth(Double.MAX_VALUE);
+        saveBtn.setOnAction(e -> {
+            if (controller != null) {
+                // Map the selected label back to its integer value
+                int chosenInterval = 3;
+                for (int i = 0; i < intervalOptions.length; i++) {
+                    if (intervalOptions[i].equals(intervalCombo.getValue())) {
+                        chosenInterval = intervalValues[i];
+                        break;
+                    }
+                }
+                controller.saveTestPermissions(remindersCb.isSelected(), shareCb.isSelected(), chosenInterval);
+            }
+            dialog.close();
+        });
+
+        box.getChildren().addAll(header, description, remindersCb, intervalRow, shareCb, note, saveBtn);
+
+        Scene dialogScene = new Scene(box);
+        AppStyles.apply(dialogScene);
+        dialog.setScene(dialogScene);
+        dialog.showAndWait();
+    }
+
+    private void showTreatmentPermissionsDialog() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Treatment Data Permissions");
+
+        VBox box = new VBox(16);
+        box.setPadding(new Insets(24));
+        box.setPrefWidth(420);
+
+        Label header = new Label("Treatment Data Permissions");
+        header.setFont(Font.font("System", FontWeight.BOLD, 16));
+
+        Label description = new Label("Choose how SafeX can use your treatment plan data:");
+        description.setFont(Font.font("System", 13));
+        description.setTextFill(Color.web("#475569"));
+        description.setWrapText(true);
+
+        boolean[] perms = (controller != null) ? controller.getTreatmentPermissions() : new boolean[]{false, false};
+
+        CheckBox remindersCb = new CheckBox("Notify me when any medication is running low on supply");
+        remindersCb.setWrapText(true);
+        remindersCb.setMaxWidth(380);
+        remindersCb.setSelected(perms[0]);
+
+        CheckBox clinicCb = new CheckBox("Allow my healthcare provider to view and update my treatment plan");
+        clinicCb.setWrapText(true);
+        clinicCb.setMaxWidth(380);
+        clinicCb.setSelected(perms[1]);
+
+        Label note = new Label("Clinic access lets your doctor issue prescriptions directly through SafeX.");
+        note.setFont(Font.font("System", 12));
+        note.setTextFill(Color.web("#64748B"));
+        note.setWrapText(true);
+
+        Button saveBtn = new Button("Save Preferences");
+        saveBtn.getStyleClass().add("primary-button");
+        saveBtn.setMaxWidth(Double.MAX_VALUE);
+        saveBtn.setOnAction(e -> {
+            if (controller != null) {
+                controller.saveTreatmentPermissions(remindersCb.isSelected(), clinicCb.isSelected());
+            }
+            dialog.close();
+        });
+
+        box.getChildren().addAll(header, description, remindersCb, clinicCb, note, saveBtn);
+
+        Scene dialogScene = new Scene(box);
+        AppStyles.apply(dialogScene);
+        dialog.setScene(dialogScene);
+        dialog.showAndWait();
+    }
+
     private Button infoCard(String title, String subtitle, Runnable action) {
         VBox box = new VBox(6);
         box.setPadding(new Insets(14));
@@ -210,7 +347,13 @@ public class SettingsPage implements Page {
                         this::showRetentionDialog),
 
                 infoCard("User rights", "Access, modify, or delete your data",
-                        this::showRightsDialog)
+                        this::showRightsDialog),
+
+                infoCard("Testing data permissions", "Control reminders and doctor sharing for your test logs",
+                        this::showTestingPermissionsDialog),
+
+                infoCard("Treatment data permissions", "Allow reminders for medication supply and clinic access to your treatment plan",
+                        this::showTreatmentPermissionsDialog)
         );
 
         // T&Cs button

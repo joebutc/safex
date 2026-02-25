@@ -6,6 +6,7 @@ public class AppModel {
     private State state = State.Login;
     private String currentUser;
     private boolean clinicSession;
+    private String clinicPatientUsername;
 
     public State getState() {
         return state;
@@ -29,5 +30,13 @@ public class AppModel {
 
     public boolean isClinicSession() {
         return clinicSession;
+    }
+
+    public String getClinicPatientUsername() {
+        return clinicPatientUsername;
+    }
+
+    public void setClinicPatientUsername(String clinicPatientUsername) {
+        this.clinicPatientUsername = clinicPatientUsername;
     }
 }

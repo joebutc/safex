@@ -18,6 +18,9 @@ import app.view.RegisterPage;
 import app.view.PartnerNotifyPage;
 import app.view.SettingsPage;
 import app.view.LegalOnboardPage;
+import app.view.StiTestTrackerPage;
+import app.view.TreatmentTrackerPage;
+import app.view.ClinicPatientTreatmentPage;
 import app.view.AppStyles;
 
 public class AppView {
@@ -50,6 +53,9 @@ public class AppView {
                 case Notify -> new PartnerNotifyPage(controller);
                 case Settings -> new SettingsPage(controller);
                 case LegalOnboard -> new LegalOnboardPage(controller);
+                case StiTestTracker -> new StiTestTrackerPage(controller);
+                case TreatmentTracker -> new TreatmentTrackerPage(controller);
+                case ClinicPatientTreatment -> new ClinicPatientTreatmentPage(controller);
             };
             Scene scene = page.createScene();
             AppStyles.apply(scene);

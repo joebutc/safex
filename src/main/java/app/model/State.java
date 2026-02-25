@@ -10,5 +10,8 @@ public enum State {
     ClinicSchedule,
     Notify,
     Settings,
-    LegalOnboard
+    LegalOnboard,
+    StiTestTracker,
+    TreatmentTracker,
+    ClinicPatientTreatment
 }

@@ -56,6 +56,8 @@ public class DashboardPage implements Page {
 
         cards.getChildren().addAll(
                 buildNotifyCard(),
+                buildTestTrackerCard(),
+                buildTreatmentTrackerCard(),
                 buildSettingsCard(),
                 buildLegalCard(),
                 buildResourcesCard()
@@ -93,13 +95,81 @@ public class DashboardPage implements Page {
             showAlert(Alert.AlertType.WARNING, "Logout unavailable", "Controller is not available.");
         });
 
+        Button bellButton = buildBellButton();
+
+        HBox rightGroup = new HBox(8, bellButton, logoutButton);
+        rightGroup.setAlignment(Pos.CENTER_RIGHT);
+
         header.setLeft(appTitle);
         header.setCenter(welcome);
-        header.setRight(logoutButton);
+        header.setRight(rightGroup);
         BorderPane.setAlignment(appTitle, Pos.CENTER_LEFT);
         BorderPane.setAlignment(welcome, Pos.CENTER);
-        BorderPane.setAlignment(logoutButton, Pos.CENTER_RIGHT);
+        BorderPane.setAlignment(rightGroup, Pos.CENTER_RIGHT);
         return header;
+    }
+
+    private Button buildBellButton() {
+        Image bellImage = new Image(
+                Objects.requireNonNull(getClass().getResourceAsStream("/images/Bell.png")), 22, 22, true, true);
+        ImageView bellView = new ImageView(bellImage);
+
+        java.util.List<String> notifications = (controller != null)
+                ? controller.getPendingNotifications()
+                : java.util.List.of();
+        int count = notifications.size();
+
+        StackPane bellWithBadge;
+        if (count > 0) {
+            Label countLabel = new Label(count > 9 ? "9+" : String.valueOf(count));
+            countLabel.setTextFill(Color.WHITE);
+            countLabel.setFont(Font.font("System", FontWeight.BOLD, 8));
+            countLabel.setPadding(new Insets(0, 2, 0, 2));
+
+            StackPane badge = new StackPane(countLabel);
+            badge.setMinSize(15, 15);
+            badge.setMaxSize(15, 15);
+            badge.setStyle("-fx-background-color: #DC2626; -fx-background-radius: 999;");
+            badge.setTranslateX(9);
+            badge.setTranslateY(-9);
+
+            bellWithBadge = new StackPane(bellView, badge);
+            StackPane.setAlignment(badge, Pos.TOP_RIGHT);
+        } else {
+            bellWithBadge = new StackPane(bellView);
+        }
+
+        Button bellButton = new Button();
+        bellButton.setGraphic(bellWithBadge);
+        bellButton.getStyleClass().add("icon-button");
+        bellButton.setFocusTraversable(false);
+        bellButton.setOnAction(e -> showNotificationPopup());
+        return bellButton;
+    }
+
+    private void showNotificationPopup() {
+        if (controller == null) return;
+
+        java.util.List<String> notifications = controller.getPendingNotifications();
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Notifications");
+
+        if (notifications.isEmpty()) {
+            alert.setHeaderText("No new notifications");
+            alert.setContentText("You're all up to date. Enable reminders in Privacy & Settings to receive testing and medication alerts.");
+        } else {
+            alert.setHeaderText(notifications.size() + " notification(s)");
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < notifications.size(); i++) {
+                if (i > 0) sb.append("\n\n");
+                sb.append(notifications.get(i));
+            }
+            alert.setContentText(sb.toString());
+            // Allow the dialog to resize for longer messages
+            alert.getDialogPane().setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        }
+        alert.showAndWait();
     }
 
     private String buildWelcomeText() {
@@ -122,6 +192,38 @@ public class DashboardPage implements Page {
                 "Start Notification",
                 () -> navigate("notify"),
                 true
+        );
+    }
+
+    private VBox buildTreatmentTrackerCard() {
+        NodeIcon icon = NodeIcon.svg(
+                "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+                "#FCE7F3",
+                "#9D174D"
+        );
+        return buildActionCard(
+                icon,
+                "My Treatment Plan",
+                "Track your medications, doses, and supply levels. Get low-stock alerts.",
+                "View Treatments",
+                () -> navigate("treatment"),
+                false
+        );
+    }
+
+    private VBox buildTestTrackerCard() {
+        NodeIcon icon = NodeIcon.svg(
+                "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
+                "#FEF3C7",
+                "#B45309"
+        );
+        return buildActionCard(
+                icon,
+                "Track Your Tests",
+                "Log your STI test dates and results. Keep a private record of your sexual health history.",
+                "View My Tests",
+                () -> navigate("testtracker"),
+                false
         );
     }
 
@@ -237,6 +339,8 @@ public class DashboardPage implements Page {
 
         switch (destination) {
             case "notify" -> controller.goToNotify();
+            case "testtracker" -> controller.goToStiTestTracker();
+            case "treatment" -> controller.goToTreatmentTracker();
             case "settings" -> controller.goToSettings();
             case "legal" -> controller.goToLegalOnboard();
             default -> {

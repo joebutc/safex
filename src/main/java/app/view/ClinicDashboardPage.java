@@ -44,6 +44,7 @@ public class ClinicDashboardPage implements Page {
         cards.prefWrapLengthProperty().bind(root.widthProperty().subtract(48));
         cards.getChildren().addAll(
                 buildScheduleCard(),
+                buildPatientTreatmentCard(),
                 buildLegalCard()
         );
 
@@ -122,6 +123,38 @@ public class ClinicDashboardPage implements Page {
                 },
                 true
         );
+    }
+
+    private VBox buildPatientTreatmentCard() {
+        NodeIcon icon = NodeIcon.svg(
+                "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+                "#FCE7F3",
+                "#9D174D"
+        );
+        return buildActionCard(
+                icon,
+                "Patient Treatments",
+                "Look up a patient by username and manage their treatment plan and prescriptions.",
+                "Manage Treatments",
+                () -> showPatientLookupDialog(),
+                false
+        );
+    }
+
+    private void showPatientLookupDialog() {
+        if (controller == null) {
+            showAlert(Alert.AlertType.WARNING, "Unavailable", "Controller is not available.");
+            return;
+        }
+
+        javafx.scene.control.TextInputDialog input = new javafx.scene.control.TextInputDialog();
+        input.setTitle("Patient Lookup");
+        input.setHeaderText("Enter patient username");
+        input.setContentText("Username:");
+        input.showAndWait().ifPresent(username -> {
+            if (username == null || username.isBlank()) return;
+            controller.goToClinicPatientTreatment(username.trim());
+        });
     }
 
     private VBox buildLegalCard() {
