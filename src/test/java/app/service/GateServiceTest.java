@@ -21,7 +21,7 @@ public class GateServiceTest {
 
     private static final String PASS_GATE = "G_ALL_PASS";
     private static final String PASS_REASON = "You are eligible for home testing.";
-    private static final String G1_REASON = "Under 13 - safeguarding referral; 13-15 without Fraser assessment - clinic triage.";
+    private static final String G1_REASON = "Under 13 \u2014 safeguarding referral; ages 13 to 15 without Fraser assessment \u2014 clinic triage.";
 
     private GateService service;
 
@@ -50,14 +50,14 @@ public class GateServiceTest {
         return Stream.of(
                 Arguments.of("G1", G1_REASON, eligibleContext().age(12).build()),
                 Arguments.of("G1", G1_REASON, eligibleContext().age(14).fraser(false).build()),
-                Arguments.of("G2", "Symptomatic - refer to sexual health clinic for examination and testing.", eligibleContext().symptomatic(true).build()),
-                Arguments.of("G3", "Assault reported - immediate SARC/A&E referral; forensic care and PEP/EC may be required.", eligibleContext().assault(true).build()),
-                Arguments.of("G4", "PEP needed - urgent sexual health clinic / A&E.", eligibleContext().pep(true).build()),
-                Arguments.of("G5", "Pregnant - route to sexual health clinic and obstetric team.", eligibleContext().preg(true).build()),
-                Arguments.of("G6", "Immunocompromised - route to specialist sexual health/HIV clinic.", eligibleContext().immuno(true).build()),
-                Arguments.of("G7", "Safeguarding concern - clinical triage with safeguarding lead.", eligibleContext().safeguarding(true).build()),
-                Arguments.of("G8", "Too early - advise to wait and re-order; provide interim safer-sex advice.", eligibleContext().windowElapsed(false).build()),
-                Arguments.of("G9", "Recent kit - advise contacting clinic; assess for repeat presentations/safeguarding.", eligibleContext().recentKitWeeks(6).build()),
+                Arguments.of("G2", "Symptomatic \u2014 refer to sexual health clinic for examination and testing.", eligibleContext().symptomatic(true).build()),
+                Arguments.of("G3", "Assault reported \u2014 immediate SARC/A&E referral; forensic care and PEP/EC may be required.", eligibleContext().assault(true).build()),
+                Arguments.of("G4", "PEP needed \u2014 urgent sexual health clinic or A&E.", eligibleContext().pep(true).build()),
+                Arguments.of("G5", "Pregnant \u2014 route to sexual health clinic and obstetric team.", eligibleContext().preg(true).build()),
+                Arguments.of("G6", "Immunocompromised \u2014 route to specialist sexual health/HIV clinic.", eligibleContext().immuno(true).build()),
+                Arguments.of("G7", "Safeguarding concern \u2014 clinical triage with safeguarding lead.", eligibleContext().safeguarding(true).build()),
+                Arguments.of("G8", "Too early \u2014 advise to wait and reorder; provide interim safer sex advice.", eligibleContext().windowElapsed(false).build()),
+                Arguments.of("G9", "Recent kit \u2014 advise contacting clinic; assess for repeat presentations/safeguarding.", eligibleContext().recentKitWeeks(6).build()),
                 Arguments.of("G10", "Ensure informed consent: provide clear info and link to local clinic details.", eligibleContext().understands(false).build())
         );
     }

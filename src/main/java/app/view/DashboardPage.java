@@ -21,8 +21,6 @@ import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
-import java.awt.Desktop;
-import java.net.URI;
 import java.util.Objects;
 
 public class DashboardPage implements Page {
@@ -56,11 +54,11 @@ public class DashboardPage implements Page {
 
         cards.getChildren().addAll(
                 buildNotifyCard(),
+                buildBookStiTestCard(),
                 buildTestTrackerCard(),
                 buildTreatmentTrackerCard(),
                 buildSettingsCard(),
-                buildLegalCard(),
-                buildResourcesCard()
+                buildLegalCard()
         );
 
         VBox.setVgrow(cards, Priority.ALWAYS);
@@ -204,9 +202,25 @@ public class DashboardPage implements Page {
         return buildActionCard(
                 icon,
                 "My Treatment Plan",
-                "Track your medications, doses, and supply levels. Get low-stock alerts.",
+                "Track your medications, doses, and supply levels. Get low stock alerts.",
                 "View Treatments",
                 () -> navigate("treatment"),
+                false
+        );
+    }
+
+    private VBox buildBookStiTestCard() {
+        NodeIcon icon = NodeIcon.svg(
+                "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
+                "#ECFDF5",
+                "#059669"
+        );
+        return buildActionCard(
+                icon,
+                "Book an STI Test",
+                "Answer a few short questions to check your eligibility for a home testing kit or find your nearest clinic.",
+                "Check Eligibility",
+                () -> navigate("booktest"),
                 false
         );
     }
@@ -261,22 +275,6 @@ public class DashboardPage implements Page {
         );
     }
 
-    private VBox buildResourcesCard() {
-        NodeIcon icon = NodeIcon.svg(
-                "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z",
-                "#DCFCE7",
-                "#166534"
-        );
-
-        return buildActionCard(
-                icon,
-                "Health Resources",
-                "Find trusted sexual health services and information.",
-                "View Resources",
-                this::openResourcesUrl,
-                false
-        );
-    }
 
     private VBox buildActionCard(
             NodeIcon icon,
@@ -338,28 +336,16 @@ public class DashboardPage implements Page {
         }
 
         switch (destination) {
-            case "notify" -> controller.goToNotify();
-            case "testtracker" -> controller.goToStiTestTracker();
-            case "treatment" -> controller.goToTreatmentTracker();
-            case "settings" -> controller.goToSettings();
-            case "legal" -> controller.goToLegalOnboard();
-            default -> {
-            }
+            case "notify"     -> controller.goToNotify();
+            case "booktest"   -> controller.goToStiTestBooking();
+            case "testtracker"-> controller.goToStiTestTracker();
+            case "treatment"  -> controller.goToTreatmentTracker();
+            case "settings"   -> controller.goToSettings();
+            case "legal"      -> controller.goToLegalOnboard();
+            default -> {}
         }
     }
 
-    private void openResourcesUrl() {
-        String url = "https://www.nhs.uk/conditions/sexually-transmitted-infections-stis/";
-        try {
-            if (!Desktop.isDesktopSupported()) {
-                showAlert(Alert.AlertType.ERROR, "Browser unavailable", "Desktop browsing is not supported on this platform.");
-                return;
-            }
-            Desktop.getDesktop().browse(URI.create(url));
-        } catch (Exception exception) {
-            showAlert(Alert.AlertType.ERROR, "Unable to open browser", "SafeX could not open the NHS resources page.");
-        }
-    }
 
     private HBox buildFooter() {
         Label left = new Label("SafeX - Your privacy is our priority");

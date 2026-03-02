@@ -13,5 +13,6 @@ public enum State {
     LegalOnboard,
     StiTestTracker,
     TreatmentTracker,
-    ClinicPatientTreatment
+    ClinicPatientTreatment,
+    StiTestBooking
 }

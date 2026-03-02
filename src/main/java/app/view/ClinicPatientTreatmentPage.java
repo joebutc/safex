@@ -42,10 +42,8 @@ public class ClinicPatientTreatmentPage implements Page {
         VBox content = new VBox(16);
         content.setPadding(new Insets(24));
 
-        // Patient info + permission status row
         HBox patientRow = buildPatientInfoRow();
 
-        // Check clinic access permission
         boolean[] perms = controller != null
                 ? controller.getPatientTreatmentPermissions(patientUsername)
                 : new boolean[]{false, false};
@@ -150,9 +148,24 @@ public class ClinicPatientTreatmentPage implements Page {
     }
 
     private VBox buildTreatmentCard(TreatmentEntry t) {
+        // Source badge
+        Label sourceBadge = new Label(t.isClinicIssued() ? "Clinic prescribed" : "Self reported");
+        sourceBadge.setFont(Font.font("System", FontWeight.SEMI_BOLD, 10));
+        sourceBadge.setPadding(new Insets(3, 9, 3, 9));
+        if (t.isClinicIssued()) {
+            sourceBadge.setTextFill(Color.web("#1D4ED8"));
+            sourceBadge.setStyle("-fx-background-color: #DBEAFE; -fx-background-radius: 999;");
+        } else {
+            sourceBadge.setTextFill(Color.web("#374151"));
+            sourceBadge.setStyle("-fx-background-color: #F1F5F9; -fx-background-radius: 999;");
+        }
+
         Label nameLabel = new Label(t.getMedicationName());
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
         nameLabel.setTextFill(Color.web("#0F172A"));
+
+        HBox nameRow = new HBox(10, nameLabel, sourceBadge);
+        nameRow.setAlignment(Pos.CENTER_LEFT);
 
         Label doseFreq = new Label(t.getDose() + "  ·  " + t.getFrequency());
         doseFreq.setFont(Font.font("System", 13));
@@ -174,13 +187,25 @@ public class ClinicPatientTreatmentPage implements Page {
         startLabel.setFont(Font.font("System", 12));
         startLabel.setTextFill(Color.web("#64748B"));
 
-        VBox infoBox = new VBox(4, nameLabel, doseFreq, qtyLabel, startLabel);
+        VBox infoBox = new VBox(4, nameRow, doseFreq, qtyLabel, startLabel);
+
         if (t.getNotes() != null && !t.getNotes().isBlank()) {
-            Label notes = new Label("Note: " + t.getNotes());
+            Label notes = new Label("Clinical note: " + t.getNotes());
             notes.setFont(Font.font("System", 12));
             notes.setTextFill(Color.web("#64748B"));
             notes.setWrapText(true);
             infoBox.getChildren().add(notes);
+        }
+
+        // Show patient's note to clinic if present
+        if (t.getPatientNote() != null && !t.getPatientNote().isBlank()) {
+            Label patientNote = new Label("Patient's note: " + t.getPatientNote());
+            patientNote.setFont(Font.font("System", 12));
+            patientNote.setTextFill(Color.web("#6B21A8"));
+            patientNote.setStyle(
+                    "-fx-background-color: #F3E8FF; -fx-padding: 6 8 6 8; -fx-background-radius: 6;");
+            patientNote.setWrapText(true);
+            infoBox.getChildren().add(patientNote);
         }
 
         Button editBtn = new Button("Update Prescription");
@@ -226,7 +251,7 @@ public class ClinicPatientTreatmentPage implements Page {
 
         VBox form = new VBox(10);
         form.setPadding(new Insets(24));
-        form.setPrefWidth(440);
+        form.setPrefWidth(460);
 
         Label heading = new Label(editTarget == null
                 ? "Issue New Prescription for " + patientUsername
@@ -243,9 +268,29 @@ public class ClinicPatientTreatmentPage implements Page {
                 : TreatmentTrackerPage.MEDICATION_PRESETS.get(0));
         nameCombo.setMaxWidth(Double.MAX_VALUE);
 
-        Label doseL = fieldLabel("Dose (e.g. 1 tablet, 200 mg)");
-        TextField doseField = new TextField(editTarget != null ? editTarget.getDose() : "");
-        doseField.setPromptText("e.g. 1 tablet");
+        // Split dose: amount + unit
+        Label doseL = fieldLabel("Dose per administration");
+        String[] doseParts = parseDoseString(editTarget != null ? editTarget.getDose() : "");
+        TextField doseAmountField = new TextField(doseParts[0]);
+        doseAmountField.setPromptText("e.g. 1, 200, 0.5");
+
+        ComboBox<String> doseUnitCombo = new ComboBox<>();
+        doseUnitCombo.getItems().addAll(TreatmentTrackerPage.DOSE_UNITS);
+        doseUnitCombo.setEditable(true);
+        doseUnitCombo.setValue(!doseParts[1].isBlank() ? doseParts[1] : TreatmentTrackerPage.DOSE_UNITS.get(0));
+        doseUnitCombo.setMaxWidth(Double.MAX_VALUE);
+        doseUnitCombo.setPromptText("Select or type unit");
+        // "Other (type below)..." clears the editor so the user can type a custom unit
+        doseUnitCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if ("Other (type below)...".equals(newVal)) {
+                doseUnitCombo.getEditor().clear();
+                doseUnitCombo.getEditor().requestFocus();
+            }
+        });
+
+        HBox doseRow = new HBox(8, doseAmountField, doseUnitCombo);
+        HBox.setHgrow(doseAmountField, Priority.SOMETIMES);
+        HBox.setHgrow(doseUnitCombo, Priority.ALWAYS);
 
         Label freqL = fieldLabel("Frequency");
         ComboBox<String> freqCombo = new ComboBox<>();
@@ -258,7 +303,7 @@ public class ClinicPatientTreatmentPage implements Page {
                 ? String.valueOf((int) editTarget.getQuantityRemaining()) : "30");
         qtyField.setPromptText("e.g. 30");
 
-        Label threshL = fieldLabel("Low-stock alert threshold (days of supply)");
+        Label threshL = fieldLabel("Low stock alert threshold (days of supply)");
         TextField threshField = new TextField(editTarget != null
                 ? String.valueOf(editTarget.getLowStockThreshold()) : "7");
         threshField.setPromptText("e.g. 7");
@@ -284,7 +329,9 @@ public class ClinicPatientTreatmentPage implements Page {
         saveBtn.setMinHeight(40);
         saveBtn.setOnAction(e -> {
             String name = nameCombo.getValue() == null ? "" : nameCombo.getValue().trim();
-            String dose = doseField.getText().trim();
+            String amount = doseAmountField.getText().trim();
+            String unit = doseUnitCombo.getValue() == null ? "" : doseUnitCombo.getValue().trim();
+            String dose = unit.isBlank() ? amount : amount + " " + unit;
             String freq = freqCombo.getValue();
             String notes = notesField.getText().trim();
 
@@ -299,7 +346,7 @@ public class ClinicPatientTreatmentPage implements Page {
                 return;
             }
 
-            if (name.isBlank() || dose.isBlank() || datePicker.getValue() == null) {
+            if (name.isBlank() || amount.isBlank() || datePicker.getValue() == null) {
                 errorLabel.setText("Please fill in all required fields.");
                 errorLabel.setVisible(true);
                 return;
@@ -336,7 +383,7 @@ public class ClinicPatientTreatmentPage implements Page {
 
         form.getChildren().addAll(heading,
                 nameL, nameCombo,
-                doseL, doseField,
+                doseL, doseRow,
                 freqL, freqCombo,
                 qtyL, qtyField,
                 threshL, threshField,
@@ -348,6 +395,15 @@ public class ClinicPatientTreatmentPage implements Page {
         AppStyles.apply(sc);
         dialog.setScene(sc);
         dialog.showAndWait();
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private static String[] parseDoseString(String dose) {
+        if (dose == null || dose.isBlank()) return new String[]{"", ""};
+        int space = dose.indexOf(' ');
+        if (space < 0) return new String[]{dose, ""};
+        return new String[]{dose.substring(0, space), dose.substring(space + 1)};
     }
 
     private Label fieldLabel(String text) {

@@ -108,6 +108,11 @@ public class AppController {
         updateView();
     }
 
+    public void goToStiTestBooking() {
+        model.setState(State.StiTestBooking);
+        updateView();
+    }
+
     public List<StiTestEntry> getStiTests() {
         return DatabaseHandler.getStiTests(model.getCurrentUser());
     }
@@ -172,7 +177,11 @@ public class AppController {
     public boolean addTreatment(String medicationName, String dose, String frequency,
                                 double quantity, int lowStockThreshold, String startDate, String notes) {
         return DatabaseHandler.addTreatment(model.getCurrentUser(), medicationName, dose,
-                frequency, quantity, lowStockThreshold, startDate, notes);
+                frequency, quantity, lowStockThreshold, startDate, notes, "patient");
+    }
+
+    public boolean updatePatientNote(int id, String note) {
+        return DatabaseHandler.updatePatientNote(id, model.getCurrentUser(), note);
     }
 
     public boolean deleteTreatment(int id) {
@@ -215,7 +224,7 @@ public class AppController {
                                           String frequency, double quantity, int lowStockThreshold,
                                           String startDate, String notes) {
         return DatabaseHandler.addTreatment(patientUsername, medicationName, dose,
-                frequency, quantity, lowStockThreshold, startDate, notes);
+                frequency, quantity, lowStockThreshold, startDate, notes, "clinic");
     }
 
     public boolean updateTreatmentPlanForPatient(int id, String patientUsername, String medicationName,

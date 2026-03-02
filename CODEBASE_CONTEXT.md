@@ -58,22 +58,50 @@ Architecture is MVC + state routing:
 
 | File | Purpose |
 |---|---|
-| `src/main/java/app/model/TreatmentEntry.java` | Treatment model (`medicationName`, `dose`, `frequency`, `quantityRemaining`, `lowStockThreshold`, `startDate`, `notes`, `active`) with helpers: `dosesPerDay()`, `daysRemaining()`, `isLowStock()` |
-| `src/main/java/app/view/TreatmentTrackerPage.java` | Patient treatment UI: medication cards with supply/days remaining and actions (`Log Dose`, `Refill`, `Edit`, `Remove`); low-stock cards highlighted |
-| `src/main/java/app/view/ClinicPatientTreatmentPage.java` | Clinic treatment management UI: permission check (`allow_clinic_access`), issue/update/discontinue prescriptions for a looked-up patient |
+| `src/main/java/app/model/TreatmentEntry.java` | Treatment model (`medicationName`, `dose`, `frequency`, `quantityRemaining`, `lowStockThreshold`, `startDate`, `notes`, `active`, `source`, `patientNote`) with helpers: `dosesPerDay()`, `daysRemaining()`, `isLowStock()`, `isClinicIssued()` |
+| `src/main/java/app/view/TreatmentTrackerPage.java` | Patient treatment UI: visually distinct clinic-issued cards (blue accent, read-only) vs patient-entered cards (editable); split dose input (amount + unit ComboBox); "Note to Clinic" for clinic-issued entries |
+| `src/main/java/app/view/ClinicPatientTreatmentPage.java` | Clinic treatment management UI: permission check (`allow_clinic_access`), issue/update/discontinue prescriptions; shows source badge ("Clinic-prescribed" / "Self-reported") and patient notes; split dose input |
 
 ### Modified files
 
 | File | What changed |
 |---|---|
 | `src/main/java/app/model/State.java` | Added `TreatmentTracker` and `ClinicPatientTreatment` |
-| `src/main/java/app/model/DatabaseHandler.java` | Added tables `treatment_plans` + `treatment_permissions`; methods: `addTreatment`, `getTreatments`, `updateTreatmentQuantity`, `deleteTreatment` (soft delete), `updateTreatmentPlan`, `getPatientTreatmentsForClinic`, `getTreatmentPermissions`, `saveTreatmentPermissions` |
+| `src/main/java/app/model/DatabaseHandler.java` | Added tables `treatment_plans` + `treatment_permissions`; methods: `addTreatment`, `getTreatments`, `updateTreatmentQuantity`, `deleteTreatment` (soft delete), `updateTreatmentPlan`, `getPatientTreatmentsForClinic`, `getTreatmentPermissions`, `saveTreatmentPermissions`, `updatePatientNote` |
 | `src/main/java/app/AppModel.java` | Added `clinicPatientUsername` field for clinic patient context |
 | `src/main/java/app/AppController.java` | Added treatment CRUD and clinic treatment delegates; `getPendingNotifications()` aggregates STI-overdue + treatment low-stock notifications |
 | `src/main/java/app/AppView.java` | Added routes for `TreatmentTracker` and `ClinicPatientTreatment` |
 | `src/main/java/app/view/DashboardPage.java` | Added `My Treatment Plan` card; upgraded bell to numeric badge count |
 | `src/main/java/app/view/SettingsPage.java` | Added `Treatment data permissions` card/dialog (`allow_treatment_reminders`, `allow_clinic_access`) |
 | `src/main/java/app/view/ClinicDashboardPage.java` | Added `Patient Treatments` card with username lookup → opens `ClinicPatientTreatmentPage` |
+
+### Clinic-issued vs patient-entered treatment cards
+
+`TreatmentEntry.source` (`"clinic"` or `"patient"`) drives two distinct card styles in `TreatmentTrackerPage`:
+
+| Source | Card style | Available actions |
+|---|---|---|
+| `"clinic"` | Blue left accent bar (`#2563EB`), light-blue tint (`#EFF6FF`), "Prescribed by your doctor" badge | Log Dose, Refill, Note to Clinic |
+| `"patient"` | White card (standard) | Log Dose, Refill, Edit, Remove |
+
+- **Note to Clinic**: TextArea dialog on a clinic-issued card lets the patient write a message stored in `treatment_plans.patient_note`. Clinics see this note in purple on `ClinicPatientTreatmentPage`.
+- `isClinicIssued()` convenience method on `TreatmentEntry` returns `"clinic".equals(source)`.
+
+### Dose split input
+
+Both patient and clinic forms split the dose field into two controls:
+- Amount: plain `TextField` (e.g., `"200"`)
+- Unit: `ComboBox` with options defined in `TreatmentTrackerPage.DOSE_UNITS`:
+  `tablet(s), capsule(s), mg, mcg, g, ml, IU, patch(es), drop(s)`
+
+On save the value is concatenated as `"{amount} {unit}"` (same format as before).
+`parseDoseString(String dose)` splits on the first space to pre-populate the two fields when editing.
+
+### Login / Register branding
+
+Both `LoginPage` and `RegisterPage` use a split-screen layout:
+- **Left panel** (310 px, `#0A0A0A`): `safex_logo.png` at 254×200 (ratio preserved) + context-aware tagline in `#94A3B8`. Dark panel background matches the logo's black background for seamless blending.
+- **Right panel** (remaining width, `#F8FAFC`): the existing form card.
 
 ### Low-stock logic (`TreatmentEntry`)
 
@@ -136,7 +164,7 @@ Architecture is MVC + state routing:
 - `clinics`
 - `sti_tests`
 - `test_permissions` (`allow_reminders`, `allow_share_with_doctor`, `reminder_interval_months`)
-- `treatment_plans` (soft-delete via `active` flag)
+- `treatment_plans` (soft-delete via `active` flag; `source` = `"patient"` or `"clinic"`; `patient_note` for patient-to-clinic messages)
 - `treatment_permissions` (`allow_treatment_reminders`, `allow_clinic_access`)
 
 ### Controller behavior
@@ -146,7 +174,7 @@ Architecture is MVC + state routing:
 - STI test CRUD: `getStiTests`, `addStiTest`, `deleteStiTest`
 - STI permissions: `getTestPermissions`, `saveTestPermissions`, `getReminderIntervalMonths`
 - Reminder logic: `shouldShowReminder()`, `getReminderMessage()`
-- Treatment CRUD (patient): `getTreatments`, `addTreatment`, `deleteTreatment`, `updateTreatmentQuantity`
+- Treatment CRUD (patient): `getTreatments`, `addTreatment`, `deleteTreatment`, `updateTreatmentQuantity`, `updatePatientNote`
 - Treatment CRUD (clinic-on-patient): `getPatientTreatmentsForClinic`, `addTreatmentForPatient`, `updateTreatmentPlanForPatient`, `deleteTreatmentForPatient`
 - Treatment permissions: `getTreatmentPermissions`, `saveTreatmentPermissions`
 - Aggregated notifications: `getPendingNotifications()`
@@ -185,7 +213,7 @@ Architecture is MVC + state routing:
 ## Resources (`src/main/resources`)
 
 - Styles: `styles/app.css`
-- Images: `Bell.png`, `+.png`, `deleteIcon.png`, `Home.png`, `arrow_back.png`
+- Images: `Bell.png`, `+.png`, `deleteIcon.png`, `Home.png`, `arrow_back.png`, `safex_logo.png`
 - FXML: `fxmlFiles/monthCalenderUI.fxml`, `fxmlFiles/dayCalender.fxml`
 - PDFs: `privacy.pdf`, `tcs.pdf`
 - Local-only: `config.properties`

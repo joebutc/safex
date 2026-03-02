@@ -93,6 +93,17 @@ public class DatabaseHandler {
             } catch (SQLException ignored) {
                 // Column already exists — safe to ignore
             }
+
+            // Migration: add source column to treatment_plans (patient vs clinic)
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE treatment_plans ADD COLUMN source TEXT NOT NULL DEFAULT 'patient'");
+            } catch (SQLException ignored) {}
+
+            // Migration: add patient_note column to treatment_plans
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE treatment_plans ADD COLUMN patient_note TEXT");
+            } catch (SQLException ignored) {}
+
         } catch (SQLException e) {
             System.out.println("Error initialising database: " + e.getMessage());
         }
@@ -266,12 +277,22 @@ public class DatabaseHandler {
         }
     }
 
-    // Inserts a new treatment plan entry
+    // Convenience overload used by tests — defaults source to "patient"
     public static boolean addTreatment(String username, String medicationName, String dose,
                                        String frequency, double quantityRemaining,
                                        int lowStockThreshold, String startDate, String notes) {
+        return addTreatment(username, medicationName, dose, frequency, quantityRemaining,
+                lowStockThreshold, startDate, notes, "patient");
+    }
+
+    // Inserts a new treatment plan entry; source is "patient" or "clinic"
+    public static boolean addTreatment(String username, String medicationName, String dose,
+                                       String frequency, double quantityRemaining,
+                                       int lowStockThreshold, String startDate, String notes,
+                                       String source) {
         String sql = "INSERT INTO treatment_plans (username, medication_name, dose, frequency, "
-                + "quantity_remaining, low_stock_threshold, start_date, notes, active) VALUES (?,?,?,?,?,?,?,?,1)";
+                + "quantity_remaining, low_stock_threshold, start_date, notes, active, source) "
+                + "VALUES (?,?,?,?,?,?,?,?,1,?)";
         try (Connection conn = connect()) {
             if (conn == null) return false;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
@@ -283,6 +304,7 @@ public class DatabaseHandler {
                 p.setInt(6, lowStockThreshold);
                 p.setString(7, startDate);
                 p.setString(8, notes);
+                p.setString(9, source != null ? source : "patient");
                 p.executeUpdate();
                 return true;
             }
@@ -295,7 +317,7 @@ public class DatabaseHandler {
     // Returns active treatment plans for a user, most recent first
     public static List<TreatmentEntry> getTreatments(String username) {
         String sql = "SELECT id, username, medication_name, dose, frequency, quantity_remaining, "
-                + "low_stock_threshold, start_date, notes, active "
+                + "low_stock_threshold, start_date, notes, active, source, patient_note "
                 + "FROM treatment_plans WHERE username = ? AND active = 1 ORDER BY id DESC";
         List<TreatmentEntry> entries = new ArrayList<>();
         try (Connection conn = connect()) {
@@ -349,7 +371,7 @@ public class DatabaseHandler {
     // Clinic: fetches active treatment plans for any patient (no username guard — caller must check permission)
     public static List<TreatmentEntry> getPatientTreatmentsForClinic(String patientUsername) {
         String sql = "SELECT id, username, medication_name, dose, frequency, quantity_remaining, "
-                + "low_stock_threshold, start_date, notes, active "
+                + "low_stock_threshold, start_date, notes, active, source, patient_note "
                 + "FROM treatment_plans WHERE username = ? AND active = 1 ORDER BY id DESC";
         List<TreatmentEntry> entries = new ArrayList<>();
         try (Connection conn = connect()) {
@@ -429,6 +451,23 @@ public class DatabaseHandler {
         }
     }
 
+    // Updates the patient's note to clinic on a treatment they own
+    public static boolean updatePatientNote(int id, String usernameGuard, String note) {
+        String sql = "UPDATE treatment_plans SET patient_note = ? WHERE id = ? AND username = ?";
+        try (Connection conn = connect()) {
+            if (conn == null) return false;
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, note);
+                p.setInt(2, id);
+                p.setString(3, usernameGuard);
+                return p.executeUpdate() > 0;
+            }
+        } catch (SQLException e) {
+            System.out.println("updatePatientNote error: " + e.getMessage());
+            return false;
+        }
+    }
+
     private static TreatmentEntry mapTreatmentRow(ResultSet rs) throws SQLException {
         return new TreatmentEntry(
                 rs.getInt("id"),
@@ -440,7 +479,9 @@ public class DatabaseHandler {
                 rs.getInt("low_stock_threshold"),
                 rs.getString("start_date"),
                 rs.getString("notes"),
-                rs.getInt("active") == 1
+                rs.getInt("active") == 1,
+                rs.getString("source"),
+                rs.getString("patient_note")
         );
     }
 

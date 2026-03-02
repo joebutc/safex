@@ -11,10 +11,13 @@ public class TreatmentEntry {
     private final String startDate;
     private final String notes;
     private final boolean active;
+    private final String source;      // "patient" or "clinic"
+    private final String patientNote; // patient's message to their clinic
 
     public TreatmentEntry(int id, String username, String medicationName, String dose,
                           String frequency, double quantityRemaining, int lowStockThreshold,
-                          String startDate, String notes, boolean active) {
+                          String startDate, String notes, boolean active,
+                          String source, String patientNote) {
         this.id = id;
         this.username = username;
         this.medicationName = medicationName;
@@ -25,6 +28,16 @@ public class TreatmentEntry {
         this.startDate = startDate;
         this.notes = notes;
         this.active = active;
+        this.source = source != null ? source : "patient";
+        this.patientNote = patientNote;
+    }
+
+    // Convenience constructor — defaults source to "patient", patientNote to null (used by tests)
+    public TreatmentEntry(int id, String username, String medicationName, String dose,
+                          String frequency, double quantityRemaining, int lowStockThreshold,
+                          String startDate, String notes, boolean active) {
+        this(id, username, medicationName, dose, frequency, quantityRemaining,
+                lowStockThreshold, startDate, notes, active, "patient", null);
     }
 
     public int getId() { return id; }
@@ -37,6 +50,11 @@ public class TreatmentEntry {
     public String getStartDate() { return startDate; }
     public String getNotes() { return notes; }
     public boolean isActive() { return active; }
+    public String getSource() { return source; }
+    public String getPatientNote() { return patientNote; }
+
+    /** Returns true when this treatment was prescribed/issued by a clinic. */
+    public boolean isClinicIssued() { return "clinic".equals(source); }
 
     // Returns how many doses are administered per day for this frequency
     public double dosesPerDay() {

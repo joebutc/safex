@@ -39,6 +39,19 @@ public class TreatmentTrackerPage implements Page {
             "Once daily", "Twice daily", "Three times daily", "Weekly", "As needed"
     );
 
+    static final List<String> DOSE_UNITS = List.of(
+            // Solid / oral
+            "tablet(s)", "capsule(s)", "lozenge(s)", "sachet(s)",
+            // Weight / volume measures
+            "mg", "mcg", "g", "ml", "mmol", "mEq",
+            // Injectables / biological
+            "IU", "units",
+            // Topical / inhaled / other forms
+            "patch(es)", "puff(s)", "spray(s)", "drop(s)", "suppository/suppositories",
+            // Catch-all
+            "Other (type below)..."
+    );
+
     private final AppController controller;
     private VBox listContainer;
 
@@ -136,8 +149,135 @@ public class TreatmentTrackerPage implements Page {
     }
 
     VBox buildTreatmentCard(TreatmentEntry t) {
-        // Low-stock badge
-        Label stockBadge = new Label(t.isLowStock() ? "LOW STOCK" : "");
+        return t.isClinicIssued() ? buildClinicCard(t) : buildPatientCard(t);
+    }
+
+    // ── Clinic-issued card ───────────────────────────────────────────────────
+    // Read-only: Log Dose + Refill + Note to Clinic only.
+    // Blue left accent + light blue tint distinguishes it from self-entered cards.
+
+    private VBox buildClinicCard(TreatmentEntry t) {
+        Label badge = new Label("Prescribed by your doctor");
+        badge.setFont(Font.font("System", FontWeight.SEMI_BOLD, 10));
+        badge.setPadding(new Insets(3, 9, 3, 9));
+        badge.setTextFill(Color.web("#1D4ED8"));
+        badge.setStyle("-fx-background-color: #DBEAFE; -fx-background-radius: 999;");
+
+        Label stockBadge = new Label("LOW STOCK");
+        stockBadge.setFont(Font.font("System", FontWeight.BOLD, 10));
+        stockBadge.setPadding(new Insets(3, 9, 3, 9));
+        stockBadge.setTextFill(Color.WHITE);
+        stockBadge.setStyle("-fx-background-color: #DC2626; -fx-background-radius: 999;");
+        stockBadge.setVisible(t.isLowStock());
+        stockBadge.setManaged(t.isLowStock());
+
+        Label nameLabel = new Label(t.getMedicationName());
+        nameLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
+        nameLabel.setTextFill(Color.web("#1E3A8A"));
+
+        HBox nameRow = new HBox(10, nameLabel, badge, stockBadge);
+        nameRow.setAlignment(Pos.CENTER_LEFT);
+
+        Label doseFreq = new Label(t.getDose() + "  ·  " + t.getFrequency());
+        doseFreq.setFont(Font.font("System", 13));
+        doseFreq.setTextFill(Color.web("#3B4E6B"));
+
+        Label startedLabel = new Label("Prescribed: " + t.getStartDate());
+        startedLabel.setFont(Font.font("System", 12));
+        startedLabel.setTextFill(Color.web("#64748B"));
+
+        String qtyText;
+        if (t.dosesPerDay() > 0) {
+            int days = (int) Math.ceil(t.daysRemaining());
+            qtyText = String.format("Supply: %.0f doses  (approx. %d day%s remaining)",
+                    t.getQuantityRemaining(), days, days == 1 ? "" : "s");
+        } else {
+            qtyText = String.format("Supply: %.0f doses  (as needed — no auto-calculation)",
+                    t.getQuantityRemaining());
+        }
+        Label qtyLabel = new Label(qtyText);
+        qtyLabel.setFont(Font.font("System", FontWeight.SEMI_BOLD, 13));
+        qtyLabel.setTextFill(t.isLowStock() ? Color.web("#DC2626") : Color.web("#1E3A8A"));
+
+        VBox infoBox = new VBox(4, nameRow, doseFreq, startedLabel, qtyLabel);
+
+        if (t.getNotes() != null && !t.getNotes().isBlank()) {
+            Label clinicNotes = new Label("Clinical note: " + t.getNotes());
+            clinicNotes.setFont(Font.font("System", 12));
+            clinicNotes.setTextFill(Color.web("#3B4E6B"));
+            clinicNotes.setWrapText(true);
+            infoBox.getChildren().add(clinicNotes);
+        }
+
+        if (t.getPatientNote() != null && !t.getPatientNote().isBlank()) {
+            Label noteDisplay = new Label("Your note to clinic: " + t.getPatientNote());
+            noteDisplay.setFont(Font.font("System", 12));
+            noteDisplay.setTextFill(Color.web("#6B21A8"));
+            noteDisplay.setStyle(
+                    "-fx-background-color: #F3E8FF; -fx-padding: 6 8 6 8; -fx-background-radius: 6;");
+            noteDisplay.setWrapText(true);
+            infoBox.getChildren().add(noteDisplay);
+        }
+
+        Button logDoseBtn = new Button("Log Dose");
+        logDoseBtn.getStyleClass().add("primary-button");
+        logDoseBtn.setMinHeight(32);
+        logDoseBtn.setDisable(t.getQuantityRemaining() <= 0);
+        logDoseBtn.setOnAction(e -> {
+            double newQty = Math.max(0, t.getQuantityRemaining() - 1);
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                    "Log 1 dose of " + t.getMedicationName() + "?\n"
+                            + String.format("Remaining: %.0f → %.0f doses", t.getQuantityRemaining(), newQty),
+                    ButtonType.YES, ButtonType.NO);
+            confirm.setHeaderText(null);
+            confirm.setTitle("Log Dose");
+            confirm.showAndWait().ifPresent(bt -> {
+                if (bt == ButtonType.YES && controller != null) {
+                    controller.updateTreatmentQuantity(t.getId(), newQty);
+                    refresh();
+                }
+            });
+        });
+
+        Button refillBtn = new Button("Refill");
+        refillBtn.getStyleClass().add("secondary-button");
+        refillBtn.setMinHeight(32);
+        refillBtn.setOnAction(e -> showRefillDialog(t));
+
+        Button noteBtn = new Button("Note to Clinic");
+        noteBtn.getStyleClass().add("secondary-button");
+        noteBtn.setMinHeight(32);
+        noteBtn.setOnAction(e -> showNoteToClinicDialog(t));
+
+        HBox buttons = new HBox(8, logDoseBtn, refillBtn, noteBtn);
+        buttons.setAlignment(Pos.CENTER_LEFT);
+
+        VBox cardInner = new VBox(10, infoBox, buttons);
+        cardInner.setPadding(new Insets(14, 16, 14, 14));
+        cardInner.setStyle("-fx-background-color: #EFF6FF; -fx-background-radius: 0 10 10 0;");
+        HBox.setHgrow(cardInner, Priority.ALWAYS);
+
+        Region accent = new Region();
+        accent.setMinWidth(5);
+        accent.setPrefWidth(5);
+        accent.setStyle("-fx-background-color: #2563EB; -fx-background-radius: 10 0 0 10;");
+
+        HBox cardRow = new HBox(0, accent, cardInner);
+        cardRow.setStyle(
+                "-fx-background-radius: 12;"
+                + " -fx-border-color: #BFDBFE;"
+                + " -fx-border-radius: 12;"
+                + " -fx-border-width: 1;"
+                + " -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.08), 12, 0.1, 0, 3);");
+
+        return new VBox(cardRow);
+    }
+
+    // ── Patient self-entered card ────────────────────────────────────────────
+    // Fully editable: Log Dose + Refill + Edit + Remove.
+
+    private VBox buildPatientCard(TreatmentEntry t) {
+        Label stockBadge = new Label("LOW STOCK");
         stockBadge.setFont(Font.font("System", FontWeight.BOLD, 10));
         stockBadge.setPadding(new Insets(2, 8, 2, 8));
         stockBadge.setTextFill(Color.WHITE);
@@ -160,7 +300,6 @@ public class TreatmentTrackerPage implements Page {
         startedLabel.setFont(Font.font("System", 12));
         startedLabel.setTextFill(Color.web("#64748B"));
 
-        // Quantity / days remaining
         String qtyText;
         if (t.dosesPerDay() > 0) {
             int days = (int) Math.ceil(t.daysRemaining());
@@ -184,7 +323,6 @@ public class TreatmentTrackerPage implements Page {
             infoBox.getChildren().add(notes);
         }
 
-        // Action buttons
         Button logDoseBtn = new Button("Log Dose");
         logDoseBtn.getStyleClass().add("primary-button");
         logDoseBtn.setMinHeight(32);
@@ -247,6 +385,8 @@ public class TreatmentTrackerPage implements Page {
         return card;
     }
 
+    // ── Dialogs ──────────────────────────────────────────────────────────────
+
     private void showRefillDialog(TreatmentEntry t) {
         TextInputDialog dlg = new TextInputDialog("30");
         dlg.setTitle("Refill Medication");
@@ -264,6 +404,55 @@ public class TreatmentTrackerPage implements Page {
         });
     }
 
+    private void showNoteToClinicDialog(TreatmentEntry t) {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Note to Clinic");
+
+        VBox form = new VBox(12);
+        form.setPadding(new Insets(24));
+        form.setPrefWidth(420);
+
+        Label heading = new Label("Note to your clinic");
+        heading.setFont(Font.font("System", FontWeight.BOLD, 15));
+        heading.setTextFill(Color.web("#0F172A"));
+
+        Label medInfo = new Label("Regarding: " + t.getMedicationName());
+        medInfo.setFont(Font.font("System", 13));
+        medInfo.setTextFill(Color.web("#475569"));
+
+        Label noteL = fieldLabel("Your message (e.g. side effects, questions, refill request)");
+        TextArea noteArea = new TextArea(t.getPatientNote() != null ? t.getPatientNote() : "");
+        noteArea.setPromptText("e.g. Experiencing nausea, please advise on timing");
+        noteArea.setPrefRowCount(4);
+        noteArea.setWrapText(true);
+
+        Button saveBtn = new Button("Save Note");
+        saveBtn.getStyleClass().add("primary-button");
+        saveBtn.setMaxWidth(Double.MAX_VALUE);
+        saveBtn.setMinHeight(40);
+        saveBtn.setOnAction(e -> {
+            if (controller != null) controller.updatePatientNote(t.getId(), noteArea.getText().trim());
+            dialog.close();
+            refresh();
+        });
+
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.getStyleClass().add("secondary-button");
+        cancelBtn.setMaxWidth(Double.MAX_VALUE);
+        cancelBtn.setOnAction(e -> dialog.close());
+
+        HBox btns = new HBox(10, cancelBtn, saveBtn);
+        HBox.setHgrow(saveBtn, Priority.ALWAYS);
+        HBox.setHgrow(cancelBtn, Priority.ALWAYS);
+
+        form.getChildren().addAll(heading, medInfo, noteL, noteArea, btns);
+        Scene sc = new Scene(form);
+        AppStyles.apply(sc);
+        dialog.setScene(sc);
+        dialog.showAndWait();
+    }
+
     // editTarget == null → add mode; non-null → edit/prefill mode
     void showAddDialog(TreatmentEntry editTarget) {
         Stage dialog = new Stage();
@@ -272,13 +461,12 @@ public class TreatmentTrackerPage implements Page {
 
         VBox form = new VBox(10);
         form.setPadding(new Insets(24));
-        form.setPrefWidth(440);
+        form.setPrefWidth(460);
 
         Label heading = new Label(editTarget == null ? "Add a New Medication" : "Edit Medication");
         heading.setFont(Font.font("System", FontWeight.BOLD, 16));
         heading.setTextFill(Color.web("#0F172A"));
 
-        // Medication name
         Label nameL = fieldLabel("Medication Name");
         ComboBox<String> nameCombo = new ComboBox<>();
         nameCombo.getItems().addAll(MEDICATION_PRESETS);
@@ -286,31 +474,46 @@ public class TreatmentTrackerPage implements Page {
         nameCombo.setValue(editTarget != null ? editTarget.getMedicationName() : MEDICATION_PRESETS.get(0));
         nameCombo.setMaxWidth(Double.MAX_VALUE);
 
-        // Dose
-        Label doseL = fieldLabel("Dose (e.g. 1 tablet, 200 mg)");
-        TextField doseField = new TextField(editTarget != null ? editTarget.getDose() : "");
-        doseField.setPromptText("e.g. 1 tablet");
+        // Split dose: amount field + unit picker
+        Label doseL = fieldLabel("Dose per administration");
+        String[] doseParts = parseDoseString(editTarget != null ? editTarget.getDose() : "");
+        TextField doseAmountField = new TextField(doseParts[0]);
+        doseAmountField.setPromptText("e.g. 1, 200, 0.5");
 
-        // Frequency
+        ComboBox<String> doseUnitCombo = new ComboBox<>();
+        doseUnitCombo.getItems().addAll(DOSE_UNITS);
+        doseUnitCombo.setEditable(true);
+        doseUnitCombo.setValue(!doseParts[1].isBlank() ? doseParts[1] : DOSE_UNITS.get(0));
+        doseUnitCombo.setMaxWidth(Double.MAX_VALUE);
+        doseUnitCombo.setPromptText("Select or type unit");
+        // "Other (type below)..." clears the editor so the user can type a custom unit
+        doseUnitCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if ("Other (type below)...".equals(newVal)) {
+                doseUnitCombo.getEditor().clear();
+                doseUnitCombo.getEditor().requestFocus();
+            }
+        });
+
+        HBox doseRow = new HBox(8, doseAmountField, doseUnitCombo);
+        HBox.setHgrow(doseAmountField, Priority.SOMETIMES);
+        HBox.setHgrow(doseUnitCombo, Priority.ALWAYS);
+
         Label freqL = fieldLabel("Frequency");
         ComboBox<String> freqCombo = new ComboBox<>();
         freqCombo.getItems().addAll(FREQUENCY_OPTIONS);
         freqCombo.setValue(editTarget != null ? editTarget.getFrequency() : "Once daily");
         freqCombo.setMaxWidth(Double.MAX_VALUE);
 
-        // Quantity
         Label qtyL = fieldLabel("Current Supply (number of doses)");
         TextField qtyField = new TextField(editTarget != null
                 ? String.valueOf((int) editTarget.getQuantityRemaining()) : "30");
         qtyField.setPromptText("e.g. 30");
 
-        // Low-stock threshold
-        Label threshL = fieldLabel("Low-stock alert when below (days of supply)");
+        Label threshL = fieldLabel("Low stock alert when below (days of supply)");
         TextField threshField = new TextField(editTarget != null
                 ? String.valueOf(editTarget.getLowStockThreshold()) : "7");
         threshField.setPromptText("e.g. 7");
 
-        // Start date
         Label dateL = fieldLabel("Start Date");
         DatePicker datePicker = new DatePicker(LocalDate.now());
         if (editTarget != null) {
@@ -321,14 +524,12 @@ public class TreatmentTrackerPage implements Page {
         }
         datePicker.setMaxWidth(Double.MAX_VALUE);
 
-        // Notes
         Label notesL = fieldLabel("Notes (optional)");
         TextArea notesField = new TextArea(editTarget != null ? editTarget.getNotes() : "");
         notesField.setPromptText("e.g. Take with food");
         notesField.setPrefRowCount(2);
         notesField.setWrapText(true);
 
-        // Error
         Label errorLabel = new Label();
         errorLabel.setTextFill(Color.web("#DC2626"));
         errorLabel.setFont(Font.font("System", 12));
@@ -340,7 +541,9 @@ public class TreatmentTrackerPage implements Page {
         saveBtn.setMinHeight(40);
         saveBtn.setOnAction(e -> {
             String name = nameCombo.getValue() == null ? "" : nameCombo.getValue().trim();
-            String dose = doseField.getText().trim();
+            String amount = doseAmountField.getText().trim();
+            String unit = doseUnitCombo.getValue() == null ? "" : doseUnitCombo.getValue().trim();
+            String dose = unit.isBlank() ? amount : amount + " " + unit;
             String freq = freqCombo.getValue();
             String notes = notesField.getText().trim();
 
@@ -355,7 +558,7 @@ public class TreatmentTrackerPage implements Page {
                 return;
             }
 
-            if (name.isBlank() || dose.isBlank() || datePicker.getValue() == null) {
+            if (name.isBlank() || amount.isBlank() || datePicker.getValue() == null) {
                 errorLabel.setText("Please fill in all required fields.");
                 errorLabel.setVisible(true);
                 return;
@@ -364,7 +567,6 @@ public class TreatmentTrackerPage implements Page {
             String date = datePicker.getValue().format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
 
             if (editTarget != null) {
-                controller.updateTreatmentQuantity(editTarget.getId(), qty);
                 DatabaseHandler.updateTreatmentPlan(editTarget.getId(), editTarget.getUsername(),
                         name, dose, freq, qty, thresh, notes);
             } else {
@@ -385,7 +587,7 @@ public class TreatmentTrackerPage implements Page {
 
         form.getChildren().addAll(heading,
                 nameL, nameCombo,
-                doseL, doseField,
+                doseL, doseRow,
                 freqL, freqCombo,
                 qtyL, qtyField,
                 threshL, threshField,
@@ -397,6 +599,16 @@ public class TreatmentTrackerPage implements Page {
         AppStyles.apply(sc);
         dialog.setScene(sc);
         dialog.showAndWait();
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /** Splits "1 tablet(s)" → ["1", "tablet(s)"], "200 mg" → ["200", "mg"]. */
+    private static String[] parseDoseString(String dose) {
+        if (dose == null || dose.isBlank()) return new String[]{"", ""};
+        int space = dose.indexOf(' ');
+        if (space < 0) return new String[]{dose, ""};
+        return new String[]{dose.substring(0, space), dose.substring(space + 1)};
     }
 
     private Label fieldLabel(String text) {

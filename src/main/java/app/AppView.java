@@ -21,6 +21,7 @@ import app.view.LegalOnboardPage;
 import app.view.StiTestTrackerPage;
 import app.view.TreatmentTrackerPage;
 import app.view.ClinicPatientTreatmentPage;
+import app.view.StiTestBookingPage;
 import app.view.AppStyles;
 
 public class AppView {
@@ -56,6 +57,7 @@ public class AppView {
                 case StiTestTracker -> new StiTestTrackerPage(controller);
                 case TreatmentTracker -> new TreatmentTrackerPage(controller);
                 case ClinicPatientTreatment -> new ClinicPatientTreatmentPage(controller);
+                case StiTestBooking -> new StiTestBookingPage(controller);
             };
             Scene scene = page.createScene();
             AppStyles.apply(scene);
