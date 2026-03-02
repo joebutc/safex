@@ -1,142 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.scene.paint.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.shape.*?>
 
+<?import java.lang.String?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.DashboardPage" minWidth="900" minHeight="650" style="-fx-background-color: #F8FAFC;">
+    <!-- ================= HEADER ================= -->
     <top>
         <BorderPane styleClass="app-header">
+
             <left>
-                <Label text="SafeX">
-                    <font>
-                        <Font name="System" size="22"/>
-                    </font>
-                    <textFill>
-                        <Color value="#0F172A"/>
-                    </textFill>
-                </Label>
+                <Label text="SafeX"
+                       style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
             </left>
+
             <center>
-                <Label fx:id="welcomeLabel">
-                    <font>
-                        <Font name="System" size="14"/>
-                    </font>
-                    <textFill>
-                        <Color value="#334155"/>
-                    </textFill>
-                </Label>
+                <Label fx:id="welcomeLabel"
+                       style="-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #334155;"/>
             </center>
+
             <right>
-                <Button text="Logout" onAction="#handleLogout" styleClass="secondary-button"/>
+                <HBox alignment="CENTER_RIGHT" spacing="8">
+                    <Button fx:id="bellButton"
+                            onAction="#handleNotifications"
+                            styleClass="icon-button"/>
+                    <Button text="Logout"
+                            onAction="#handleLogout">
+                        <styleClass>
+                            <String fx:value="secondary-button"/>
+                        </styleClass>
+                    </Button>
+                </HBox>
             </right>
+
         </BorderPane>
     </top>
+
+    <!-- ================= CENTER CONTENT ================= -->
     <center>
-        <VBox spacing="18">
-            <padding>
-                <Insets top="24" right="24" bottom="24" left="24"/>
-            </padding>
-            <FlowPane hgap="18" vgap="18" alignment="TOP_CENTER" prefWrapLength="800">
-                <VBox spacing="12" prefWidth="400" minWidth="360" maxWidth="520"
-                      style="-fx-background-color: #ffffff;
-                             -fx-background-radius: 18;
-                             -fx-border-radius: 18;
-                             -fx-border-color: #2563EB;
-                             -fx-border-width: 2;
-                             -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.10), 20, 0.2, 0, 6);">
-                    <padding>
-                        <Insets top="18" right="18" bottom="18" left="18"/>
-                    </padding>
-                    <HBox spacing="12">
-                        <StackPane prefWidth="46" prefHeight="46"
-                                   style="-fx-background-color: #DBEAFE; -fx-background-radius: 999;">
-                            <ImageView fitWidth="22" fitHeight="22" preserveRatio="true">
-                                <Image url="@/images/Bell.png"/>
-                            </ImageView>
-                        </StackPane>
-                        <VBox spacing="6">
-                            <Label text="Notify Partners">
-                                <font>
-                                    <Font name="System" size="18"/>
-                                </font>
-                            </Label>
-                            <Label text="Send anonymous notifications to sexual health contacts." wrapText="true">
-                                <font>
-                                    <Font name="System" size="13"/>
-                                </font>
-                            </Label>
-                        </VBox>
-                    </HBox>
-                    <Region VBox.vgrow="ALWAYS"/>
-                    <Button text="Start Notification" onAction="#goToNotify" styleClass="primary-button" minHeight="40" maxWidth="Infinity"/>
-                </VBox>
-                <VBox spacing="12" prefWidth="400" minWidth="360" maxWidth="520" styleClass="dashboard-card">
-                    <padding>
-                        <Insets top="18" right="18" bottom="18" left="18"/>
-                    </padding>
-                    <HBox spacing="12">
-                        <StackPane prefWidth="46" prefHeight="46"
-                                   style="-fx-background-color: #CCFBF1; -fx-background-radius: 999;">
-                            <SVGPath content="M6 10V8a6 6 0 1112 0v2h1a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h1V8zm2 2h8V8a4 4 0 00-8 0v2z" fill="#0F766E" scaleX="0.9" scaleY="0.9"/>
-                        </StackPane>
-                        <VBox spacing="6">
-                            <Label text="Privacy &amp; Settings"/>
-                            <Label text="Manage your data, privacy preferences, and account settings." wrapText="true"/>
-                        </VBox>
-                    </HBox>
-                    <Region VBox.vgrow="ALWAYS"/>
-                    <Button text="Open Settings" onAction="#goToSettings" styleClass="secondary-button" minHeight="40" maxWidth="Infinity"/>
-                </VBox>
-                <VBox spacing="12" prefWidth="400" minWidth="360" maxWidth="520" styleClass="dashboard-card">
-                    <padding>
-                        <Insets top="18" right="18" bottom="18" left="18"/>
-                    </padding>
-                    <HBox spacing="12">
-                        <StackPane prefWidth="46" prefHeight="46"
-                                   style="-fx-background-color: #E0E7FF; -fx-background-radius: 999;">
-                            <SVGPath content="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zm8 1.5L19.5 9H14V3.5z" fill="#4338CA" scaleX="0.9" scaleY="0.9"/>
-                        </StackPane>
-                        <VBox spacing="6">
-                            <Label text="Terms &amp; Conditions"/>
-                            <Label text="Review our privacy policy and terms of service." wrapText="true"/>
-                        </VBox>
-                    </HBox>
-                    <Region VBox.vgrow="ALWAYS"/>
-                    <Button text="View T&amp;C" onAction="#goToLegal" styleClass="secondary-button" minHeight="40" maxWidth="Infinity"/>
-                </VBox>
-                <VBox spacing="12" prefWidth="400" minWidth="360" maxWidth="520" styleClass="dashboard-card">
-                    <padding>
-                        <Insets top="18" right="18" bottom="18" left="18"/>
-                    </padding>
-                    <HBox spacing="12">
-                        <StackPane prefWidth="46" prefHeight="46"
-                                   style="-fx-background-color: #DCFCE7; -fx-background-radius: 999;">
-                            <SVGPath content="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#166534" scaleX="0.9" scaleY="0.9"/>
-                        </StackPane>
-                        <VBox spacing="6">
-                            <Label text="Health Resources"/>
-                            <Label text="Find trusted sexual health services and information." wrapText="true"/>
-                        </VBox>
-                    </HBox>
-                    <Region VBox.vgrow="ALWAYS"/>
-                    <Button text="View Resources" onAction="#openResources" styleClass="secondary-button" minHeight="40" maxWidth="Infinity"/>
-                </VBox>
-            </FlowPane>
+        <VBox spacing="18" padding="24">
+            <FlowPane fx:id="cardContainer"
+                      hgap="18"
+                      vgap="18"
+                      alignment="TOP_CENTER"
+                      prefWrapLength="1000"/>
         </VBox>
     </center>
+
+    <!-- ================= FOOTER ================= -->
     <bottom>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <padding>
-                <Insets top="12" right="24" bottom="18" left="24"/>
-            </padding>
-            <Label text="SafeX - Your privacy is our priority"/>
+        <HBox spacing="10"
+              padding="12 24 18 24"
+              alignment="CENTER_LEFT">
+
+            <Label text="SafeX - Your privacy is our priority"
+                   style="-fx-text-fill: #64748B; -fx-font-size: 12px;"/>
+
             <Region HBox.hgrow="ALWAYS"/>
-            <Label text="v0.0.1"/>
+
+            <Label text="v0.0.1"
+                   style="-fx-text-fill: #64748B; -fx-font-size: 12px;"/>
+
         </HBox>
     </bottom>
+
 </BorderPane>
