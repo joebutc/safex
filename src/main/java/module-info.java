@@ -1,8 +1,10 @@
 module safex {
-    requires transitive javafx.controls;
+    requires javafx.controls;
+    requires transitive javafx.graphics;
     requires java.desktop;
     requires java.sql;
     requires jakarta.mail;
+    requires org.apache.logging.log4j.core;
     requires javafx.fxml;
     opens app;
     opens app.model;
@@ -12,7 +14,5 @@ module safex {
     exports app.model;
     exports app.view;
     exports app.service;
-    exports app.Schedule;
-    opens app.Schedule to javafx.fxml;
 }
 
