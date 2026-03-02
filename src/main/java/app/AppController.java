@@ -2,16 +2,22 @@ package app;
 
 import app.model.DatabaseHandler;
 import app.model.State;
+import app.model.TreatmentEntry;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class AppController {
     private static boolean initialised = false;
     private static Stage primaryStage;
     private static String currentUser;
+    private static String patientUser;
     private static String currentLoginType;
 
     private AppController() {
@@ -66,6 +72,63 @@ public final class AppController {
     public static String getCurrentUser() {
         assertInitialised();
         return currentUser;
+    }
+
+    public static List<String> getPendingNotifications() {
+        assertInitialised();
+        List<String> notifications = new ArrayList<>();
+
+        // STI test overdue reminder
+        String testMsg = getReminderMessage();
+        if (testMsg != null) {
+            notifications.add(testMsg);
+        }
+
+        // Treatment low-stock reminders (only if user has enabled them)
+        boolean[] treatPerms = DatabaseHandler.getTreatmentPermissions(currentUser);
+        if (treatPerms[0]) {
+            for (TreatmentEntry t : DatabaseHandler.getTreatments(currentUser)) {
+                if (t.isLowStock()) {
+                    int days = (int) Math.ceil(t.daysRemaining());
+                    notifications.add("Low supply: " + t.getMedicationName()
+                            + " — approx. " + days + " day(s) remaining. Consider requesting a refill.");
+                }
+            }
+        }
+
+        return notifications;
+    }
+
+    public static String getReminderMessage() {
+        assertInitialised();
+        if (!shouldShowReminder()) return null;
+        String latestDate = DatabaseHandler.getLatestTestDate(currentUser);
+        int interval = DatabaseHandler.getReminderIntervalMonths(currentUser);
+        if (latestDate == null) {
+            return "You haven't logged any STI tests yet.\n\nRegular testing is important for your sexual health. Consider getting tested and logging your results in 'Track Your Tests'.";
+        }
+        return "It has been more than " + interval + " month(s) since your last logged STI test (" + latestDate + ").\n\nConsider booking a new test and logging your results.";
+    }
+
+    public static boolean shouldShowReminder() {
+        assertInitialised();
+        boolean[] perms = DatabaseHandler.getTestPermissions(currentUser);
+        if (!perms[0]) return false;
+        String latestDate = DatabaseHandler.getLatestTestDate(currentUser);
+        if (latestDate == null) return true;
+        try {
+            LocalDate last = LocalDate.parse(latestDate, DateTimeFormatter.ofPattern("dd MMM yyyy"));
+            int interval = DatabaseHandler.getReminderIntervalMonths(currentUser);
+            return LocalDate.now().isAfter(last.plusMonths(interval));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static void getPatientTreatment(String patientUsername) {
+        assertInitialised();
+        patientUser = patientUsername;
+        updateView(State.PATIENT_TREATMENT);
     }
 
     private static Parent loadRoot(State state) {

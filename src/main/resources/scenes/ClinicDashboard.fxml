@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.ClinicDashboardPage" minWidth="900" minHeight="650" style="-fx-background-color: #F8FAFC;">
+    <!-- ================= HEADER ================= -->
+    <top>
+        <BorderPane styleClass="app-header">
+            <left>
+                <Label text="SafeX Clinic"
+                       style="-fx-font-size:22px; -fx-font-weight:bold; -fx-text-fill:#0F172A;" />
+            </left>
+
+            <center>
+                <Label fx:id="welcomeLabel"
+                       style="-fx-font-size:14px; -fx-font-weight:600; -fx-text-fill:#334155;" />
+            </center>
+
+            <right>
+                <Button text="Logout"
+                        styleClass="secondary-button"
+                        onAction="#handleLogout" />
+            </right>
+        </BorderPane>
+    </top>
+
+    <!-- ================= CONTENT ================= -->
+    <center>
+        <VBox spacing="18" padding="24">
+            <FlowPane fx:id="cardContainer"
+                      hgap="18"
+                      vgap="18"
+                      alignment="TOP_CENTER" />
+        </VBox>
+    </center>
+
+    <!-- ================= FOOTER ================= -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <padding>
+                <Insets top="12" right="24" bottom="18" left="24"/>
+            </padding>
+            <Label text="SafeX Clinic Portal"
+                   style="-fx-text-fill:#64748B; -fx-font-size:12px;" />
+        </HBox>
+    </bottom>
+
+</BorderPane>
