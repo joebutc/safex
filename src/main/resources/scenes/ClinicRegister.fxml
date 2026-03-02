@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import java.lang.String?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.ClinicRegisterPage">
+    <!-- LEFT BRAND PANEL -->
+    <left>
+        <VBox fx:id="brandPanel"
+              alignment="CENTER"
+              prefWidth="310"
+              minWidth="310"
+              maxWidth="310"
+              spacing="20"
+              style="-fx-background-color: #0A0A0A;"
+              padding="48 28 48 28"/>
+    </left>
+
+    <!-- RIGHT REGISTER FORM -->
+    <center>
+        <StackPane style="-fx-background-color: #F8FAFC;"
+                   padding="32">
+
+            <VBox alignment="CENTER_LEFT"
+                  spacing="14"
+                  maxWidth="400">
+
+                <styleClass>
+                    <String fx:value="card"/>
+                    <String fx:value="card-padding"/>
+                </styleClass>
+
+                <!-- Title -->
+                <Label fx:id="titleLabel"
+                       text="Register your clinic"/>
+
+                <!-- Subtitle -->
+                <Label fx:id="subtitleLabel"
+                       text="Set up your clinic portal."
+                       wrapText="true">
+                    <styleClass>
+                        <String fx:value="muted-text"/>
+                    </styleClass>
+                </Label>
+
+                <!-- Username -->
+                <VBox spacing="4">
+                    <Label text="Clinic ID / Username"/>
+                    <TextField fx:id="usernameField"
+                               promptText="Choose a username"
+                               maxWidth="Infinity"/>
+                </VBox>
+
+                <!-- Password -->
+                <VBox spacing="4">
+                    <Label text="Password"/>
+                    <PasswordField fx:id="passwordField"
+                                   promptText="Choose a password"
+                                   maxWidth="Infinity"/>
+                </VBox>
+
+                <!-- Confirm Password -->
+                <VBox spacing="4">
+                    <Label text="Confirm password"/>
+                    <PasswordField fx:id="confirmPasswordField"
+                                   promptText="Confirm your password"
+                                   maxWidth="Infinity"/>
+                </VBox>
+
+                <!-- Feedback -->
+                <Label fx:id="feedbackLabel"
+                       visible="false"
+                       managed="false"
+                       wrapText="true"/>
+
+                <!-- Register Button -->
+                <Button text="Register clinic"
+                        onAction="#handleRegister"
+                        minHeight="42"
+                        maxWidth="Infinity">
+                    <styleClass>
+                        <String fx:value="primary-button"/>
+                    </styleClass>
+                </Button>
+
+                <!-- Login Link -->
+                <Button fx:id="loginLink">
+                    <styleClass>
+                        <String fx:value="link-button"/>
+                    </styleClass>
+                </Button>
+
+            </VBox>
+        </StackPane>
+    </center>
+
+</BorderPane>

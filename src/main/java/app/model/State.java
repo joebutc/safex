@@ -1,8 +1,10 @@
 package app.model;
 
 public enum State {
-    LOGIN("/scenes/ClinicLogin.fxml"),
-    REGISTER("/scenes/Register.fxml"),
+    LOGIN("/scenes/StandardLogin.fxml"),
+    REGISTER("/scenes/StandardRegister.fxml"),
+    CLINIC_LOGIN("/scenes/ClinicLogin.fxml"),
+    CLINIC_REGISTER("/scenes/ClinicRegister.fxml"),
     DASHBOARD("/scenes/Dashboard.fxml");
 
     private final String fxmlPath;

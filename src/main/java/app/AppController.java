@@ -12,6 +12,7 @@ public final class AppController {
     private static boolean initialised = false;
     private static Stage primaryStage;
     private static String currentUser;
+    private static String currentLoginType;
 
     private AppController() {
     }
@@ -40,20 +41,22 @@ public final class AppController {
     }
 
     // Called by Log In Page
-    public static boolean attemptLogin(String username, String password) {
+    public static boolean attemptLogin(String username, String password, String loginType) {
         assertInitialised();
-        if (DatabaseHandler.checkLogin(username, password)) {
+        if (DatabaseHandler.checkLogin(username, password, loginType)) {
             currentUser = username;
+            currentLoginType = loginType;
             updateView(State.DASHBOARD);
             return true;
         }
         return false;
     }
 
-    public static boolean attemptRegister(String username, String password) {
+    public static boolean attemptRegister(String username, String password, String loginType) {
         assertInitialised();
-        if (DatabaseHandler.registerUser(username, password)) {
+        if (DatabaseHandler.registerUser(username, password, loginType)) {
             currentUser = username;
+            currentLoginType = loginType;
             updateView(State.DASHBOARD);
             return true;
         }

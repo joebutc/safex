@@ -1,19 +1,68 @@
 package app.view;
 
 import app.AppController;
-import app.model.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
-public class RegisterPage {
-    @FXML private TextField usernameField;
-    @FXML private PasswordField passwordField;
-    @FXML private PasswordField confirmPasswordField;
-    @FXML private Label feedbackLabel;
+import java.util.Objects;
+
+public abstract class RegisterBase {
+    @FXML protected VBox brandPanel;
+    @FXML protected Label titleLabel;
+    @FXML protected Label subtitleLabel;
+    @FXML protected TextField usernameField;
+    @FXML protected PasswordField passwordField;
+    @FXML protected PasswordField confirmPasswordField;
+    @FXML protected Label feedbackLabel;
+
+    @FXML
+    public final void initialize() {
+        confirmPasswordField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handleRegister();
+            }
+        });
+        onInitialize();
+    }
+
+    protected abstract void onInitialize();
+    protected abstract String getLoginType();
+
+    protected void buildBrandPanel(String tagline) {
+        try {
+            Image logo = new Image(
+                    Objects.requireNonNull(
+                            getClass().getResourceAsStream("/images/safex_logo.png")),
+                    254, 200, true, true);
+
+            ImageView logoView = new ImageView(logo);
+            logoView.setPreserveRatio(true);
+            brandPanel.getChildren().add(logoView);
+
+        } catch (Exception ignored) {
+            Label fallback = new Label("SafeX");
+            fallback.setFont(Font.font("System", FontWeight.EXTRA_BOLD, 36));
+            fallback.setTextFill(Color.WHITE);
+            brandPanel.getChildren().add(fallback);
+        }
+
+        Label taglineLabel = new Label(tagline);
+        taglineLabel.setFont(Font.font("System", 13));
+        taglineLabel.setTextFill(Color.web("#94A3B8"));
+        taglineLabel.setWrapText(true);
+        taglineLabel.setMaxWidth(240);
+
+        brandPanel.getChildren().add(taglineLabel);
+    }
 
     @FXML
     private void handleRegister() {
@@ -46,23 +95,11 @@ public class RegisterPage {
         }
 
         // Logic for Database Insertion
-        boolean success = AppController.attemptRegister(username, password);
+        boolean success = AppController.attemptRegister(username, password, getLoginType());
         if (success) {
             showFeedback("Registration successful! You can now log in.", true);
         } else {
             showFeedback("Username already exists or database error.", false);
-        }
-    }
-
-    @FXML
-    private void handleLoginLink() {
-        AppController.updateView(State.LOGIN);
-    }
-
-    @FXML
-    private void handleEnterKey(KeyEvent event) {
-        if (event.getCode() == KeyCode.ENTER) {
-            handleRegister();
         }
     }
 
