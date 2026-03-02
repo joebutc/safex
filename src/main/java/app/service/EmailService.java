@@ -74,20 +74,28 @@ public final class EmailService {
     }
 
     protected static Credentials loadCredentials() {
+        return loadCredentials(CONFIG_FILE);
+    }
+
+    static Credentials loadCredentials(String resourceName) {
         Properties config = new Properties();
-        try (InputStream inputStream = EmailService.class.getClassLoader().getResourceAsStream(CONFIG_FILE)) {
+        try (InputStream inputStream = EmailService.class.getClassLoader().getResourceAsStream(resourceName)) {
             if (inputStream == null) {
-                throw new IllegalStateException("Missing config.properties resource");
+                throw new IllegalStateException("Missing " + resourceName + " resource");
             }
             config.load(inputStream);
         } catch (IOException exception) {
-            throw new IllegalStateException("Unable to load config.properties resource", exception);
+            throw new IllegalStateException("Unable to load " + resourceName + " resource", exception);
         }
 
+        return parseCredentials(config, resourceName);
+    }
+
+    static Credentials parseCredentials(Properties config, String sourceName) {
         String emailAddress = config.getProperty(EMAIL_ADDRESS_KEY, "").trim();
         String emailPassword = config.getProperty(EMAIL_PASSWORD_KEY, "").trim();
         if (emailAddress.isBlank() || emailPassword.isBlank()) {
-            throw new IllegalStateException("Missing email credentials in config.properties");
+            throw new IllegalStateException("Missing email credentials in " + sourceName);
         }
         return new Credentials(emailAddress, emailPassword);
     }

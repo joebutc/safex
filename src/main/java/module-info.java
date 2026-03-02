@@ -4,7 +4,10 @@ module safex {
     requires java.sql;
     requires jakarta.mail;
     requires javafx.fxml;
-    opens app.view to javafx.fxml;
+    opens app;
+    opens app.model;
+    opens app.service;
+    opens app.view;
     exports app;
     exports app.model;
     exports app.view;

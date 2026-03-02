@@ -4,6 +4,10 @@ import app.model.DatabaseHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.parallel.ResourceAccessMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -21,6 +25,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * AppController is constructed with a null AppView because none of the methods
  * under test call updateView() or any UI method.
  */
+@Execution(ExecutionMode.SAME_THREAD)
+@ResourceLock(value = "useraccounts.db", mode = ResourceAccessMode.READ_WRITE)
 class NotificationAndPermissionsTests {
 
     private static final String TEST_USER = "__test_notif_user__";

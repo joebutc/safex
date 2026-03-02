@@ -3,25 +3,34 @@ package app.service;
 import app.model.Action;
 import app.model.Context;
 import app.model.Result;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+public class GateServiceTest {
 
-
-class GateServiceTest {
+    private static final String PASS_GATE = "G_ALL_PASS";
+    private static final String PASS_REASON = "You are eligible for home testing.";
+    private static final String G1_REASON = "Under 13 - safeguarding referral; 13-15 without Fraser assessment - clinic triage.";
 
     private GateService service;
 
-    // All gates pass
-    private Context.Builder eligible() {
+    @BeforeEach
+    void setUp() {
+        service = new GateService();
+    }
+
+    private static Context.Builder eligibleContext() {
         return Context.builder()
                 .age(25)
                 .fraser(false)
@@ -37,140 +46,93 @@ class GateServiceTest {
                 .clinOverride(false);
     }
 
-    // Static base builder for use in @MethodSource providers
-    private static Context.Builder base() {
-        return Context.builder()
-                .age(25).fraser(false).symptomatic(false)
-                .assault(false).pep(false).preg(false)
-                .immuno(false).safeguarding(false)
-                .windowElapsed(true).recentKitWeeks(null)
-                .understands(true).clinOverride(false);
-    }
-
-    // Cases for G2-G8: each flips exactly one flag and expects a specific gate to fire
-    static Stream<Arguments> singleFlagCases() {
+    static Stream<Arguments> failingGateCases() {
         return Stream.of(
-                Arguments.of(base().symptomatic(true).build(),    "G2"),
-                Arguments.of(base().assault(true).build(),         "G3"),
-                Arguments.of(base().pep(true).build(),             "G4"),
-                Arguments.of(base().preg(true).build(),            "G5"),
-                Arguments.of(base().immuno(true).build(),          "G6"),
-                Arguments.of(base().safeguarding(true).build(),    "G7"),
-                Arguments.of(base().windowElapsed(false).build(),  "G8")
+                Arguments.of("G1", G1_REASON, eligibleContext().age(12).build()),
+                Arguments.of("G1", G1_REASON, eligibleContext().age(14).fraser(false).build()),
+                Arguments.of("G2", "Symptomatic - refer to sexual health clinic for examination and testing.", eligibleContext().symptomatic(true).build()),
+                Arguments.of("G3", "Assault reported - immediate SARC/A&E referral; forensic care and PEP/EC may be required.", eligibleContext().assault(true).build()),
+                Arguments.of("G4", "PEP needed - urgent sexual health clinic / A&E.", eligibleContext().pep(true).build()),
+                Arguments.of("G5", "Pregnant - route to sexual health clinic and obstetric team.", eligibleContext().preg(true).build()),
+                Arguments.of("G6", "Immunocompromised - route to specialist sexual health/HIV clinic.", eligibleContext().immuno(true).build()),
+                Arguments.of("G7", "Safeguarding concern - clinical triage with safeguarding lead.", eligibleContext().safeguarding(true).build()),
+                Arguments.of("G8", "Too early - advise to wait and re-order; provide interim safer-sex advice.", eligibleContext().windowElapsed(false).build()),
+                Arguments.of("G9", "Recent kit - advise contacting clinic; assess for repeat presentations/safeguarding.", eligibleContext().recentKitWeeks(6).build()),
+                Arguments.of("G10", "Ensure informed consent: provide clear info and link to local clinic details.", eligibleContext().understands(false).build())
         );
     }
 
-    @BeforeEach
-    void setUp() {
-        service = new GateService();
+    static Stream<Context> passingCases() {
+        return Stream.of(
+                eligibleContext().build(),
+                eligibleContext().age(14).fraser(true).build(),
+                eligibleContext().age(16).build(),
+                eligibleContext().recentKitWeeks(12).build(),
+                eligibleContext().recentKitWeeks(6).clinOverride(true).build()
+        );
     }
 
-    // G1 — Age
-    @Test
-    void g1_failsUnder13() {
-        Context ctx = eligible().age(12).build();
-        Result r = service.run(ctx);
-
-        assertFalse(r.isPassed());
-        assertEquals("G1", r.getGateName());
-        assertEquals(Action.CLINIC_REFER, r.getAction());
-    }
-
-    @Test
-    void g1_fails13to15NoFraser() {
-        Context ctx = eligible().age(14).fraser(false).build();
-        Result r = service.run(ctx);
-
-        assertFalse(r.isPassed());
-        assertEquals("G1", r.getGateName());
-        assertEquals(Action.CLINIC_REFER, r.getAction());
-    }
-
-    @Test
-    void g1_passes13to15WithFraser() {
-        Context ctx = eligible().age(14).fraser(true).build();
-        Result r = service.run(ctx);
-        // G1 should pass; verify overall pass and action
-        assertTrue(r.isPassed());
-        assertEquals(Action.HOME_TEST, r.getAction());
-        assertEquals("G_ALL_PASS", r.getGateName());
-    }
-
-    @Test
-    void g1_passes16Plus() {
-        Context ctx = eligible().age(16).build();
-        Result r = service.run(ctx);
-        assertTrue(r.isPassed());
-        assertEquals(Action.HOME_TEST, r.getAction());
-        assertEquals("G_ALL_PASS", r.getGateName());
-    }
-
-
-    // G2-G8 — Single-flag gates (symptomatic, assault, pep, preg, immuno, safeguarding, window)
     @ParameterizedTest
-    @MethodSource("singleFlagCases")
-    void singleFlagGate_failsWithClinicRefer(Context ctx, String expectedGate) {
-        Result r = service.run(ctx);
+    @MethodSource("failingGateCases")
+    void run_returnsClinicReferralForFailingGate(String expectedGate, String expectedReason, Context ctx) {
+        LocalDateTime before = LocalDateTime.now();
+        Result result = service.run(ctx);
+        LocalDateTime after = LocalDateTime.now();
 
-        assertFalse(r.isPassed());
-        assertEquals(expectedGate, r.getGateName());
-        assertEquals(Action.CLINIC_REFER, r.getAction());
+        assertFailure(result, expectedGate, expectedReason, before, after);
     }
 
+    @ParameterizedTest
+    @MethodSource("passingCases")
+    void run_returnsHomeTestForEligibleContext(Context ctx) {
+        LocalDateTime before = LocalDateTime.now();
+        Result result = service.run(ctx);
+        LocalDateTime after = LocalDateTime.now();
 
-    // G9 — Recent kit (< 12 weeks, no clinician override)
-    @Test
-    void g9_failsRecentKit() {
-        Context ctx = eligible().recentKitWeeks(6).clinOverride(false).build();
-        Result r = service.run(ctx);
-
-        assertFalse(r.isPassed());
-        assertEquals("G9", r.getGateName());
-        assertEquals(Action.CLINIC_REFER, r.getAction());
-    }
-
-    @Test
-    void g9_passesWithClinOverride() {
-        Context ctx = eligible().recentKitWeeks(6).clinOverride(true).build();
-        Result r = service.run(ctx);
-
-        // G9 should be bypassed — overall pass expected
-        assertTrue(r.isPassed());
-        assertEquals(Action.HOME_TEST, r.getAction());
+        assertSuccess(result, before, after);
     }
 
     @Test
-    void g9_passes12WeeksOrMore() {
-        Context ctx = eligible().recentKitWeeks(12).build();
-        Result r = service.run(ctx);
-        assertTrue(r.isPassed());
-        assertEquals(Action.HOME_TEST, r.getAction());
+    void run_returnsFirstFailingGateWhenMultipleConditionsApply() {
+        Context ctx = eligibleContext()
+                .age(12)
+                .symptomatic(true)
+                .assault(true)
+                .windowElapsed(false)
+                .understands(false)
+                .build();
+
+        LocalDateTime before = LocalDateTime.now();
+        Result result = service.run(ctx);
+        LocalDateTime after = LocalDateTime.now();
+
+        assertFailure(result, "G1", G1_REASON, before, after);
     }
 
-
-    // G10 — Informed consent / understanding
-    @Test
-    void g10_failsNoUnderstanding() {
-        Context ctx = eligible().understands(false).build();
-        Result r = service.run(ctx);
-
-        assertFalse(r.isPassed());
-        assertEquals("G10", r.getGateName());
-        assertEquals(Action.CLINIC_REFER, r.getAction());
+    private static void assertFailure(
+            Result result,
+            String expectedGate,
+            String expectedReason,
+            LocalDateTime before,
+            LocalDateTime after) {
+        assertFalse(result.isPassed());
+        assertEquals(expectedGate, result.getGateName());
+        assertEquals(Action.CLINIC_REFER, result.getAction());
+        assertEquals(expectedReason, result.getReason());
+        assertEvaluatedAt(result, before, after);
     }
 
+    private static void assertSuccess(Result result, LocalDateTime before, LocalDateTime after) {
+        assertTrue(result.isPassed());
+        assertEquals(PASS_GATE, result.getGateName());
+        assertEquals(Action.HOME_TEST, result.getAction());
+        assertEquals(PASS_REASON, result.getReason());
+        assertEvaluatedAt(result, before, after);
+    }
 
-    // All-pass
-
-
-    @Test
-    void allGatesPass() {
-        Context ctx = eligible().build();
-        Result r = service.run(ctx);
-
-        assertTrue(r.isPassed());
-        assertEquals("G_ALL_PASS", r.getGateName());
-        assertEquals(Action.HOME_TEST, r.getAction());
-        assertNotNull(r.getEvaluatedAt());
+    private static void assertEvaluatedAt(Result result, LocalDateTime before, LocalDateTime after) {
+        assertNotNull(result.getEvaluatedAt());
+        assertFalse(result.getEvaluatedAt().isBefore(before));
+        assertFalse(result.getEvaluatedAt().isAfter(after));
     }
 }
