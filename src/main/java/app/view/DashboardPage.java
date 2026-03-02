@@ -95,8 +95,8 @@ public class DashboardPage {
                 buildCard("Notify Partners", "Send anonymous notifications.", "Start", () -> AppController.updateView(State.NOTIFY)),
                 buildCard("Book an STI Test", "Check eligibility for testing.", "Check", () -> AppController.updateView(State.STI_BOOKING)),
                 buildCard("Track Your Tests", "Log and review STI tests.", "View", () -> AppController.updateView(State.STI_TRACKER)),
-                buildCard("My Treatment Plan", "Track medications and supply.", "Open", () -> AppController.updateView(State.TREATMENTS)),
-                buildCard("Privacy & Settings", "Manage your privacy settings.", "Open", () -> AppController.updateView(State.SETTNGS)),
+                buildCard("My Treatment Plan", "Track medications and supply.", "Open", () -> AppController.updateView(State.TREATMENT_TRACKER)),
+                buildCard("Privacy & Settings", "Manage your privacy settings.", "Open", () -> AppController.updateView(State.SETTINGS)),
                 buildCard("Terms & Conditions", "Review privacy policy.", "View", () -> AppController.updateView(State.LEGAL))
         );
     }

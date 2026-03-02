@@ -35,7 +35,6 @@ public abstract class LoginBase {
     protected abstract String getLoginType(); // "STANDARD" or "CLINIC"
 
     protected void buildBrandPanel(String tagline) {
-
         try {
             Image logo = new Image(
                     Objects.requireNonNull(

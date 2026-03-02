@@ -131,6 +131,31 @@ public final class AppController {
         updateView(State.PATIENT_TREATMENT);
     }
 
+    public static boolean saveTreatmentPermissions(boolean allowReminders, boolean allowClinicAccess) {
+        assertInitialised();
+        return DatabaseHandler.saveTreatmentPermissions(currentUser, allowReminders, allowClinicAccess);
+    }
+
+    public static boolean[] getTestPermissions() {
+        assertInitialised();
+        return DatabaseHandler.getTestPermissions(currentUser);
+    }
+
+    public static int getReminderIntervalMonths() {
+        assertInitialised();
+        return DatabaseHandler.getReminderIntervalMonths(currentUser);
+    }
+
+    public static boolean saveTestPermissions(boolean allowReminders, boolean allowShareWithDoctor, int intervalMonths) {
+        assertInitialised();
+        return DatabaseHandler.saveTestPermissions(currentUser, allowReminders, allowShareWithDoctor, intervalMonths);
+    }
+
+    public static boolean[] getTreatmentPermissions() {
+        assertInitialised();
+        return DatabaseHandler.getTreatmentPermissions(currentUser);
+    }
+
     private static Parent loadRoot(State state) {
         try {
             FXMLLoader loader = new FXMLLoader(AppController.class.getResource(state.getFxmlPath()));
