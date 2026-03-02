@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.TreatmentTrackerPage" style="-fx-background-color: #F8FAFC;" prefWidth="900" prefHeight="650">
+    <!-- Top Header -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="app-header" padding="10">
+            <Button fx:id="homeButton" styleClass="icon-button"/>
+            <Label text="My Treatment Plan" styleClass="app-header-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+
+    <!-- Center Content -->
+    <center>
+        <VBox spacing="16" padding="24">
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <Label wrapText="true"
+                       text="Track your medications, dose schedules, and supply levels. You'll be notified when stock runs low."
+                       textFill="#475569" />
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="addMedicationBtn" text="+ Add Medication" styleClass="primary-button" minHeight="40"/>
+            </HBox>
+
+            <!-- List Container -->
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+                <VBox fx:id="listContainer" spacing="14" padding="0,0,16,0"/>
+            </ScrollPane>
+        </VBox>
+    </center>
+
+</BorderPane>

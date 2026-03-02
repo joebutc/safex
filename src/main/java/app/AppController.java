@@ -156,6 +156,46 @@ public final class AppController {
         return DatabaseHandler.getTreatmentPermissions(currentUser);
     }
 
+    public static List<TreatmentEntry> getTreatments() {
+        assertInitialised();
+        return DatabaseHandler.getTreatments(currentUser);
+    }
+
+    public static boolean updateTreatmentQuantity(int id, double newQuantity) {
+        assertInitialised();
+        return DatabaseHandler.updateTreatmentQuantity(id, currentUser, newQuantity);
+    }
+
+    public static boolean deleteTreatmentForPatient(int id, String patientUsername) {
+        assertInitialised();
+        return DatabaseHandler.deleteTreatment(id, patientUsername);
+    }
+
+    public static boolean deleteTreatment(int id) {
+        assertInitialised();
+        return DatabaseHandler.deleteTreatment(id, currentUser);
+    }
+
+    public static boolean updatePatientNote(int id, String note) {
+        assertInitialised();
+        return DatabaseHandler.updatePatientNote(id, currentUser, note);
+    }
+
+    public static boolean addTreatment(String medicationName, String dose, String frequency,
+                                double quantity, int lowStockThreshold, String startDate, String notes) {
+        assertInitialised();
+        return DatabaseHandler.addTreatment(currentUser, medicationName, dose,
+                frequency, quantity, lowStockThreshold, startDate, notes, "patient");
+    }
+
+    public static boolean addTreatmentForPatient(String patientUsername, String medicationName, String dose,
+                                          String frequency, double quantity, int lowStockThreshold,
+                                          String startDate, String notes) {
+        assertInitialised();
+        return DatabaseHandler.addTreatment(patientUsername, medicationName, dose,
+                frequency, quantity, lowStockThreshold, startDate, notes, "clinic");
+    }
+
     private static Parent loadRoot(State state) {
         try {
             FXMLLoader loader = new FXMLLoader(AppController.class.getResource(state.getFxmlPath()));

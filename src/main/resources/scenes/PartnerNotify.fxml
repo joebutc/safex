@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.PartnerNotifyPage" prefWidth="900" prefHeight="650" style="-fx-background-color: #F8FAFC">
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.PartnerNotifyPage" prefWidth="900" prefHeight="650" style="-fx-background-color: #F8FAFC;">
     <!-- ================= HEADER ================= -->
     <top>
         <HBox spacing="10" alignment="CENTER_LEFT" styleClass="app-header" padding="20">
