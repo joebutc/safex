@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import app.util.PostcodeValidator;
 
 /**
  * Step-by-step eligibility wizard that routes the patient through the
@@ -262,6 +263,11 @@ public class StiTestBookingPage implements Page {
             if (loc.isBlank()) {
                 alert(Alert.AlertType.WARNING, "Location required",
                         "Please enter your postcode or town to find nearby services.");
+                return;
+            }
+            if (loc.matches(".*\\d.*") && !PostcodeValidator.isValid(loc)) {
+                alert(Alert.AlertType.WARNING, "Invalid postcode",
+                        "Please enter a valid UK postcode (e.g. SW1A 1AA) or a town name.");
                 return;
             }
             location = loc;
