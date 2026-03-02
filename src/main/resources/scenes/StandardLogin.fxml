@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import java.lang.String?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.StandardLoginPage">
+    <left>
+        <VBox fx:id="brandPanel"
+              alignment="CENTER"
+              prefWidth="310"
+              minWidth="310"
+              maxWidth="310"
+              spacing="20"
+              style="-fx-background-color: #0A0A0A;"
+              BorderPane.alignment="CENTER">
+        </VBox>
+    </left>
+
+    <!-- RIGHT LOGIN FORM -->
+    <center>
+        <StackPane style="-fx-background-color: #F8FAFC;"
+                   padding="32">
+
+            <VBox alignment="CENTER_LEFT"
+                  spacing="14"
+                  maxWidth="400">
+
+                <styleClass>
+                    <String fx:value="card"/>
+                    <String fx:value="card-padding"/>
+                </styleClass>
+
+                <Label fx:id="titleLabel"/>
+                <Label fx:id="subtitleLabel"
+                       wrapText="true"
+                       styleClass="muted-text"/>
+
+                <VBox spacing="4">
+                    <Label text="Username"/>
+                    <TextField fx:id="usernameField"
+                               promptText="Enter your username"/>
+                </VBox>
+
+                <VBox spacing="4">
+                    <Label text="Password"/>
+                    <PasswordField fx:id="passwordField"
+                                   promptText="Enter your password"/>
+                </VBox>
+
+                <Label fx:id="errorLabel"
+                       visible="false"
+                       managed="false"
+                       wrapText="true"
+                       styleClass="error-text"/>
+
+                <Button text="Log in"
+                        minHeight="42"
+                        maxWidth="Infinity"
+                        onAction="#handleLogin"
+                        styleClass="primary-button"/>
+
+                <Button fx:id="registerLink"
+                        styleClass="link-button"/>
+
+                <Button fx:id="switchPortalLink"
+                        styleClass="link-button"/>
+
+            </VBox>
+        </StackPane>
+    </center>
+
+</BorderPane>

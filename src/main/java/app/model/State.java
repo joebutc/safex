@@ -1,7 +1,7 @@
 package app.model;
 
 public enum State {
-    LOGIN("/scenes/Login.fxml"),
+    LOGIN("/scenes/ClinicLogin.fxml"),
     REGISTER("/scenes/Register.fxml"),
     DASHBOARD("/scenes/Dashboard.fxml");
 
