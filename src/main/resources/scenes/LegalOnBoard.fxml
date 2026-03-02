@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import java.lang.String?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.LegalOnboardPage" prefWidth="900" prefHeight="650" style="-fx-background-color: #F8FAFC">
+    <!-- ===== HEADER ===== -->
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="app-header" padding="20">
+            <Button onAction="#handleHome"/>
+            <Label text="Privacy &amp; Terms" styleClass="app-header-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+
+    <!-- ===== CENTER CONTENT ===== -->
+    <center>
+        <ScrollPane fitToWidth="true" pannable="true" style="-fx-background-color: transparent;">
+            <StackPane padding="24" alignment="TOP_CENTER">
+                <VBox fx:id="contentContainer" spacing="12"
+                      maxWidth="620">
+                    <styleClass>
+                        <String>card</String>
+                        <String>card-padding</String>
+                        <String>card-flat</String>
+                    </styleClass>
+                </VBox>
+            </StackPane>
+        </ScrollPane>
+    </center>
+</BorderPane>

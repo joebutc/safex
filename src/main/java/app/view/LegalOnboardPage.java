@@ -1,71 +1,31 @@
 package app.view;
 
 import app.AppController;
+import app.model.State;
+import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import app.util.PdfOpener;
 
-import java.util.Objects;
+public class LegalOnboardPage {
+    @FXML private VBox contentContainer;
 
-public class LegalOnboardPage implements Page {
-    private final AppController controller;
-
-    public LegalOnboardPage(AppController controller) {
-        this.controller = controller;
+    @FXML
+    private void initialize() {
+        showPrivacyPolicy();
     }
 
-    public LegalOnboardPage() {
-        this(null);
+    @FXML
+    private void handleHome() {
+        AppController.updateView(State.DASHBOARD);
     }
 
-    @Override
-    public Scene createScene() {
-        VBox content = new VBox(12);
-        content.getStyleClass().addAll("card", "card-padding", "card-flat");
-        content.setMaxWidth(620);
+    private void showPrivacyPolicy() {
+        contentContainer.getChildren().clear();
 
-        StackPane wrapper = new StackPane(content);
-        wrapper.setPadding(new Insets(24));
-        wrapper.setAlignment(Pos.TOP_CENTER);
-
-        ScrollPane scrollPane = new ScrollPane(wrapper);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPannable(true);
-        scrollPane.setStyle("-fx-background-color: transparent;");
-
-        BorderPane root = new BorderPane(scrollPane);
-        root.setTop(buildHeader());
-
-        showPrivacyPolicy(content);
-
-        return new Scene(root, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
-    }
-
-    private void onAgree() {
-        if (controller != null) {
-            controller.goToDashboard();
-        }
-    }
-
-    private void goToDashboard() {
-        if (controller != null) {
-            controller.goToDashboard();
-        }
-    }
-
-    private void showPrivacyPolicy(VBox content) {
         Label title = new Label("Privacy Policy Summary");
         title.getStyleClass().add("legal-title");
 
@@ -77,7 +37,6 @@ public class LegalOnboardPage implements Page {
         VBox headerBlock = new VBox(6, title, intro);
 
         VBox bullets = new VBox(8);
-
         bullets.getChildren().addAll(
                 buildQuestionAnswer("What personal information do we process?", " When you visit, use, or navigate our Services, we may process personal information depending on how you interact with us and the Services, the choices you make, and the products and features you use. Learn more about personal information we collect in Section 1."),
                 buildQuestionAnswer("Do we process any sensitive personal information?", " Some of the information we process may be considered special category data (for example health data). We process special category data only where we have a lawful basis and, for health data, only where we have your explicit consent or processing is otherwise permitted under applicable law (for example, where necessary for the provision of health or social care). See Section 3 and Section 10."),
@@ -89,25 +48,22 @@ public class LegalOnboardPage implements Page {
                 buildQuestionAnswer("How do you exercise your rights?", " The easiest way to exercise your rights is through the app's privacy and data controls, or by contacting us at support@safex.com. We will consider and act upon any request in accordance with applicable data protection laws. See Section 13.")
         );
 
-        Label closing = new Label("Want to learn more about what we do with any information we collect? Review the Privacy Notice in full.");
-        closing.getStyleClass().add("legal-closing");
-        closing.setWrapText(true);
-        closing.setMaxWidth(520);
-
         HBox pdfRow = buildPdfRow("Privacy Notice (full) (PDF)", "privacy.pdf");
 
         Button continueButton = new Button("By continuing, you acknowledge that you have read our Privacy Policy.");
-        continueButton.setOnAction(event -> showTermsAndConditions(content));
         continueButton.setWrapText(true);
         continueButton.setMaxWidth(520);
+        continueButton.getStyleClass().add("primary-button");
+        continueButton.setOnAction(e -> showTermsAndConditions());
 
         HBox actions = new HBox(continueButton);
-        actions.setAlignment(Pos.CENTER_LEFT);
-
-        content.getChildren().setAll(headerBlock, bullets, closing, pdfRow, actions);
+        actions.setPadding(new Insets(12));
+        contentContainer.getChildren().setAll(headerBlock, bullets, pdfRow, actions);
     }
 
-    private void showTermsAndConditions(VBox content) {
+    private void showTermsAndConditions() {
+        contentContainer.getChildren().clear();
+
         Label title = new Label("Terms & Conditions Summary");
         title.getStyleClass().add("legal-title");
 
@@ -136,54 +92,18 @@ public class LegalOnboardPage implements Page {
                 buildQuestionAnswer("How can you contact SafeX?", " Email support@safex.com or write to SafeX Ltd, London, United Kingdom (for notices only). See Section 19.")
         );
 
-        Label closing = new Label("Want to learn more? Review the full Terms in the app or the Terms document.");
-        closing.getStyleClass().addAll("muted-text", "legal-closing");
-        closing.setWrapText(true);
-        closing.setMaxWidth(520);
-
         HBox pdfRow = buildPdfRow("Terms (full) (PDF)", "tcs.pdf");
 
         Button agreeButton = new Button("I Agree");
         agreeButton.setDefaultButton(true);
         agreeButton.getStyleClass().add("primary-button");
-        agreeButton.setOnAction(event -> onAgree());
         agreeButton.setWrapText(true);
         agreeButton.setMaxWidth(520);
+        agreeButton.setOnAction(e -> onAgree());
 
         HBox actions = new HBox(agreeButton);
-        actions.setAlignment(Pos.CENTER_LEFT);
-
-        content.getChildren().setAll(headerBlock, bullets, closing, pdfRow, actions);
-    }
-
-    private HBox buildHeader() {
-        Button homeButton = buildHomeButton();
-
-        Label headerTitle = new Label("Privacy & Terms");
-        headerTitle.getStyleClass().add("app-header-title");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox header = new HBox(10, homeButton, headerTitle, spacer);
-        header.setAlignment(Pos.CENTER_LEFT);
-        header.getStyleClass().add("app-header");
-        return header;
-    }
-
-    private Button buildHomeButton() {
-        Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/Home.png")));
-        ImageView icon = new ImageView(image);
-        icon.setFitWidth(28);
-        icon.setFitHeight(28);
-        icon.setPreserveRatio(true);
-
-        Button homeButton = new Button();
-        homeButton.setGraphic(icon);
-        homeButton.getStyleClass().add("icon-button");
-        homeButton.setFocusTraversable(false);
-        homeButton.setOnAction(event -> goToDashboard());
-        return homeButton;
+        actions.setPadding(new Insets(12));
+        contentContainer.getChildren().setAll(headerBlock, bullets, pdfRow, actions);
     }
 
     private HBox buildPdfRow(String labelText, String resourceName) {
@@ -193,7 +113,7 @@ public class LegalOnboardPage implements Page {
         openPdfButton.setOnAction(event -> PdfOpener.openResourcePdf(resourceName));
 
         HBox row = new HBox(10, label, openPdfButton);
-        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPadding(new Insets(6));
         return row;
     }
 
@@ -209,5 +129,9 @@ public class LegalOnboardPage implements Page {
         VBox block = new VBox(4, q, a);
         block.setMaxWidth(520);
         return block;
+    }
+
+    private void onAgree() {
+        AppController.updateView(State.DASHBOARD);
     }
 }
