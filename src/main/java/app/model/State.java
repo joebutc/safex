@@ -5,7 +5,8 @@ public enum State {
     REGISTER("/scenes/StandardRegister.fxml"),
     CLINIC_LOGIN("/scenes/ClinicLogin.fxml"),
     CLINIC_REGISTER("/scenes/ClinicRegister.fxml"),
-    DASHBOARD("/scenes/Dashboard.fxml");
+    DASHBOARD("/scenes/Dashboard.fxml"),
+    NOTIFY("/scenes/PartnerNotify.fxml");
 
     private final String fxmlPath;
 
