@@ -38,7 +38,7 @@ public class DashboardPage implements Page {
     public Scene createScene() {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #F8FAFC;");
-        root.setMinSize(900, 650);
+        root.setMinSize(900, 850);
 
         BorderPane header = buildHeader();
         root.setTop(header);
@@ -52,14 +52,15 @@ public class DashboardPage implements Page {
         cards.setAlignment(Pos.TOP_CENTER);
         cards.prefWrapLengthProperty().bind(root.widthProperty().subtract(48));
 
+        // Added the new clinic appointment card here
         cards.getChildren().addAll(
                 buildNotifyCard(),
                 buildBookStiTestCard(),
+                buildClinicAppointmentCard(),
                 buildTestTrackerCard(),
                 buildTreatmentTrackerCard(),
                 buildSettingsCard(),
-                buildLegalCard()
-        );
+                buildLegalCard());
 
         VBox.setVgrow(cards, Priority.ALWAYS);
         content.getChildren().add(cards);
@@ -146,7 +147,8 @@ public class DashboardPage implements Page {
     }
 
     private void showNotificationPopup() {
-        if (controller == null) return;
+        if (controller == null)
+            return;
 
         java.util.List<String> notifications = controller.getPendingNotifications();
 
@@ -155,16 +157,17 @@ public class DashboardPage implements Page {
 
         if (notifications.isEmpty()) {
             alert.setHeaderText("No new notifications");
-            alert.setContentText("You're all up to date. Enable reminders in Privacy & Settings to receive testing and medication alerts.");
+            alert.setContentText(
+                    "You're all up to date. Enable reminders in Privacy & Settings to receive testing and medication alerts.");
         } else {
             alert.setHeaderText(notifications.size() + " notification(s)");
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < notifications.size(); i++) {
-                if (i > 0) sb.append("\n\n");
+                if (i > 0)
+                    sb.append("\n\n");
                 sb.append(notifications.get(i));
             }
             alert.setContentText(sb.toString());
-            // Allow the dialog to resize for longer messages
             alert.getDialogPane().setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         }
         alert.showAndWait();
@@ -189,64 +192,72 @@ public class DashboardPage implements Page {
                 "Send anonymous notifications to sexual health contacts.",
                 "Start Notification",
                 () -> navigate("notify"),
-                true
-        );
+                true);
+    }
+
+    // --- NEW CARD FOR CLINIC APPOINTMENTS ---
+    private VBox buildClinicAppointmentCard() {
+        // A calendar icon SVG
+        NodeIcon icon = NodeIcon.svg(
+                "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+                "#EDE9FE",
+                "#7C3AED");
+        return buildActionCard(
+                icon,
+                "Clinic Appointments",
+                "View available time slots and book an in-person appointment at your local clinic.",
+                "View Calendar",
+                () -> navigate("clinic_appointment"),
+                false);
     }
 
     private VBox buildTreatmentTrackerCard() {
         NodeIcon icon = NodeIcon.svg(
                 "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
                 "#FCE7F3",
-                "#9D174D"
-        );
+                "#9D174D");
         return buildActionCard(
                 icon,
                 "My Treatment Plan",
                 "Track your medications, doses, and supply levels. Get low stock alerts.",
                 "View Treatments",
                 () -> navigate("treatment"),
-                false
-        );
+                false);
     }
 
     private VBox buildBookStiTestCard() {
         NodeIcon icon = NodeIcon.svg(
                 "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
                 "#ECFDF5",
-                "#059669"
-        );
+                "#059669");
         return buildActionCard(
                 icon,
                 "Book an STI Test",
                 "Answer a few short questions to check your eligibility for a home testing kit or find your nearest clinic.",
                 "Check Eligibility",
                 () -> navigate("booktest"),
-                false
-        );
+                false);
     }
 
     private VBox buildTestTrackerCard() {
         NodeIcon icon = NodeIcon.svg(
                 "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
                 "#FEF3C7",
-                "#B45309"
-        );
+                "#B45309");
         return buildActionCard(
                 icon,
                 "Track Your Tests",
                 "Log your STI test dates and results. Keep a private record of your sexual health history.",
                 "View My Tests",
                 () -> navigate("testtracker"),
-                false
-        );
+                false);
     }
 
     private VBox buildSettingsCard() {
         NodeIcon icon = NodeIcon.svg(
                 "M6 10V8a6 6 0 1112 0v2h1a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h1V8zm2 2h8V8a4 4 0 00-8 0v2z",
                 "#CCFBF1",
-                "#0F766E"
-        );
+                "#0F766E");
 
         return buildActionCard(
                 icon,
@@ -254,16 +265,14 @@ public class DashboardPage implements Page {
                 "Manage your data, privacy preferences, and account settings.",
                 "Open Settings",
                 () -> navigate("settings"),
-                false
-        );
+                false);
     }
 
     private VBox buildLegalCard() {
         NodeIcon icon = NodeIcon.svg(
                 "M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zm8 1.5L19.5 9H14V3.5z",
                 "#E0E7FF",
-                "#4338CA"
-        );
+                "#4338CA");
 
         return buildActionCard(
                 icon,
@@ -271,10 +280,8 @@ public class DashboardPage implements Page {
                 "Review our privacy policy and terms of service.",
                 "View T&C",
                 () -> navigate("legal"),
-                false
-        );
+                false);
     }
-
 
     private VBox buildActionCard(
             NodeIcon icon,
@@ -336,16 +343,17 @@ public class DashboardPage implements Page {
         }
 
         switch (destination) {
-            case "notify"     -> controller.goToNotify();
-            case "booktest"   -> controller.goToStiTestBooking();
-            case "testtracker"-> controller.goToStiTestTracker();
-            case "treatment"  -> controller.goToTreatmentTracker();
-            case "settings"   -> controller.goToSettings();
-            case "legal"      -> controller.goToLegalOnboard();
-            default -> {}
+            case "notify" -> controller.goToNotify();
+            case "booktest" -> controller.goToStiTestBooking();
+            case "clinic_appointment" -> controller.goToPatientCalendar(); // The new route
+            case "testtracker" -> controller.goToStiTestTracker();
+            case "treatment" -> controller.goToTreatmentTracker();
+            case "settings" -> controller.goToSettings();
+            case "legal" -> controller.goToLegalOnboard();
+            default -> {
+            }
         }
     }
-
 
     private HBox buildFooter() {
         Label left = new Label("SafeX - Your privacy is our priority");

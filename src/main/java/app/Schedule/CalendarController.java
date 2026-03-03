@@ -1,6 +1,5 @@
 package app.Schedule;
 
-
 import app.AppController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -38,49 +37,39 @@ public class CalendarController {
         populateCalendar(displayedMonth);
     }
 
-    public void populateCalendar(YearMonth yearMonth){
-
-        // remove existing buttons.
+    public void populateCalendar(YearMonth yearMonth) {
         calendarGrid.getChildren().clear();
 
-        // Get the Month
-        String monthName = yearMonth.getMonth().getDisplayName(TextStyle.FULL,Locale.ENGLISH);
+        String monthName = yearMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
         monthLabel.setText(monthName + " " + displayedMonth.getYear());
 
-        //Get the first day of the month.
         LocalDate firstOfMonth = yearMonth.atDay(1);
         int daysInMonth = yearMonth.lengthOfMonth();
 
-        // Monday = column 0 on grid, Sunday is 6
-        // getValue() for Monday returns 1 so we -1.
         int dayOfWeekValue = firstOfMonth.getDayOfWeek().getValue() - 1;
 
         int currentRow = 0;
         int currentColumn = dayOfWeekValue;
 
-        // Loop through and add Buttons.
-        for (int day = 1; day <= daysInMonth; day++){
+        for (int day = 1; day <= daysInMonth; day++) {
             Button dayButton = new Button(String.valueOf(day));
+            dayButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-            dayButton.setMaxSize(Double.MAX_VALUE,Double.MAX_VALUE);
+            // We need to capture the specific day for the event handler
+            final int selectedDay = day;
+            dayButton.setOnAction(e -> openDaySchedule(e, yearMonth.atDay(selectedDay)));
 
-            // Styling hook for day buttons can be applied here if needed.
-            dayButton.setOnAction(this::openDaySchedule);
-
-
-            calendarGrid.add(dayButton,currentColumn,currentRow);
+            calendarGrid.add(dayButton, currentColumn, currentRow);
 
             currentColumn++;
             if (currentColumn > 6) {
                 currentColumn = 0;
                 currentRow++;
             }
-
         }
-
     }
 
-    public void openDaySchedule(ActionEvent e)  {
+    public void openDaySchedule(ActionEvent e, LocalDate selectedDate) {
         try {
             FXMLLoader loader = new FXMLLoader(
                     Objects.requireNonNull(getClass().getResource("/fxmlFiles/dayCalender.fxml")));
@@ -88,7 +77,17 @@ public class CalendarController {
             DoctorScheduleController dayController = loader.getController();
             dayController.setAppController(appController);
 
-            Stage stage = (Stage)((Node)e.getSource()).getScene().getWindow();
+            // Pass the selected date and the clinic's username to the new controller
+            // NOTE: Replace "appController.getUsername()" with however you get the
+            // logged-in clinic's username!
+            String clinicUsername = "Clinic123"; // Placeholder
+            if (appController != null) {
+                // clinicUsername = appController.getLoggedInUsername();
+            }
+
+            dayController.setupSchedule(clinicUsername, selectedDate);
+
+            Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException ex) {
@@ -103,28 +102,21 @@ public class CalendarController {
         }
     }
 
-
     @FXML
-    public void handlePreviousMonth(){
+    public void handlePreviousMonth() {
         displayedMonth = displayedMonth.minusMonths(1);
         updateUI();
     }
 
     @FXML
     public void handleNextMonth() {
-        // Add 1 month to our tracker
         displayedMonth = displayedMonth.plusMonths(1);
         updateUI();
     }
 
-
     private void updateUI() {
-        // Update the Label text (e.g., "March 2026")
         String monthName = displayedMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
         monthLabel.setText(monthName + " " + displayedMonth.getYear());
-
-        // Repopulate the grid using the method we wrote earlier
         populateCalendar(displayedMonth);
     }
-
 }

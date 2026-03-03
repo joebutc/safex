@@ -15,9 +15,17 @@ public class AppController {
     private final AppModel model;
     private final AppView view;
 
+    // 1. Added the primaryStage variable here
+    private javafx.stage.Stage primaryStage;
+
     public AppController(AppModel model, AppView view) {
         this.model = model;
         this.view = view;
+    }
+
+    // 2. Added the setter method so the Stage can be passed in
+    public void setPrimaryStage(javafx.stage.Stage stage) {
+        this.primaryStage = stage;
     }
 
     public void updateView() {
@@ -134,15 +142,17 @@ public class AppController {
     }
 
     public boolean saveTestPermissions(boolean allowReminders, boolean allowShareWithDoctor, int intervalMonths) {
-        return DatabaseHandler.saveTestPermissions(model.getCurrentUser(), allowReminders, allowShareWithDoctor, intervalMonths);
+        return DatabaseHandler.saveTestPermissions(model.getCurrentUser(), allowReminders, allowShareWithDoctor,
+                intervalMonths);
     }
 
-    // Returns true when the user has reminders enabled and is overdue for a test
     public boolean shouldShowReminder() {
         boolean[] perms = DatabaseHandler.getTestPermissions(model.getCurrentUser());
-        if (!perms[0]) return false;
+        if (!perms[0])
+            return false;
         String latestDate = DatabaseHandler.getLatestTestDate(model.getCurrentUser());
-        if (latestDate == null) return true;
+        if (latestDate == null)
+            return true;
         try {
             LocalDate last = LocalDate.parse(latestDate, DateTimeFormatter.ofPattern("dd MMM yyyy"));
             int interval = DatabaseHandler.getReminderIntervalMonths(model.getCurrentUser());
@@ -152,15 +162,16 @@ public class AppController {
         }
     }
 
-    // Returns the reminder message to display, or null if no reminder should be shown
     public String getReminderMessage() {
-        if (!shouldShowReminder()) return null;
+        if (!shouldShowReminder())
+            return null;
         String latestDate = DatabaseHandler.getLatestTestDate(model.getCurrentUser());
         int interval = DatabaseHandler.getReminderIntervalMonths(model.getCurrentUser());
         if (latestDate == null) {
             return "You haven't logged any STI tests yet.\n\nRegular testing is important for your sexual health. Consider getting tested and logging your results in 'Track Your Tests'.";
         }
-        return "It has been more than " + interval + " month(s) since your last logged STI test (" + latestDate + ").\n\nConsider booking a new test and logging your results.";
+        return "It has been more than " + interval + " month(s) since your last logged STI test (" + latestDate
+                + ").\n\nConsider booking a new test and logging your results.";
     }
 
     // ── Treatment tracker ────────────────────────────────────────────────────
@@ -175,7 +186,7 @@ public class AppController {
     }
 
     public boolean addTreatment(String medicationName, String dose, String frequency,
-                                double quantity, int lowStockThreshold, String startDate, String notes) {
+            double quantity, int lowStockThreshold, String startDate, String notes) {
         return DatabaseHandler.addTreatment(model.getCurrentUser(), medicationName, dose,
                 frequency, quantity, lowStockThreshold, startDate, notes, "patient");
     }
@@ -221,15 +232,15 @@ public class AppController {
     }
 
     public boolean addTreatmentForPatient(String patientUsername, String medicationName, String dose,
-                                          String frequency, double quantity, int lowStockThreshold,
-                                          String startDate, String notes) {
+            String frequency, double quantity, int lowStockThreshold,
+            String startDate, String notes) {
         return DatabaseHandler.addTreatment(patientUsername, medicationName, dose,
                 frequency, quantity, lowStockThreshold, startDate, notes, "clinic");
     }
 
     public boolean updateTreatmentPlanForPatient(int id, String patientUsername, String medicationName,
-                                                 String dose, String frequency,
-                                                 double quantity, int lowStockThreshold, String notes) {
+            String dose, String frequency,
+            double quantity, int lowStockThreshold, String notes) {
         return DatabaseHandler.updateTreatmentPlan(id, patientUsername, medicationName, dose,
                 frequency, quantity, lowStockThreshold, notes);
     }
@@ -240,17 +251,14 @@ public class AppController {
 
     // ── Notification aggregation ─────────────────────────────────────────────
 
-    // Returns all pending reminder messages (test overdue + low-stock treatments)
     public List<String> getPendingNotifications() {
         List<String> notifications = new ArrayList<>();
 
-        // STI test overdue reminder
         String testMsg = getReminderMessage();
         if (testMsg != null) {
             notifications.add(testMsg);
         }
 
-        // Treatment low-stock reminders (only if user has enabled them)
         boolean[] treatPerms = DatabaseHandler.getTreatmentPermissions(model.getCurrentUser());
         if (treatPerms[0]) {
             for (TreatmentEntry t : DatabaseHandler.getTreatments(model.getCurrentUser())) {
@@ -263,6 +271,37 @@ public class AppController {
         }
 
         return notifications;
+    }
+
+    public void goToPatientCalendar() {
+        if (primaryStage == null) {
+            System.out.println("Error: primaryStage has not been set in AppController!");
+            return;
+        }
+
+        String loggedInPatient = getCurrentUser();
+        String targetClinic = "Clinic123"; // Replace with how you select the clinic
+
+        // Pass the variables directly into the constructor
+        app.Schedule.PatientCalendarPage calendarPage = new app.Schedule.PatientCalendarPage(this, loggedInPatient,
+                targetClinic);
+
+        // Load the scene directly from the class
+        primaryStage.setScene(calendarPage.createScene());
+        primaryStage.show();
+    }
+
+    public void goToPatientDaySchedule(String patientUsername, String clinicUsername, java.time.LocalDate date) {
+        if (primaryStage == null) {
+            System.out.println("Error: primaryStage has not been set in AppController!");
+            return;
+        }
+
+        app.Schedule.PatientSchedulePage schedulePage = new app.Schedule.PatientSchedulePage(this, patientUsername,
+                clinicUsername, date);
+
+        primaryStage.setScene(schedulePage.createScene());
+        primaryStage.show();
     }
 
     public boolean attemptLogin(String username, String password, LoginType loginType) {
