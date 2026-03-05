@@ -1,7 +1,9 @@
 package app.view;
 
 import app.AppController;
+import app.model.State;
 import app.model.TreatmentEntry;
+import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -20,124 +22,60 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
-public class ClinicPatientTreatmentPage implements Page {
+public class ClinicPatientTreatmentPage {
 
-    private final AppController controller;
-    private VBox listContainer;
     private String patientUsername;
 
-    public ClinicPatientTreatmentPage(AppController controller) {
-        this.controller = controller;
-    }
+    @FXML
+    private Button homeButton;
+    @FXML
+    private Button prescribeButton;
 
-    @Override
-    public Scene createScene() {
-        patientUsername = controller != null ? controller.getClinicPatientUsername() : "";
+    @FXML
+    private Label patientNameLabel;
+    @FXML
+    private Label accessWarning;
 
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: #F8FAFC;");
-        root.setMinSize(900, 650);
-        root.setTop(buildHeader());
+    @FXML
+    private VBox listContainer;
+    @FXML
+    private HBox topRow;
 
-        VBox content = new VBox(16);
-        content.setPadding(new Insets(24));
+    @FXML
+    private void initialize() {
+        this.patientUsername = AppController.getClinicPatientUsername();
 
-        HBox patientRow = buildPatientInfoRow();
+        patientNameLabel.setText(patientUsername);
 
-        boolean[] perms = controller != null
-                ? controller.getPatientTreatmentPermissions(patientUsername)
-                : new boolean[]{false, false};
-        boolean hasAccess = perms[1]; // allow_clinic_access
+        homeButton.setOnAction(e -> AppController.updateView(State.DASHBOARD));
+        prescribeButton.setOnAction(e -> showPrescribeDialog(null));
+
+        boolean[] perms = AppController.getPatientTreatmentPermissions(patientUsername);
+        boolean hasAccess = perms[1];
 
         if (!hasAccess) {
-            Label warn = new Label(
+            accessWarning.setText(
                     "This patient has not granted clinic access to their treatment plan. "
-                    + "They can enable this in Privacy & Settings → Treatment Data Permissions.");
-            warn.setWrapText(true);
-            warn.setFont(Font.font("System", 13));
-            warn.setTextFill(Color.web("#B45309"));
-            warn.setStyle("-fx-background-color: #FEF3C7; -fx-padding: 12; -fx-background-radius: 8;");
-            content.getChildren().addAll(patientRow, warn);
+                            + "They can enable this in Privacy & Settings → Treatment Data Permissions."
+            );
+            accessWarning.setVisible(true);
+            accessWarning.setManaged(true);
+            topRow.setVisible(false);
+            topRow.setManaged(false);
         } else {
-            Button prescribeBtn = new Button("+ Issue Prescription");
-            prescribeBtn.getStyleClass().add("primary-button");
-            prescribeBtn.setMinHeight(40);
-            prescribeBtn.setOnAction(e -> showPrescribeDialog(null));
-
-            Region spacer = new Region();
-            HBox.setHgrow(spacer, Priority.ALWAYS);
-
-            HBox topRow = new HBox(12, patientRow, spacer, prescribeBtn);
-            topRow.setAlignment(Pos.CENTER_LEFT);
-
-            listContainer = new VBox(14);
-            listContainer.setAlignment(Pos.TOP_LEFT);
-            listContainer.setPadding(new Insets(0, 0, 16, 0));
-
-            ScrollPane scroll = new ScrollPane(listContainer);
-            scroll.setFitToWidth(true);
-            scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
-            VBox.setVgrow(scroll, Priority.ALWAYS);
-
-            content.getChildren().addAll(topRow, scroll);
-            VBox.setVgrow(content, Priority.ALWAYS);
             refresh();
         }
-
-        root.setCenter(content);
-        return new Scene(root, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
-    }
-
-    private HBox buildPatientInfoRow() {
-        Label patientLabel = new Label("Patient:  ");
-        patientLabel.setFont(Font.font("System", 13));
-        patientLabel.setTextFill(Color.web("#475569"));
-
-        Label patientName = new Label(patientUsername != null ? patientUsername : "—");
-        patientName.setFont(Font.font("System", FontWeight.BOLD, 14));
-        patientName.setTextFill(Color.web("#0F172A"));
-
-        HBox row = new HBox(4, patientLabel, patientName);
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
-    }
-
-    private HBox buildHeader() {
-        Image homeImage = new Image(
-                Objects.requireNonNull(getClass().getResourceAsStream("/images/Home.png")), 25, 25, true, true);
-        ImageView icon = new ImageView(homeImage);
-        icon.setFitWidth(28);
-        icon.setFitHeight(28);
-
-        Button homeBtn = new Button();
-        homeBtn.setGraphic(icon);
-        homeBtn.getStyleClass().add("icon-button");
-        homeBtn.setFocusTraversable(false);
-        homeBtn.setOnAction(e -> { if (controller != null) controller.goToDashboard(); });
-
-        Label title = new Label("Patient Treatment Plan");
-        title.getStyleClass().add("app-header-title");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox header = new HBox(10, homeBtn, title, spacer);
-        header.getStyleClass().add("app-header");
-        header.setAlignment(Pos.CENTER_LEFT);
-        return header;
     }
 
     private void refresh() {
-        if (listContainer == null || controller == null) return;
         listContainer.getChildren().clear();
 
-        List<TreatmentEntry> treatments = controller.getPatientTreatmentsForClinic(patientUsername);
+        List<TreatmentEntry> treatments = AppController.getPatientTreatmentsForClinic(patientUsername);
 
         if (treatments.isEmpty()) {
             Label empty = new Label("No active treatments on record for this patient.");
             empty.setTextFill(Color.web("#94A3B8"));
             empty.setFont(Font.font("System", 14));
-            empty.setPadding(new Insets(20, 0, 0, 4));
             listContainer.getChildren().add(empty);
             return;
         }
@@ -223,8 +161,8 @@ public class ClinicPatientTreatmentPage implements Page {
             confirm.setHeaderText(null);
             confirm.setTitle("Discontinue Treatment");
             confirm.showAndWait().ifPresent(bt -> {
-                if (bt == ButtonType.YES && controller != null) {
-                    controller.deleteTreatmentForPatient(t.getId(), patientUsername);
+                if (bt == ButtonType.YES) {
+                    AppController.deleteTreatmentForPatient(t.getId(), patientUsername);
                     refresh();
                 }
             });
@@ -356,10 +294,10 @@ public class ClinicPatientTreatmentPage implements Page {
 
             boolean ok;
             if (editTarget != null) {
-                ok = controller.updateTreatmentPlanForPatient(
+                ok = AppController.updateTreatmentPlanForPatient(
                         editTarget.getId(), patientUsername, name, dose, freq, qty, thresh, notes);
             } else {
-                ok = controller.addTreatmentForPatient(
+                ok = AppController.addTreatmentForPatient(
                         patientUsername, name, dose, freq, qty, thresh, date, notes);
             }
 
@@ -413,6 +351,4 @@ public class ClinicPatientTreatmentPage implements Page {
         return l;
     }
 
-    @Override
-    public void onEnter() {}
 }

@@ -211,6 +211,29 @@ public final class AppController {
         return DatabaseHandler.addStiTest(currentUser, testDate, stiType, result, notes);
     }
 
+    public static String getClinicPatientUsername() {
+        assertInitialised();
+        return patientUser;
+    }
+
+    public static boolean[] getPatientTreatmentPermissions(String patientUsername) {
+        assertInitialised();
+        return DatabaseHandler.getTreatmentPermissions(patientUsername);
+    }
+
+    public static List<TreatmentEntry> getPatientTreatmentsForClinic(String patientUsername) {
+        assertInitialised();
+        return DatabaseHandler.getPatientTreatmentsForClinic(patientUsername);
+    }
+
+    public static boolean updateTreatmentPlanForPatient(int id, String patientUsername, String medicationName,
+                                                 String dose, String frequency,
+                                                 double quantity, int lowStockThreshold, String notes) {
+        assertInitialised();
+        return DatabaseHandler.updateTreatmentPlan(id, patientUsername, medicationName, dose,
+                frequency, quantity, lowStockThreshold, notes);
+    }
+
     private static Parent loadRoot(State state) {
         try {
             FXMLLoader loader = new FXMLLoader(AppController.class.getResource(state.getFxmlPath()));

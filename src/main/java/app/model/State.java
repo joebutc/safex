@@ -11,7 +11,10 @@ public enum State {
     SETTINGS("/scenes/Settings.fxml"),
     TREATMENT_TRACKER("/scenes/TreatmentTracker.fxml"),
     STI_BOOKING("/scenes/StiBooking.fxml"),
-    STI_TRACKER("/scenes/StiTracker.fxml");
+    STI_TRACKER("/scenes/StiTracker.fxml"),
+    CLINIC_SCHEDULE("/scenes/ClinicSchedule.fxml"),
+    CALENDER("/scenes/Calendar.fxml"),
+    PATIENT_TREATMENT("/scenes/PatientTreatment.fxml");
 
     private final String fxmlPath;
 

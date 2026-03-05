@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.image.ImageView?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.ClinicPatientTreatmentPage" prefWidth="900" prefHeight="650"
+            >
+
+    <!-- HEADER -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="app-header">
+            <Button fx:id="homeButton" styleClass="icon-button">
+                <graphic>
+                    <ImageView fitHeight="28" fitWidth="28"/>
+                </graphic>
+            </Button>
+
+            <Label text="Patient Treatment Plan"
+                   styleClass="app-header-title"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+
+    <!-- CONTENT -->
+    <center>
+        <VBox spacing="16" padding="24">
+
+            <HBox spacing="4" alignment="CENTER_LEFT">
+                <Label text="Patient:"/>
+                <Label fx:id="patientNameLabel"/>
+            </HBox>
+
+            <Label fx:id="accessWarning"
+                   wrapText="true"
+                   visible="false"
+                   managed="false"/>
+
+            <HBox fx:id="topRow" spacing="12" alignment="CENTER_LEFT">
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="prescribeButton"
+                        text="+ Issue Prescription"
+                        styleClass="primary-button"/>
+            </HBox>
+
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                <VBox fx:id="listContainer" spacing="14"/>
+            </ScrollPane>
+
+        </VBox>
+    </center>
+
+</BorderPane>

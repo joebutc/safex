@@ -13,7 +13,7 @@
 <?import javafx.scene.text.Font?>
 
 <VBox alignment="TOP_CENTER" stylesheets="@../styles/app.css" xmlns="http://javafx.com/javafx/23.0.1"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.Schedule.CalendarController">
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.view.CalendarPage">
     <HBox prefHeight="35.0" prefWidth="581.0" styleClass="app-header">
         <Button mnemonicParsing="false" onAction="#handleHome" styleClass="icon-button">
             <graphic>

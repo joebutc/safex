@@ -1,38 +1,25 @@
-package app.Schedule;
+package app.view;
 
 
 import app.AppController;
+import app.model.State;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
-import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.Locale;
-import java.util.Objects;
 
-public class CalendarController {
+public class CalendarPage {
     private YearMonth displayedMonth = YearMonth.now();
-    private AppController appController;
-
     @FXML
     private GridPane calendarGrid;
     @FXML
     private Label monthLabel;
-
-    public void setAppController(AppController appController) {
-        this.appController = appController;
-    }
-
     @FXML
     public void initialize() {
         populateCalendar(displayedMonth);
@@ -81,26 +68,12 @@ public class CalendarController {
     }
 
     public void openDaySchedule(ActionEvent e)  {
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                    Objects.requireNonNull(getClass().getResource("/fxmlFiles/dayCalender.fxml")));
-            Parent root = loader.load();
-            DoctorScheduleController dayController = loader.getController();
-            dayController.setAppController(appController);
-
-            Stage stage = (Stage)((Node)e.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+        AppController.updateView(State.CLINIC_SCHEDULE);
     }
 
     @FXML
     private void handleHome() {
-        if (appController != null) {
-            appController.goToDashboard();
-        }
+        AppController.updateView(State.DASHBOARD);
     }
 
 
