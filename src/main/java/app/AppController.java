@@ -2,6 +2,7 @@ package app;
 
 import app.model.DatabaseHandler;
 import app.model.State;
+import app.model.StiTestEntry;
 import app.model.TreatmentEntry;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -194,6 +195,20 @@ public final class AppController {
         assertInitialised();
         return DatabaseHandler.addTreatment(patientUsername, medicationName, dose,
                 frequency, quantity, lowStockThreshold, startDate, notes, "clinic");
+    }
+
+    public static List<StiTestEntry> getStiTests() {
+        assertInitialised();
+        return DatabaseHandler.getStiTests(currentUser);
+    }
+
+    public static boolean deleteStiTest(int id) {
+        assertInitialised();
+        return DatabaseHandler.deleteStiTest(id, currentUser);
+    }
+
+    public static boolean addStiTest(String testDate, String stiType, String result, String notes) {
+        return DatabaseHandler.addStiTest(currentUser, testDate, stiType, result, notes);
     }
 
     private static Parent loadRoot(State state) {

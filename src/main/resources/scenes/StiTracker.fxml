@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.StiTestTrackerPage" prefWidth="900" prefHeight="650"
+            style="-fx-background-color:#F8FAFC;">
+
+    <!-- HEADER -->
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="app-header">
+            <Button fx:id="homeButton" styleClass="icon-button">
+                <graphic>
+                    <ImageView fitWidth="28" fitHeight="28" preserveRatio="true">
+                        <Image url="@/images/Home.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+
+            <Label text="Track Your Tests" styleClass="app-header-title"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+
+    <!-- MAIN CONTENT -->
+    <center>
+        <VBox spacing="16" padding="24">
+
+            <!-- Actions row -->
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <Label wrapText="true"
+                       text="Keep a private record of your STI testing history. All data is stored locally on this device."
+                       style="-fx-font-size:13; -fx-text-fill:#475569;"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Button fx:id="addButton"
+                        text="+ Log New Test"
+                        styleClass="primary-button"
+                        minHeight="40"/>
+            </HBox>
+
+            <!-- Column headers -->
+            <HBox spacing="16" alignment="CENTER_LEFT" padding="4 16 4 16">
+                <Label text="Date" minWidth="110"
+                       style="-fx-font-size:12; -fx-font-weight:bold; -fx-text-fill:#64748B;"/>
+
+                <Label text="Test Type" minWidth="160"
+                       style="-fx-font-size:12; -fx-font-weight:bold; -fx-text-fill:#64748B;"/>
+
+                <Label text="Result" minWidth="100"
+                       style="-fx-font-size:12; -fx-font-weight:bold; -fx-text-fill:#64748B;"/>
+
+                <Label text="Notes"
+                       HBox.hgrow="ALWAYS"
+                       style="-fx-font-size:12; -fx-font-weight:bold; -fx-text-fill:#64748B;"/>
+            </HBox>
+
+            <!-- Test list -->
+            <ScrollPane fitToWidth="true" style="-fx-background-color:transparent;">
+                <VBox fx:id="testListContainer"
+                      spacing="8"
+                      padding="0 0 16 0"/>
+            </ScrollPane>
+
+        </VBox>
+    </center>
+
+</BorderPane>

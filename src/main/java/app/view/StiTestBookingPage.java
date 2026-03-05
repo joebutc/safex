@@ -4,7 +4,9 @@ import app.AppController;
 import app.model.Action;
 import app.model.Context;
 import app.model.Result;
+import app.model.State;
 import app.service.GateService;
+import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -30,7 +32,7 @@ import java.util.Deque;
  * Smart routing: answering Yes to a fail-gate question immediately shows
  * the CLINIC_REFER result — no need to answer remaining questions.
  */
-public class StiTestBookingPage implements Page {
+public class StiTestBookingPage {
 
     private static final String NHS_BASE =
             "https://www.nhs.uk/service-search/sexual-health-services/" +
@@ -53,8 +55,6 @@ public class StiTestBookingPage implements Page {
     private static final int S_RESULT        = 14;
     private static final int TOTAL_STEPS     = 11; // main-path steps for progress bar
 
-    private final AppController controller;
-
     // ── Collected answers ─────────────────────────────────────────────────────
     private int     age          = 18;
     private boolean fraser       = false;
@@ -68,6 +68,7 @@ public class StiTestBookingPage implements Page {
     private boolean windowElap   = false;
     private boolean recentKit    = false;
     private int     kitWeeks     = 6;
+
     private Result  finalResult  = null;
 
     // ── Navigation history for Back button ────────────────────────────────────
@@ -75,35 +76,21 @@ public class StiTestBookingPage implements Page {
     private int currentStep = S_AGE;
 
     // ── Mutable header UI ─────────────────────────────────────────────────────
-    private VBox        contentArea;
-    private ProgressBar progressBar;
-    private Label       stepLabel;
-    private Button      headerBackBtn;
+    @FXML private VBox contentArea;
+    @FXML private ProgressBar progressBar;
+    @FXML private Label stepLabel;
+    @FXML private Button headerBackBtn;
 
-    public StiTestBookingPage(AppController controller) {
-        this.controller = controller;
-    }
-
-    // ── Scene ─────────────────────────────────────────────────────────────────
-
-    @Override
-    public Scene createScene() {
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: #F8FAFC;");
-        root.setMinSize(900, 650);
-        root.setTop(buildHeader());
-
-        contentArea = new VBox();
-        contentArea.setAlignment(Pos.TOP_CENTER);
-        contentArea.setPadding(new Insets(36, 40, 36, 40));
-
-        ScrollPane scroll = new ScrollPane(contentArea);
-        scroll.setFitToWidth(true);
-        scroll.setStyle("-fx-background-color: #F8FAFC; -fx-background: #F8FAFC;");
-        root.setCenter(scroll);
-
+    @FXML
+    public void initialize(){
+        headerBackBtn.setOnAction(e -> {
+            if(history.isEmpty()){
+                AppController.updateView(State.DASHBOARD);
+            } else {
+                goBack();
+            }
+        });
         showStep(S_AGE);
-        return new Scene(root, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
     }
 
     // ── Navigation ────────────────────────────────────────────────────────────
@@ -115,12 +102,8 @@ public class StiTestBookingPage implements Page {
     }
 
     private void goBack() {
-        if (!history.isEmpty()) {
-            currentStep = history.pop();
-            showStep(currentStep);
-        } else if (controller != null) {
-            controller.goToDashboard();
-        }
+        currentStep = history.pop();
+        showStep(currentStep);
     }
 
     private void showStep(int step) {
@@ -128,20 +111,15 @@ public class StiTestBookingPage implements Page {
         contentArea.getChildren().setAll(buildStep(step));
     }
 
-    private void updateProgress(int step) {
-        if (progressBar == null) return;
-        int n = displayNumber(step);
-        if (step == S_RESULT) {
-            progressBar.setProgress(1.0);
+    private void updateProgress(int step){
+        if(step == S_RESULT){
+            progressBar.setProgress(1);
             stepLabel.setText("Complete");
-        } else if (n > 0) {
-            progressBar.setProgress((double) n / TOTAL_STEPS);
-            stepLabel.setText("Step " + n + " of " + TOTAL_STEPS);
+            return;
         }
-        headerBackBtn.setOnAction(e -> {
-            if (history.isEmpty() && controller != null) controller.goToDashboard();
-            else goBack();
-        });
+        int num = displayNumber(step);
+        progressBar.setProgress((double)num / TOTAL_STEPS);
+        stepLabel.setText("Step " + num + " of " + TOTAL_STEPS);
     }
 
     private int displayNumber(int step) {
@@ -220,11 +198,10 @@ public class StiTestBookingPage implements Page {
 
     private VBox stepAge() {
         Spinner<Integer> spinner = new Spinner<>(10, 99, age);
-        spinner.setEditable(true);
         spinner.setPrefWidth(130);
-        spinner.setStyle("-fx-font-size: 16;");
 
         Button next = primaryBtn("Next  \u2192");
+
         next.setOnAction(e -> {
             age = spinner.getValue();
             if (age < 13) {
