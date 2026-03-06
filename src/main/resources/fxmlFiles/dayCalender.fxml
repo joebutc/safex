@@ -28,7 +28,7 @@
                 <Insets />
             </opaqueInsets>
         </Label>
-        <Button minWidth="140.0" mnemonicParsing="false" styleClass="primary-button" text="Confirm" />
+        <Button minWidth="140.0" mnemonicParsing="false" onAction="#handleConfirmAvailability" styleClass="primary-button" text="Confirm" />
     </HBox>
     <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="358.0" prefWidth="746.0" VBox.vgrow="ALWAYS">
         <GridPane id="timetableGrid" fx:id="timetableGrid" alignment="CENTER" gridLinesVisible="true" prefHeight="333.0" prefWidth="723.0">

@@ -77,12 +77,13 @@ public class CalendarController {
             DoctorScheduleController dayController = loader.getController();
             dayController.setAppController(appController);
 
-            // Pass the selected date and the clinic's username to the new controller
-            // NOTE: Replace "appController.getUsername()" with however you get the
-            // logged-in clinic's username!
-            String clinicUsername = "Clinic123"; // Placeholder
+            String clinicUsername = null;
             if (appController != null) {
-                // clinicUsername = appController.getLoggedInUsername();
+                clinicUsername = appController.getCurrentUser();
+            }
+            if (clinicUsername == null || clinicUsername.isBlank()) {
+                System.out.println("Cannot open clinic schedule: logged-in clinic username is unavailable.");
+                return;
             }
 
             dayController.setupSchedule(clinicUsername, selectedDate);

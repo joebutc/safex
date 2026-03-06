@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
@@ -21,21 +22,29 @@ import javafx.scene.text.FontWeight;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class PatientCalendarPage implements Page {
     private final AppController controller;
     private final String patientUsername;
-    private final String clinicUsername;
+    private final List<String> clinicUsernames;
+    private String selectedClinicUsername;
 
     private YearMonth displayedMonth = YearMonth.now();
     private GridPane calendarGrid;
     private Label monthLabel;
+    private Label selectedClinicLabel;
+    private ComboBox<String> clinicSelector;
 
-    public PatientCalendarPage(AppController controller, String patientUsername, String clinicUsername) {
+    public PatientCalendarPage(AppController controller, String patientUsername, List<String> clinicUsernames) {
         this.controller = controller;
         this.patientUsername = patientUsername;
-        this.clinicUsername = clinicUsername;
+        this.clinicUsernames = clinicUsernames == null ? new ArrayList<>() : new ArrayList<>(clinicUsernames);
+        if (!this.clinicUsernames.isEmpty()) {
+            this.selectedClinicUsername = this.clinicUsernames.get(0);
+        }
     }
 
     @Override
@@ -56,7 +65,7 @@ public class PatientCalendarPage implements Page {
         HBox header = new HBox(20);
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(0, 20, 0, 20));
-        header.setPrefHeight(60);
+        header.setPrefHeight(90);
         header.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;");
 
         Button backBtn = new Button("Back to Dashboard");
@@ -66,9 +75,8 @@ public class PatientCalendarPage implements Page {
         backBtn.setFont(Font.font("System", FontWeight.BOLD, 14));
         backBtn.setOnAction(e -> controller.goToDashboard());
 
-        HBox monthControls = new HBox();
+        HBox monthControls = new HBox(12);
         monthControls.setAlignment(Pos.CENTER);
-        HBox.setHgrow(monthControls, Priority.ALWAYS);
 
         Button prevBtn = new Button("<");
         prevBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
@@ -88,8 +96,29 @@ public class PatientCalendarPage implements Page {
         nextBtn.setFont(Font.font("System", FontWeight.BOLD, 18));
         nextBtn.setOnAction(e -> handleNextMonth());
 
+        selectedClinicLabel = new Label();
+        selectedClinicLabel.setTextFill(Color.web("#475569"));
+        selectedClinicLabel.setFont(Font.font("System", FontWeight.SEMI_BOLD, 13));
+
+        clinicSelector = new ComboBox<>();
+        clinicSelector.getItems().addAll(clinicUsernames);
+        clinicSelector.setValue(selectedClinicUsername);
+        clinicSelector.setOnAction(e -> {
+            selectedClinicUsername = clinicSelector.getValue();
+            updateSelectedClinicLabel();
+            populateCalendar(displayedMonth);
+        });
+
+        HBox clinicControls = new HBox(8, new Label("Clinic"), clinicSelector, selectedClinicLabel);
+        clinicControls.setAlignment(Pos.CENTER);
+
+        VBox centerControls = new VBox(6, monthControls, clinicControls);
+        centerControls.setAlignment(Pos.CENTER);
+        HBox.setHgrow(centerControls, Priority.ALWAYS);
+
+        updateSelectedClinicLabel();
         monthControls.getChildren().addAll(prevBtn, monthLabel, nextBtn);
-        header.getChildren().addAll(backBtn, monthControls);
+        header.getChildren().addAll(backBtn, centerControls);
 
         return header;
     }
@@ -159,8 +188,15 @@ public class PatientCalendarPage implements Page {
             dayButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
             final int selectedDay = day;
-            dayButton.setOnAction(e -> controller.goToPatientDaySchedule(patientUsername, clinicUsername,
-                    yearMonth.atDay(selectedDay)));
+            final String clinicForSelection = selectedClinicUsername;
+            if (clinicForSelection == null || clinicForSelection.isBlank()) {
+                dayButton.setDisable(true);
+            } else {
+                dayButton.setOnAction(e -> controller.goToPatientDaySchedule(
+                        patientUsername,
+                        clinicForSelection,
+                        yearMonth.atDay(selectedDay)));
+            }
 
             calendarGrid.add(dayButton, currentColumn, currentRow);
 
@@ -180,5 +216,16 @@ public class PatientCalendarPage implements Page {
     private void handleNextMonth() {
         displayedMonth = displayedMonth.plusMonths(1);
         populateCalendar(displayedMonth);
+    }
+
+    private void updateSelectedClinicLabel() {
+        if (selectedClinicLabel == null) {
+            return;
+        }
+        if (selectedClinicUsername == null || selectedClinicUsername.isBlank()) {
+            selectedClinicLabel.setText("(no clinic selected)");
+            return;
+        }
+        selectedClinicLabel.setText("Booking with " + selectedClinicUsername);
     }
 }

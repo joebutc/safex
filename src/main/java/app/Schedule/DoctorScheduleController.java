@@ -9,6 +9,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -36,12 +37,13 @@ public class DoctorScheduleController {
     private Button currentlySelectedButton = null;
     private LocalTime currentlySelectedTime = null;
 
-    // Maps a time to its database ID if it is currently marked as available
-    private Map<LocalTime, Integer> availableSlotsMap = new HashMap<>();
+    // Maps a time to the full slot data to distinguish available vs booked.
+    private Map<LocalTime, AppointmentSlot> slotsByTime = new HashMap<>();
 
     // CSS Styles for visual feedback
     private final String STYLE_DEFAULT = "-fx-background-color: #e0e0e0; -fx-text-fill: black;";
     private final String STYLE_AVAILABLE = "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;";
+    private final String STYLE_BOOKED = "-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-font-weight: bold;";
     private final String STYLE_SELECTED = "-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;";
 
     public void setAppController(AppController appController) {
@@ -65,12 +67,12 @@ public class DoctorScheduleController {
     }
 
     private void refreshDatabaseSlots() {
-        availableSlotsMap.clear();
-        List<AppointmentSlot> slots = ScheduleDatabaseHandler.getAvailableSlotsForDate(clinicUsername,
+        slotsByTime.clear();
+        List<AppointmentSlot> slots = ScheduleDatabaseHandler.getSlotsForDate(clinicUsername,
                 currentDate.toString());
         for (AppointmentSlot slot : slots) {
             LocalTime time = LocalTime.parse(slot.getTime());
-            availableSlotsMap.put(time, slot.getId());
+            slotsByTime.put(time, slot);
         }
     }
 
@@ -109,17 +111,6 @@ public class DoctorScheduleController {
             currentTime = currentTime.plusMinutes(intervalMinutes);
             rowNum++;
         }
-
-        // Add a "Toggle Availability" control button at the very bottom
-        Button toggleButton = new Button("Make Selected Slot Available / Unavailable");
-        toggleButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        toggleButton.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
-        toggleButton.setOnAction(e -> handleToggleAvailability());
-
-        RowConstraints actionRow = new RowConstraints();
-        actionRow.setMinHeight(60);
-        timetableGrid.getRowConstraints().add(actionRow);
-        timetableGrid.add(toggleButton, 0, rowNum, 2, 1); // Spans 2 columns
     }
 
     private void handleSlotSelection(Button clickedButton, LocalTime time) {
@@ -134,9 +125,17 @@ public class DoctorScheduleController {
         currentlySelectedButton.setStyle(STYLE_SELECTED);
 
         // Update text to show it's selected
-        boolean isAlreadyAvailable = availableSlotsMap.containsKey(time);
-        currentlySelectedButton
-                .setText(isAlreadyAvailable ? "Selected (Currently Available)" : "Selected (Currently Unavailable)");
+        AppointmentSlot slot = slotsByTime.get(time);
+        if (slot == null) {
+            currentlySelectedButton.setText("Selected (Currently Unavailable)");
+        } else if (slot.isBooked()) {
+            String patient = (slot.getPatientUsername() == null || slot.getPatientUsername().isBlank())
+                    ? "Unknown patient"
+                    : slot.getPatientUsername();
+            currentlySelectedButton.setText("Selected (Booked by " + patient + ")");
+        } else {
+            currentlySelectedButton.setText("Selected (Currently Available)");
+        }
     }
 
     private void handleToggleAvailability() {
@@ -145,20 +144,34 @@ public class DoctorScheduleController {
         }
 
         String timeStr = currentlySelectedTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+        boolean success;
+        AppointmentSlot slot = slotsByTime.get(currentlySelectedTime);
 
-        if (availableSlotsMap.containsKey(currentlySelectedTime)) {
-            // It's currently available, so we want to REMOVE it
-            int slotId = availableSlotsMap.get(currentlySelectedTime);
-            boolean success = ScheduleDatabaseHandler.deleteSlot(slotId, clinicUsername);
-            if (success) {
-                availableSlotsMap.remove(currentlySelectedTime);
-            }
+        if (slot != null && slot.isBooked()) {
+            String patient = (slot.getPatientUsername() == null || slot.getPatientUsername().isBlank())
+                    ? "Unknown patient"
+                    : slot.getPatientUsername();
+            showAlert(Alert.AlertType.INFORMATION, "Slot Already Booked",
+                    "This slot is booked by " + patient + " and cannot be changed.");
+            updateButtonVisuals(currentlySelectedButton, currentlySelectedTime);
+            currentlySelectedButton = null;
+            currentlySelectedTime = null;
+            return;
+        }
+
+        if (slot != null) {
+            // Existing unbooked slot: remove availability.
+            success = ScheduleDatabaseHandler.deleteSlot(slot.getId(), clinicUsername);
         } else {
-            // It's not available, so we want to ADD it
-            boolean success = ScheduleDatabaseHandler.addAvailableSlot(clinicUsername, currentDate.toString(), timeStr);
-            if (success) {
-                refreshDatabaseSlots(); // Refresh to get the new ID generated by the database
-            }
+            // Missing slot row: create availability.
+            success = ScheduleDatabaseHandler.addAvailableSlot(clinicUsername, currentDate.toString(), timeStr);
+        }
+
+        if (success) {
+            refreshDatabaseSlots();
+        } else {
+            showAlert(Alert.AlertType.ERROR, "Update Failed",
+                    "Could not update slot availability. Please try again.");
         }
 
         // Revert the button visuals to show the new state, and clear the selection
@@ -167,14 +180,42 @@ public class DoctorScheduleController {
         currentlySelectedTime = null;
     }
 
+    @FXML
+    private void handleConfirmAvailability() {
+        handleToggleAvailability();
+    }
+
     private void updateButtonVisuals(Button button, LocalTime time) {
-        if (availableSlotsMap.containsKey(time)) {
-            button.setStyle(STYLE_AVAILABLE);
-            button.setText("Available to Patients");
-        } else {
+        AppointmentSlot slot = slotsByTime.get(time);
+        button.setWrapText(true);
+
+        if (slot == null) {
             button.setStyle(STYLE_DEFAULT);
             button.setText("Unavailable");
+            return;
         }
+
+        if (slot.isBooked()) {
+            String patient = (slot.getPatientUsername() == null || slot.getPatientUsername().isBlank())
+                    ? "Unknown patient"
+                    : slot.getPatientUsername();
+            button.setStyle(STYLE_BOOKED);
+            button.setText("Booked by " + patient);
+            return;
+        }
+
+        if (!slot.isBooked()) {
+            button.setStyle(STYLE_AVAILABLE);
+            button.setText("Available to Patients");
+        }
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
     @FXML

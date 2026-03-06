@@ -251,6 +251,24 @@ public class DatabaseHandler {
         return "users";
     }
 
+    // Returns all clinic usernames to support patient appointment booking.
+    public static List<String> getClinicUsernames() {
+        String sql = "SELECT username FROM clinics ORDER BY username COLLATE NOCASE ASC";
+        List<String> clinics = new ArrayList<>();
+        try (Connection conn = connect()) {
+            if (conn == null) return clinics;
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    clinics.add(rs.getString("username"));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("getClinicUsernames error: " + e.getMessage());
+        }
+        return clinics;
+    }
+
     // Registers a new user or clinic into the respective database table
     public static boolean registerUser(String username, String password, String accountType) {
         String tableName = getTableName(accountType);

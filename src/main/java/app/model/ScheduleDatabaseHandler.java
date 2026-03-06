@@ -39,6 +39,9 @@ public class ScheduleDatabaseHandler {
             }
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(appointmentsSql);
+                stmt.execute(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_slot_unique "
+                                + "ON appointments(clinic_username, appointment_date, appointment_time)");
                 System.out.println("Appointments table is ready.");
             }
         } catch (SQLException e) {
@@ -47,7 +50,7 @@ public class ScheduleDatabaseHandler {
     }
 
     public static boolean addAvailableSlot(String clinicUsername, String date, String time) {
-        String sql = "INSERT INTO appointments (clinic_username, appointment_date, appointment_time, is_booked) VALUES (?, ?, ?, 0)";
+        String sql = "INSERT OR IGNORE INTO appointments (clinic_username, appointment_date, appointment_time, is_booked) VALUES (?, ?, ?, 0)";
         try (Connection conn = connect()) {
             if (conn == null)
                 return false;
@@ -55,8 +58,7 @@ public class ScheduleDatabaseHandler {
                 pstmt.setString(1, clinicUsername);
                 pstmt.setString(2, date);
                 pstmt.setString(3, time);
-                pstmt.executeUpdate();
-                return true;
+                return pstmt.executeUpdate() > 0;
             }
         } catch (SQLException e) {
             System.out.println("addAvailableSlot error: " + e.getMessage());
@@ -86,6 +88,32 @@ public class ScheduleDatabaseHandler {
             }
         } catch (SQLException e) {
             System.out.println("getAvailableSlotsForDate error: " + e.getMessage());
+        }
+        return slots;
+    }
+
+    public static List<AppointmentSlot> getSlotsForDate(String clinicUsername, String date) {
+        String sql = "SELECT * FROM appointments WHERE clinic_username = ? AND appointment_date = ? ORDER BY appointment_time ASC";
+        List<AppointmentSlot> slots = new ArrayList<>();
+        try (Connection conn = connect()) {
+            if (conn == null)
+                return slots;
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, clinicUsername);
+                pstmt.setString(2, date);
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    slots.add(new AppointmentSlot(
+                            rs.getInt("id"),
+                            rs.getString("clinic_username"),
+                            rs.getString("appointment_date"),
+                            rs.getString("appointment_time"),
+                            rs.getInt("is_booked") == 1,
+                            rs.getString("patient_username")));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("getSlotsForDate error: " + e.getMessage());
         }
         return slots;
     }

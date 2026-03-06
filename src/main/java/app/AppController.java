@@ -280,13 +280,15 @@ public class AppController {
         }
 
         String loggedInPatient = getCurrentUser();
-        String targetClinic = "Clinic123"; // Replace with how you select the clinic
+        List<String> clinicUsernames = DatabaseHandler.getClinicUsernames();
+        if (clinicUsernames.isEmpty()) {
+            System.out.println("No clinics found. A clinic account is required before booking appointments.");
+            return;
+        }
 
-        // Pass the variables directly into the constructor
-        app.Schedule.PatientCalendarPage calendarPage = new app.Schedule.PatientCalendarPage(this, loggedInPatient,
-                targetClinic);
+        app.Schedule.PatientCalendarPage calendarPage = new app.Schedule.PatientCalendarPage(
+                this, loggedInPatient, clinicUsernames);
 
-        // Load the scene directly from the class
         primaryStage.setScene(calendarPage.createScene());
         primaryStage.show();
     }
@@ -296,8 +298,16 @@ public class AppController {
             System.out.println("Error: primaryStage has not been set in AppController!");
             return;
         }
+        if (clinicUsername == null || clinicUsername.isBlank()) {
+            System.out.println("Cannot open schedule: clinic username is missing.");
+            return;
+        }
+        String resolvedPatientUsername = patientUsername;
+        if (resolvedPatientUsername == null || resolvedPatientUsername.isBlank()) {
+            resolvedPatientUsername = getCurrentUser();
+        }
 
-        app.Schedule.PatientSchedulePage schedulePage = new app.Schedule.PatientSchedulePage(this, patientUsername,
+        app.Schedule.PatientSchedulePage schedulePage = new app.Schedule.PatientSchedulePage(this, resolvedPatientUsername,
                 clinicUsername, date);
 
         primaryStage.setScene(schedulePage.createScene());

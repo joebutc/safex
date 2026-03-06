@@ -198,6 +198,11 @@ public class PatientSchedulePage implements Page {
         if (ScheduleDatabaseHandler.bookSlot(slotId, patientUsername)) {
             showAlert(Alert.AlertType.INFORMATION, "Success", "Appointment booked!");
             controller.goToDashboard();
+        } else {
+            showAlert(Alert.AlertType.ERROR, "Booking Failed",
+                    "This slot is no longer available. Please refresh and choose another slot.");
+            refreshDatabaseSlots();
+            populateTimetable();
         }
     }
 
