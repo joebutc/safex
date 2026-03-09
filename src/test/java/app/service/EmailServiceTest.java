@@ -14,7 +14,7 @@ class EmailServiceTest {
     void successfulSend() {
         var result = EmailService.sendNotification(
                 "Cam",
-                "cp5g23@soton.ac.uk",
+                "safexdonotreply@gmail.com",
                 "SAFEX.");
         assertTrue(result);
     }
@@ -23,7 +23,7 @@ class EmailServiceTest {
     void noRecipientName(){
         var result = EmailService.sendNotification(
                 "", // TODO correct the grammatical error for dear.
-                "cp5g23@soton.ac.uk",
+                "safexdonotreply@gmail.com",
                 "Harvey");
         assertTrue(result);
     }
@@ -41,7 +41,7 @@ class EmailServiceTest {
     void noSenderName(){
         var result = EmailService.sendNotification(
                 "Jake Sully.",
-                "cp5g23@soton.ac.uk",
+                "safexdonotreply@gmail.com",
                 "");
         assertTrue(result);
     }
@@ -50,7 +50,7 @@ class EmailServiceTest {
     void spaceInNames(){
         var result = EmailService.sendNotification(
                 "John Doe",
-                "cp5g23@soton.ac.uk",
+                "safexdonotreply@gmail.com",
                 "Patrick Bateman");
         assertTrue(result);
     }
@@ -59,7 +59,7 @@ class EmailServiceTest {
     void invalidEmail(){
         var result = EmailService.sendNotification(
                 "recipient",
-                "cp5g23soton.com",
+                "safexdonotreply@gmail.com",
                 "sender");
         assertFalse(result);
     }
@@ -68,7 +68,7 @@ class EmailServiceTest {
     void validEmailWithInvalidSpaces(){
         var result = EmailService.sendNotification(
                 "recipient",
-                "cp5g23 @ soton . ac .uk",
+                "safexdonotreply @ gmail . com",
                 "sender");
         assertFalse(result);
     }
