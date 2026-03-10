@@ -3,10 +3,14 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.TreatmentTrackerPage" style="-fx-background-color: #F8FAFC;" prefWidth="900" prefHeight="650">
     <!-- Top Header -->
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="app-header" padding="10">
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="app-header">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10" />
+            </padding>
             <Button fx:id="homeButton" styleClass="icon-button"/>
             <Label text="My Treatment Plan" styleClass="app-header-title"/>
             <Region HBox.hgrow="ALWAYS"/>
@@ -15,7 +19,10 @@
 
     <!-- Center Content -->
     <center>
-        <VBox spacing="16" padding="24">
+        <VBox spacing="16">
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24" />
+            </padding>
             <HBox spacing="12" alignment="CENTER_LEFT">
                 <Label wrapText="true"
                        text="Track your medications, dose schedules, and supply levels. You'll be notified when stock runs low."
@@ -26,7 +33,11 @@
 
             <!-- List Container -->
             <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
-                <VBox fx:id="listContainer" spacing="14" padding="0,0,16,0"/>
+                <VBox fx:id="listContainer" spacing="14">
+                    <padding>
+                        <Insets bottom="16" />
+                    </padding>
+                </VBox>
             </ScrollPane>
         </VBox>
     </center>

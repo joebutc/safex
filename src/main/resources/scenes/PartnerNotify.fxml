@@ -3,10 +3,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.PartnerNotifyPage" prefWidth="900" prefHeight="650" style="-fx-background-color: #F8FAFC;">
     <!-- ================= HEADER ================= -->
     <top>
-        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="app-header" padding="20">
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="app-header">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20" />
+            </padding>
+
             <Button onAction="#handleHome"/>
             <Label text="Notify Partners" styleClass="app-header-title"/>
             <Region HBox.hgrow="ALWAYS"/>
@@ -15,7 +20,10 @@
 
     <!-- ================= CENTER CONTENT ================= -->
     <center>
-        <VBox spacing="18" padding="20">
+        <VBox spacing="18">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20" />
+            </padding>
 
             <!-- Instruction row + add button -->
             <HBox spacing="12">
@@ -28,11 +36,19 @@
             <!-- Contact list scroll pane -->
             <ScrollPane fitToWidth="true" pannable="true"
                         style="-fx-background-color: transparent;">
-                <VBox fx:id="contactsContainer" spacing="12" padding="12"/>
+                <VBox fx:id="contactsContainer" spacing="12">
+                    <padding>
+                        <Insets top="12" right="12" bottom="12" left="12" />
+                    </padding>
+                </VBox>
+
             </ScrollPane>
 
             <!-- Disclaimer + Notify button -->
-            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="card" padding="18">
+            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="card">
+            <padding>
+                <Insets top="18" right="18" bottom="18" left="18"/>
+            </padding>
                 <Label text="Note: the following message will be sent anonymously to all contacts in the list above."
                        wrapText="true"/>
                 <Button fx:id="notifyButton" text="Notify"/>

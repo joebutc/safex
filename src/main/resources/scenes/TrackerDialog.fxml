@@ -3,9 +3,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.geometry.Insets?>
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.TrackerDialog" spacing="12"
-            padding="24"
-            prefWidth="420">
+      prefWidth="420">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
 
     <Label text="Log a New Test"
            style="-fx-font-size:16; -fx-font-weight:bold;"/>

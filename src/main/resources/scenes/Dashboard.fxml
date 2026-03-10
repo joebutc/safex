@@ -4,6 +4,7 @@
 <?import javafx.scene.layout.*?>
 
 <?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.DashboardPage" minWidth="900" minHeight="650" style="-fx-background-color: #F8FAFC;">
     <!-- ================= HEADER ================= -->
     <top>
@@ -38,7 +39,10 @@
 
     <!-- ================= CENTER CONTENT ================= -->
     <center>
-        <VBox spacing="18" padding="24">
+        <VBox spacing="18">
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24" />
+            </padding>
             <FlowPane fx:id="cardContainer"
                       hgap="18"
                       vgap="18"
@@ -50,8 +54,10 @@
     <!-- ================= FOOTER ================= -->
     <bottom>
         <HBox spacing="10"
-              padding="12 24 18 24"
               alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="24" right="24" bottom="18" left="24" />
+            </padding>
 
             <Label text="SafeX - Your privacy is our priority"
                    style="-fx-text-fill: #64748B; -fx-font-size: 12px;"/>

@@ -4,6 +4,7 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.ClinicPatientTreatmentPage" prefWidth="900" prefHeight="650"
             >
 
@@ -25,7 +26,10 @@
 
     <!-- CONTENT -->
     <center>
-        <VBox spacing="16" padding="24">
+        <VBox spacing="16">
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24" />
+            </padding>
 
             <HBox spacing="4" alignment="CENTER_LEFT">
                 <Label text="Patient:"/>

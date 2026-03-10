@@ -5,10 +5,14 @@
 
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.shape.Rectangle?>
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.SettingsPage">
     <!-- Top header -->
     <top>
-        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="app-header" padding="0,10,0,10">
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="app-header">
+            <padding>
+                <Insets right="10" left="10" />
+            </padding>
             <Button fx:id="homeButton" onAction="#handleHome" styleClass="icon-button">
                 <graphic>
                     <ImageView fx:id="homeIcon" fitWidth="28" fitHeight="28"/>
@@ -21,7 +25,10 @@
 
     <!-- Center content -->
     <center>
-        <VBox spacing="16" alignment="TOP_CENTER" padding="20">
+        <VBox spacing="16" alignment="TOP_CENTER">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20" />
+            </padding>
             <!-- Doc icon -->
             <StackPane prefWidth="70" prefHeight="70">
                 <Rectangle width="52" height="52" arcWidth="14" arcHeight="14" fill="#F3F4F6"/>
@@ -33,49 +40,70 @@
 
                 <!-- Card examples -->
                 <Button onAction="#handleDataCollected" styleClass="card" prefWidth="300" prefHeight="100">
-                    <VBox spacing="6"  padding="14">
+                    <VBox spacing="6">
+                        <padding>
+                            <Insets top="14" right="14" bottom="14" left="14" />
+                        </padding>
                         <Label text="What data is collected" styleClass="card"/>
                         <Label text="Basic account info, usage patterns, device information" styleClass="muted-text" wrapText="true"/>
                     </VBox>
                 </Button>
 
                 <Button onAction="#handleWhyUsed" styleClass="card" prefWidth="300" prefHeight="100">
-                    <VBox spacing="6" padding="14">
+                    <VBox spacing="6">
+                        <padding>
+                            <Insets top="14" right="14" bottom="14" left="14" />
+                        </padding>
                         <Label text="Why the data is used" styleClass="card"/>
                         <Label text="To provide and improve our services, ensure security" styleClass="muted-text" wrapText="true"/>
                     </VBox>
                 </Button>
 
                 <Button onAction="#handleAccess" styleClass="card" prefWidth="300" prefHeight="100">
-                    <VBox spacing="6" padding="14">
+                    <VBox spacing="6">
+                        <padding>
+                            <Insets top="14" right="14" bottom="14" left="14" />
+                        </padding>
                         <Label text="Who can access it" styleClass="card"/>
                         <Label text="Authorized staff and service providers" styleClass="muted-text" wrapText="true"/>
                     </VBox>
                 </Button>
 
                 <Button onAction="#handleRetention" styleClass="card" prefWidth="300" prefHeight="100">
-                    <VBox spacing="6" padding="14">
+                    <VBox spacing="6">
+                        <padding>
+                            <Insets top="14" right="14" bottom="14" left="14" />
+                        </padding>
                         <Label text="How long data is kept" styleClass="card"/>
                         <Label text="Retained while your account is active" styleClass="muted-text" wrapText="true"/>
                     </VBox>
                 </Button>
 
                 <Button onAction="#handleRights" styleClass="card" prefWidth="300" prefHeight="100">
-                    <VBox spacing="6" padding="14">
+                    <VBox spacing="6">
+                        <padding>
+                            <Insets top="14" right="14" bottom="14" left="14" />
+                        </padding>
                         <Label text="User rights" styleClass="card"/>
                         <Label text="Access, modify, or delete your data" styleClass="muted-text" wrapText="true"/>
                     </VBox>
                 </Button>
 
                 <Button onAction="#handleTestingPermissions" styleClass="card" prefWidth="300" prefHeight="100">
-                    <VBox spacing="6" padding="14">
+                    <VBox spacing="6">
+                        <padding>
+                            <Insets top="14" right="14" bottom="14" left="14" />
+                        </padding>
                         <Label text="Testing data permissions" styleClass="card"/>
                         <Label text="Control reminders and doctor sharing for your test logs" styleClass="muted-text" wrapText="true"/>
                     </VBox>
                 </Button>
 
                 <Button onAction="#handleTreatmentPermissions" styleClass="card" prefWidth="300" prefHeight="100">
-                    <VBox spacing="6" padding="14">
+                    <VBox spacing="6">
+                        <padding>
+                            <Insets top="14" right="14" bottom="14" left="14" />
+                        </padding>
                         <Label text="Treatment data permissions" styleClass="card"/>
                         <Label text="Allow reminders for medication supply and clinic access to your treatment plan" styleClass="muted-text" wrapText="true"/>
                     </VBox>
@@ -91,7 +119,10 @@
 
     <!-- Bottom -->
     <bottom>
-        <HBox spacing="12" alignment="CENTER_LEFT" padding="12,6,0,6">
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="12" right="6" left="6" />
+            </padding>
             <CheckBox fx:id="agreeCheckBox" text="I agree to the Terms &amp; Conditions"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button fx:id="acceptBtn" text="Accept &amp; Continue" styleClass="primary-button"

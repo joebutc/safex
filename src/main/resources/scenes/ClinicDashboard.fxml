@@ -28,7 +28,10 @@
 
     <!-- ================= CONTENT ================= -->
     <center>
-        <VBox spacing="18" padding="24">
+        <VBox spacing="18">
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24" />
+            </padding>
             <FlowPane fx:id="cardContainer"
                       hgap="18"
                       vgap="18"

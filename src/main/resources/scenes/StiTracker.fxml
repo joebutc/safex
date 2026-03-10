@@ -5,6 +5,7 @@
 
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.StiTestTrackerPage" prefWidth="900" prefHeight="650"
             style="-fx-background-color:#F8FAFC;">
 
@@ -14,7 +15,7 @@
             <Button fx:id="homeButton" styleClass="icon-button">
                 <graphic>
                     <ImageView fitWidth="28" fitHeight="28" preserveRatio="true">
-                        <Image url="@/images/Home.png"/>
+                        <Image url="@../images/Home.png"/>
                     </ImageView>
                 </graphic>
             </Button>
@@ -27,7 +28,10 @@
 
     <!-- MAIN CONTENT -->
     <center>
-        <VBox spacing="16" padding="24">
+        <VBox spacing="16">
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24" />
+            </padding>
 
             <!-- Actions row -->
             <HBox spacing="12" alignment="CENTER_LEFT">
@@ -44,7 +48,10 @@
             </HBox>
 
             <!-- Column headers -->
-            <HBox spacing="16" alignment="CENTER_LEFT" padding="4 16 4 16">
+            <HBox spacing="16" alignment="CENTER_LEFT">
+                <padding>
+                    <Insets top="4" right="16" bottom="4" left="16" />
+                </padding>
                 <Label text="Date" minWidth="110"
                        style="-fx-font-size:12; -fx-font-weight:bold; -fx-text-fill:#64748B;"/>
 
@@ -62,8 +69,11 @@
             <!-- Test list -->
             <ScrollPane fitToWidth="true" style="-fx-background-color:transparent;">
                 <VBox fx:id="testListContainer"
-                      spacing="8"
-                      padding="0 0 16 0"/>
+                      spacing="8">
+                    <padding>
+                        <Insets bottom="16"/>
+                    </padding>
+                </VBox>
             </ScrollPane>
 
         </VBox>

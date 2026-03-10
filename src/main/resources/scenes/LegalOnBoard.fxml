@@ -4,10 +4,14 @@
 <?import javafx.scene.layout.*?>
 
 <?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.LegalOnboardPage" prefWidth="900" prefHeight="650" style="-fx-background-color: #F8FAFC;">
     <!-- ===== HEADER ===== -->
     <top>
-        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="app-header" padding="20">
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="app-header">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20" />
+            </padding>
             <Button onAction="#handleHome"/>
             <Label text="Privacy &amp; Terms" styleClass="app-header-title"/>
             <Region HBox.hgrow="ALWAYS"/>
@@ -17,7 +21,10 @@
     <!-- ===== CENTER CONTENT ===== -->
     <center>
         <ScrollPane fitToWidth="true" pannable="true" style="-fx-background-color: transparent;">
-            <StackPane padding="24" alignment="TOP_CENTER">
+            <StackPane alignment="TOP_CENTER">
+                <padding>
+                    <Insets top="24" right="24" bottom="24" left="24" />
+                </padding>
                 <VBox fx:id="contentContainer" spacing="12"
                       maxWidth="620">
                     <styleClass>

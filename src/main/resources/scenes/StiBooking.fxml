@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.StiTestBookingPage" style="-fx-background-color: #F8FAFC;" prefWidth="900" prefHeight="650">
 
     <!-- HEADER -->
@@ -50,8 +51,11 @@
 
             <VBox fx:id="contentArea"
                   alignment="TOP_CENTER"
-                  spacing="24"
-                  padding="36"/>
+                  spacing="24">
+                <padding>
+                    <Insets top="36" right="36" bottom="36" left="36" />
+                </padding>
+            </VBox>
         </ScrollPane>
 
     </center>

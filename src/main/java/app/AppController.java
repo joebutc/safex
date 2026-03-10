@@ -4,6 +4,7 @@ import app.model.DatabaseHandler;
 import app.model.State;
 import app.model.StiTestEntry;
 import app.model.TreatmentEntry;
+import app.view.AppStyles;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -32,6 +33,7 @@ public final class AppController {
         primaryStage = stage;
         Parent root = loadRoot(state);
         Scene scene = new Scene(root);
+        AppStyles.apply(scene);
         primaryStage.setScene(scene);
         primaryStage.show();
         initialised = true;
@@ -43,7 +45,12 @@ public final class AppController {
             currentUser = null;
         }
         Parent root = loadRoot(state);
-        primaryStage.getScene().setRoot(root);
+        Scene scene = primaryStage.getScene();
+        if (scene != null) {
+            AppStyles.apply(scene);
+            scene.setRoot(root);
+
+        }
         primaryStage.show();
     }
 
