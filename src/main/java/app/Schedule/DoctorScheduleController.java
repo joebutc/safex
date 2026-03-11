@@ -40,11 +40,17 @@ public class DoctorScheduleController {
     // Maps a time to the full slot data to distinguish available vs booked.
     private Map<LocalTime, AppointmentSlot> slotsByTime = new HashMap<>();
 
-    // CSS Styles for visual feedback
-    private final String STYLE_DEFAULT = "-fx-background-color: #e0e0e0; -fx-text-fill: black;";
-    private final String STYLE_AVAILABLE = "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;";
-    private final String STYLE_BOOKED = "-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-font-weight: bold;";
-    private final String STYLE_SELECTED = "-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;";
+    // Modernised CSS Styles for visual feedback
+    private final String STYLE_UNAVAILABLE = "-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: #94a3b8; -fx-font-weight: bold; -fx-cursor: hand;";
+    private final String STYLE_UNAVAILABLE_HOVER = "-fx-background-color: #f1f5f9; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-cursor: hand;";
+
+    private final String STYLE_AVAILABLE = "-fx-background-color: white; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-cursor: hand;";
+    private final String STYLE_AVAILABLE_HOVER = "-fx-background-color: #ecfdf5; -fx-border-color: #059669; -fx-border-width: 2; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: #059669; -fx-font-weight: bold; -fx-cursor: hand;";
+
+    private final String STYLE_BOOKED = "-fx-background-color: #fffbeb; -fx-border-color: #f59e0b; -fx-border-width: 2; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: #d97706; -fx-font-weight: bold; -fx-cursor: hand;";
+    private final String STYLE_BOOKED_HOVER = "-fx-background-color: #fef3c7; -fx-border-color: #d97706; -fx-border-width: 2; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: #b45309; -fx-font-weight: bold; -fx-cursor: hand;";
+
+    private final String STYLE_SELECTED = "-fx-background-color: #3b82f6; -fx-border-color: #2563eb; -fx-border-width: 2; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: white; -fx-font-weight: bold; -fx-effect: dropshadow(three-pass-box, rgba(59,130,246,0.3), 5, 0, 0, 2);";
 
     public void setAppController(AppController appController) {
         this.appController = appController;
@@ -77,8 +83,13 @@ public class DoctorScheduleController {
     }
 
     private void populateTimetable() {
+        if (timetableGrid == null)
+            return;
+
         timetableGrid.getChildren().clear();
         timetableGrid.getRowConstraints().clear();
+        timetableGrid.setVgap(12); // Added gap for visual breathing room
+        timetableGrid.setHgap(20);
 
         LocalTime startTime = LocalTime.of(9, 0);
         LocalTime endTime = LocalTime.of(17, 0);
@@ -90,20 +101,35 @@ public class DoctorScheduleController {
 
         while (!currentTime.isAfter(endTime)) {
             RowConstraints row = new RowConstraints();
-            row.setMinHeight(50);
+            row.setMinHeight(45); // Slightly tweaked for modern proportions
             timetableGrid.getRowConstraints().add(row);
 
             Label timeLabel = new Label(currentTime.format(formatter));
+            timeLabel.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #475569;");
             timetableGrid.add(timeLabel, 0, rowNum);
 
             Button slotButton = new Button();
             slotButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            slotButton.setPrefHeight(40);
 
             // Set initial visual state based on database
             updateButtonVisuals(slotButton, currentTime);
 
-            // Handle selection
+            // Handle hover states and selection
             final LocalTime slotTime = currentTime;
+
+            slotButton.setOnMouseEntered(e -> {
+                if (currentlySelectedButton != slotButton) {
+                    applyHoverStyle(slotButton, slotTime);
+                }
+            });
+
+            slotButton.setOnMouseExited(e -> {
+                if (currentlySelectedButton != slotButton) {
+                    updateButtonVisuals(slotButton, slotTime);
+                }
+            });
+
             slotButton.setOnAction(e -> handleSlotSelection(slotButton, slotTime));
 
             timetableGrid.add(slotButton, 1, rowNum);
@@ -113,9 +139,20 @@ public class DoctorScheduleController {
         }
     }
 
+    private void applyHoverStyle(Button button, LocalTime time) {
+        AppointmentSlot slot = slotsByTime.get(time);
+        if (slot == null) {
+            button.setStyle(STYLE_UNAVAILABLE_HOVER);
+        } else if (slot.isBooked()) {
+            button.setStyle(STYLE_BOOKED_HOVER);
+        } else {
+            button.setStyle(STYLE_AVAILABLE_HOVER);
+        }
+    }
+
     private void handleSlotSelection(Button clickedButton, LocalTime time) {
         // 1. Revert the previously selected button to its correct state
-        if (currentlySelectedButton != null) {
+        if (currentlySelectedButton != null && currentlySelectedButton != clickedButton) {
             updateButtonVisuals(currentlySelectedButton, currentlySelectedTime);
         }
 
@@ -124,35 +161,37 @@ public class DoctorScheduleController {
         currentlySelectedTime = time;
         currentlySelectedButton.setStyle(STYLE_SELECTED);
 
-        // Update text to show it's selected
+        // Update text to show it's selected, highlighting the patient's name
         AppointmentSlot slot = slotsByTime.get(time);
         if (slot == null) {
-            currentlySelectedButton.setText("Selected (Currently Unavailable)");
+            currentlySelectedButton.setText("Selected to Open (Currently Closed)");
         } else if (slot.isBooked()) {
             String patient = (slot.getPatientUsername() == null || slot.getPatientUsername().isBlank())
                     ? "Unknown patient"
                     : slot.getPatientUsername();
-            currentlySelectedButton.setText("Selected (Booked by " + patient + ")");
+            currentlySelectedButton.setText("Locked: Booked by " + patient.toUpperCase());
         } else {
-            currentlySelectedButton.setText("Selected (Currently Available)");
+            currentlySelectedButton.setText("Selected to Close (Currently Open)");
         }
     }
 
     private void handleToggleAvailability() {
         if (currentlySelectedTime == null) {
-            return; // Nothing is selected
+            showAlert(Alert.AlertType.WARNING, "No Selection", "Please select a time slot first.");
+            return;
         }
 
         String timeStr = currentlySelectedTime.format(DateTimeFormatter.ofPattern("HH:mm"));
         boolean success;
         AppointmentSlot slot = slotsByTime.get(currentlySelectedTime);
 
+        // Prevent modification of a booked slot
         if (slot != null && slot.isBooked()) {
             String patient = (slot.getPatientUsername() == null || slot.getPatientUsername().isBlank())
                     ? "Unknown patient"
                     : slot.getPatientUsername();
             showAlert(Alert.AlertType.INFORMATION, "Slot Already Booked",
-                    "This slot is booked by " + patient + " and cannot be changed.");
+                    "This slot has already been booked by " + patient + ". You cannot close it.");
             updateButtonVisuals(currentlySelectedButton, currentlySelectedTime);
             currentlySelectedButton = null;
             currentlySelectedTime = null;
@@ -168,16 +207,18 @@ public class DoctorScheduleController {
         }
 
         if (success) {
+            // Bug Fix: Fully refresh the timetable grid to ensure DB sync
             refreshDatabaseSlots();
+            populateTimetable();
+            currentlySelectedButton = null;
+            currentlySelectedTime = null;
         } else {
             showAlert(Alert.AlertType.ERROR, "Update Failed",
-                    "Could not update slot availability. Please try again.");
+                    "Could not update slot availability. Please check your connection and try again.");
+            updateButtonVisuals(currentlySelectedButton, currentlySelectedTime);
+            currentlySelectedButton = null;
+            currentlySelectedTime = null;
         }
-
-        // Revert the button visuals to show the new state, and clear the selection
-        updateButtonVisuals(currentlySelectedButton, currentlySelectedTime);
-        currentlySelectedButton = null;
-        currentlySelectedTime = null;
     }
 
     @FXML
@@ -190,24 +231,24 @@ public class DoctorScheduleController {
         button.setWrapText(true);
 
         if (slot == null) {
-            button.setStyle(STYLE_DEFAULT);
-            button.setText("Unavailable");
+            button.setStyle(STYLE_UNAVAILABLE);
+            button.setText("Closed (Click to Open)");
             return;
         }
 
         if (slot.isBooked()) {
             String patient = (slot.getPatientUsername() == null || slot.getPatientUsername().isBlank())
-                    ? "Unknown patient"
+                    ? "Unknown"
                     : slot.getPatientUsername();
             button.setStyle(STYLE_BOOKED);
-            button.setText("Booked by " + patient);
+            // Feature implementation: Prominently display the patient username
+            button.setText("Booked by: " + patient.toUpperCase());
             return;
         }
 
-        if (!slot.isBooked()) {
-            button.setStyle(STYLE_AVAILABLE);
-            button.setText("Available to Patients");
-        }
+        // Slot is open but not booked
+        button.setStyle(STYLE_AVAILABLE);
+        button.setText("Open for Booking (Click to Close)");
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {
@@ -223,10 +264,12 @@ public class DoctorScheduleController {
         FXMLLoader loader = new FXMLLoader(
                 Objects.requireNonNull(getClass().getResource("/fxmlFiles/monthCalenderUI.fxml")));
         Parent root = loader.load();
+
         CalendarController calendarController = loader.getController();
         calendarController.setAppController(appController);
+
+        // Swap the root node instead of creating a brand new Scene
         Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.show();
+        stage.getScene().setRoot(root);
     }
 }

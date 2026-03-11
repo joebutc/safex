@@ -69,7 +69,13 @@ public class RegisterPage implements Page {
         TextField usernameField = new TextField();
         usernameField.setPromptText("Choose a username");
         usernameField.setMaxWidth(Double.MAX_VALUE);
-        VBox userBox = new VBox(4, userLabel, usernameField);
+
+        // Added proactive username hint
+        Label userHint = new Label("Only letters allowed, no spaces.");
+        userHint.setFont(Font.font("System", 11));
+        userHint.setTextFill(Color.web("#64748b"));
+
+        VBox userBox = new VBox(4, userLabel, usernameField, userHint);
         userBox.setMaxWidth(Double.MAX_VALUE);
 
         Label passwordLabel = new Label("Password");
@@ -77,7 +83,15 @@ public class RegisterPage implements Page {
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Choose a password");
         passwordField.setMaxWidth(Double.MAX_VALUE);
-        VBox passBox = new VBox(4, passwordLabel, passwordField);
+
+        // Added proactive password hint to display requirements
+        Label passwordHint = new Label(
+                "Must be 8+ characters, including uppercase, lowercase, a number, and a special character (@#$%^&+=!).");
+        passwordHint.setFont(Font.font("System", 11));
+        passwordHint.setTextFill(Color.web("#64748b"));
+        passwordHint.setWrapText(true);
+
+        VBox passBox = new VBox(4, passwordLabel, passwordField, passwordHint);
         passBox.setMaxWidth(Double.MAX_VALUE);
 
         Label confirmLabel = new Label("Confirm password");
@@ -111,7 +125,8 @@ public class RegisterPage implements Page {
                 handleRegister(usernameField, passwordField, confirmPasswordField, feedbackLabel);
         });
         loginLink.setOnAction(e -> {
-            if (controller != null) controller.goToLogin(loginType);
+            if (controller != null)
+                controller.goToLogin(loginType);
         });
 
         card.getChildren().addAll(titleLabel, subtitleLabel, userBox, passBox,
