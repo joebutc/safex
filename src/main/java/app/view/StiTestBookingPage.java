@@ -252,31 +252,52 @@ public class StiTestBookingPage implements Page {
 
     private VBox stepLocation() {
         TextField tf = new TextField(location);
-        tf.setPromptText("e.g. London, SW1A 1AA");
+        tf.setPromptText("e.g. SW1A 1AA");
         tf.setFont(Font.font("System", 16));
         tf.setMaxWidth(380);
         tf.setPadding(new Insets(10, 14, 10, 14));
+
+        Label errorLabel = new Label();
+        errorLabel.getStyleClass().add("error-text");
+        errorLabel.setWrapText(true);
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
 
         Button next = primaryBtn("Next  \u2192");
         next.setOnAction(e -> {
             String loc = tf.getText().trim();
             if (loc.isBlank()) {
-                alert(Alert.AlertType.WARNING, "Location required",
-                        "Please enter your postcode or town to find nearby services.");
+                errorLabel.setText("Please enter your postcode to find nearby services.");
+                errorLabel.setVisible(true);
+                errorLabel.setManaged(true);
+                tf.requestFocus();
                 return;
             }
-            if (loc.matches(".*\\d.*") && !PostcodeValidator.isValid(loc)) {
-                alert(Alert.AlertType.WARNING, "Invalid postcode",
-                        "Please enter a valid UK postcode (e.g. SW1A 1AA) or a town name.");
+
+            if (!PostcodeValidator.isValid(loc)) {
+                errorLabel.setText("Please enter a valid UK postcode (e.g. SW1A 1AA).");
+                errorLabel.setVisible(true);
+                errorLabel.setManaged(true);
+                tf.requestFocus();
+                tf.selectAll();
                 return;
             }
             location = loc;
+            errorLabel.setVisible(false);
+            errorLabel.setManaged(false);
             advance(S_SYMPTOMS);
         });
 
+        tf.textProperty().addListener((obs, oldV, newV) -> {
+            if (errorLabel.isVisible()) {
+                errorLabel.setVisible(false);
+                errorLabel.setManaged(false);
+            }
+        });
+
         return stepCard("2", "\uD83D\uDCCD", "Where are you located?",
-                "Your postcode or town is used to find NHS sexual health services near you.",
-                centred(vbox(14, centred(tf), centred(next))));
+            "Your postcode is used to find NHS sexual health services near you.",
+            centred(vbox(14, centred(tf), centred(errorLabel), centred(next))));
     }
 
     private VBox stepWeeks() {
