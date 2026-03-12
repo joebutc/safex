@@ -7,12 +7,13 @@ module safex {
     requires java.sql;
     requires jakarta.mail;
 
-    // Permissions for JavaFX to reflectively access your controllers/views
-    opens app to javafx.fxml;
-    opens app.model to javafx.fxml;
-    opens app.service to javafx.fxml;
-    opens app.view to javafx.fxml;
-    opens app.Schedule to javafx.fxml;
+    // Open packages broadly so JavaFX and IDE JUnit launches can use reflection.
+    opens app;
+    opens app.model;
+    opens app.service;
+    opens app.view;
+    opens app.Schedule;
+    opens app.util;
 
     // Exports for visibility to other modules
     exports app;
@@ -20,4 +21,5 @@ module safex {
     exports app.view;
     exports app.service;
     exports app.Schedule;
+    exports app.util;
 }
