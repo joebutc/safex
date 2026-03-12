@@ -127,7 +127,24 @@ public class PartnerNotifyPage implements Page {
         notifyButton.setMinWidth(140);
 
         notifyButton.setOnAction(event -> {
-            VBox confirmCard = buildConfirmationRoot(contacts, bellImage);
+            List<Recipient> recipients = collectRecipients(contacts);
+            if (recipients.isEmpty()) {
+                showAlert(
+                        Alert.AlertType.WARNING,
+                        "No Contacts",
+                        "Add at least one contact with an email address before sending notifications.");
+                return;
+            }
+            for (Recipient recipient : recipients) {
+                if (!isSyntaxValid(recipient.email())) {
+                    showAlert(
+                            Alert.AlertType.ERROR,
+                            "Invalid Email Address",
+                            "The email '" + recipient.email() + "' is not formatted correctly.");
+                    return;
+                }
+            }
+            VBox confirmCard = buildConfirmationRoot(contacts, bellImage, pageRoot, content);
             StackPane wrapper = new StackPane(confirmCard);
             wrapper.setPadding(new Insets(20));
             pageRoot.setCenter(wrapper);
@@ -140,7 +157,7 @@ public class PartnerNotifyPage implements Page {
         return new Scene(pageRoot, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
     }
 
-    private VBox buildConfirmationRoot(List<ContactEntry> contacts, Image bellImage) {
+    private VBox buildConfirmationRoot(List<ContactEntry> contacts, Image bellImage, BorderPane pageRoot, VBox originalContent) {
         VBox outer = new VBox(14);
         outer.getStyleClass().addAll("card", "card-padding");
         outer.setMaxWidth(520);
@@ -160,9 +177,15 @@ public class PartnerNotifyPage implements Page {
         label2.setFont(new Font(BODY_FONT_SIZE));
         label2.getStyleClass().add("muted-text");
 
-        HBox sendRow = new HBox();
+        HBox sendRow = new HBox(12);
         sendRow.setAlignment(Pos.CENTER);
         sendRow.setPrefHeight(100.0);
+
+        Button backButton = new Button("Back");
+        backButton.setFont(new Font("System Bold", ACTION_FONT_SIZE));
+        backButton.setMinWidth(120);
+        backButton.getStyleClass().add("secondary-button");
+        backButton.setOnAction(event -> pageRoot.setCenter(originalContent));
 
         Button confirmNotifyButton = new Button("Notify");
         confirmNotifyButton.setFont(new Font("System Bold", ACTION_FONT_SIZE));
@@ -178,7 +201,7 @@ public class PartnerNotifyPage implements Page {
         confirmNotifyButton
                 .setOnAction(event -> sendNotificationsAsync(contacts, progressIndicator, confirmNotifyButton));
 
-        sendRow.getChildren().add(confirmNotifyButton);
+        sendRow.getChildren().addAll(backButton, confirmNotifyButton);
 
         inner.getChildren().addAll(label1, label2, sendRow, progressIndicator);
         outer.getChildren().addAll(messageSentLabel, inner);
@@ -196,22 +219,6 @@ public class PartnerNotifyPage implements Page {
             Button confirmNotifyButton) {
 
         List<Recipient> recipients = collectRecipients(contacts);
-        if (recipients.isEmpty()) {
-            showAlert(
-                    Alert.AlertType.WARNING,
-                    "No Contacts",
-                    "Add at least one contact with an email address before sending notifications.");
-            return;
-        }
-        for (Recipient recipient : recipients) {
-            if (!isSyntaxValid(recipient.email())) {
-                showAlert(
-                        Alert.AlertType.ERROR,
-                        "Invalid Email Address",
-                        "The email '" + recipient.email() + "' is not formatted correctly.");
-                return;
-            }
-        }
 
         progressIndicator.setVisible(true);
         confirmNotifyButton.setDisable(true);

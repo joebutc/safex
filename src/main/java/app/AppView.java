@@ -61,7 +61,14 @@ public class AppView {
             };
             Scene scene = page.createScene();
             AppStyles.apply(scene);
+            boolean wasFullScreen = primaryStage.isFullScreen();
+            boolean wasMaximized = primaryStage.isMaximized();
             primaryStage.setScene(scene);
+            if (wasFullScreen) {
+                primaryStage.setFullScreen(true);
+            } else if (wasMaximized) {
+                primaryStage.setMaximized(true);
+            }
             primaryStage.show();
         } catch (Exception exception) {
             exception.printStackTrace();
