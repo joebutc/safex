@@ -307,7 +307,8 @@ public class AppController {
             resolvedPatientUsername = getCurrentUser();
         }
 
-        app.Schedule.PatientSchedulePage schedulePage = new app.Schedule.PatientSchedulePage(this, resolvedPatientUsername,
+        app.Schedule.PatientSchedulePage schedulePage = new app.Schedule.PatientSchedulePage(this,
+                resolvedPatientUsername,
                 clinicUsername, date);
 
         primaryStage.setScene(schedulePage.createScene());
