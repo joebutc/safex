@@ -1,7 +1,12 @@
 .vscode/
 .idea/
 .cl*/
+.classpath
+.factorypath
+.project
+.settings/
 *.iml
 target/
 src/main/resources/config.properties
 useraccounts.db
+M2_REPO/

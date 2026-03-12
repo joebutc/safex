@@ -1,4 +1,3 @@
-
 package app.service;
 
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,7 @@ class EmailServiceTest {
     @Test
     void noRecipientName(){
         var result = EmailService.sendNotification(
-                "", // TODO correct the grammatical error for dear.
+                "",
                 "safexdonotreply@gmail.com",
                 "Harvey");
         assertTrue(result);
@@ -59,7 +58,7 @@ class EmailServiceTest {
     void invalidEmail(){
         var result = EmailService.sendNotification(
                 "recipient",
-                "safexdonotreply@gmail.com",
+                "safexdonotreplygmail.com",
                 "sender");
         assertFalse(result);
     }
