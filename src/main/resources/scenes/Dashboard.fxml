@@ -1,73 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.DashboardPage" minWidth="900" minHeight="650" style="-fx-background-color: #F8FAFC;">
-    <!-- ================= HEADER ================= -->
-    <top>
-        <BorderPane styleClass="app-header">
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-            <left>
-                <Label text="SafeX"
-                       style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
-            </left>
+<StackPane fx:id="dashboardRoot" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.view.DashboardPage">
+    <BorderPane minHeight="650" minWidth="900" style="-fx-background-color: #F8FAFC;">
+        <!-- ================= HEADER ================= -->
+        <top>
+            <BorderPane styleClass="app-header">
 
-            <center>
-                <Label fx:id="welcomeLabel"
-                       style="-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #334155;"/>
-            </center>
+                <left>
+                    <Label style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F172A;" text="SafeX" />
+                </left>
 
-            <right>
-                <HBox alignment="CENTER_RIGHT" spacing="8">
-                    <Button fx:id="bellButton"
-                            onAction="#handleNotifications"
-                            styleClass="icon-button"/>
-                    <Button text="Logout"
-                            onAction="#handleLogout">
-                        <styleClass>
-                            <String fx:value="secondary-button"/>
-                        </styleClass>
-                    </Button>
-                </HBox>
-            </right>
+                <center>
+                    <Label fx:id="welcomeLabel" style="-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #334155;" />
+                </center>
 
-        </BorderPane>
-    </top>
+                <right>
+                    <HBox alignment="CENTER_RIGHT" spacing="8">
+                        <Button fx:id="bellButton" onAction="#handleNotifications" styleClass="icon-button" />
+                        <Button onAction="#handleLogout" text="Logout">
+                            <styleClass>
+                                <String fx:value="secondary-button" />
+                            </styleClass>
+                        </Button>
+                    </HBox>
+                </right>
 
-    <!-- ================= CENTER CONTENT ================= -->
-    <center>
-        <VBox spacing="18">
-            <padding>
-                <Insets top="24" right="24" bottom="24" left="24" />
-            </padding>
-            <FlowPane fx:id="cardContainer"
-                      hgap="18"
-                      vgap="18"
-                      alignment="TOP_CENTER"
-                      prefWrapLength="1000"/>
-        </VBox>
-    </center>
+            </BorderPane>
+        </top>
 
-    <!-- ================= FOOTER ================= -->
-    <bottom>
-        <HBox spacing="10"
-              alignment="CENTER_LEFT">
-            <padding>
-                <Insets top="24" right="24" bottom="18" left="24" />
-            </padding>
+        <!-- ================= CENTER CONTENT ================= -->
+        <center>
+            <VBox spacing="18">
+                <padding>
+                    <Insets bottom="24" left="24" right="24" top="24" />
+                </padding>
+                <FlowPane fx:id="cardContainer" alignment="TOP_CENTER" hgap="18" prefWrapLength="1000" vgap="18" />
+            </VBox>
+        </center>
 
-            <Label text="SafeX - Your privacy is our priority"
-                   style="-fx-text-fill: #64748B; -fx-font-size: 12px;"/>
+        <!-- ================= FOOTER ================= -->
+        <bottom>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <padding>
+                    <Insets bottom="18" left="24" right="24" top="24" />
+                </padding>
 
-            <Region HBox.hgrow="ALWAYS"/>
+                <Label style="-fx-text-fill: #64748B; -fx-font-size: 12px;" text="SafeX - Your privacy is our priority" />
 
-            <Label text="v0.0.1"
-                   style="-fx-text-fill: #64748B; -fx-font-size: 12px;"/>
+                <Region HBox.hgrow="ALWAYS" />
 
-        </HBox>
-    </bottom>
+                <Label style="-fx-text-fill: #64748B; -fx-font-size: 12px;" text="v0.0.1" />
 
-</BorderPane>
+            </HBox>
+        </bottom>
+
+    </BorderPane>
+</StackPane>

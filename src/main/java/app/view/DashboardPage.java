@@ -2,8 +2,14 @@ package app.view;
 
 import app.AppController;
 import app.model.State;
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -12,7 +18,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,11 +29,44 @@ public class DashboardPage {
     @FXML private FlowPane cardContainer;
     @FXML private Button bellButton;
 
+    // Added for the sliding banners
+    @FXML private StackPane dashboardRoot;
+    private VBox notificationContainer;
+    private static boolean hasShownLoginReminder = false;
+
     @FXML
     private void initialize() {
         welcomeLabel.setText(buildWelcomeText());
         buildCards();
         buildBellIcon();
+
+        // The daily reminder (Only drops down once per login)
+        if (!hasShownLoginReminder) {
+            addBannerToScreen("Daily Reminder", "Don't forget to take your medication today.");
+
+            String stiReminder = AppController.getReminderMessage();
+            if (stiReminder != null && stiReminder.startsWith("You haven't logged any STI tests yet")) {
+                addBannerToScreen("Test Reminder", stiReminder);
+            }
+
+            hasShownLoginReminder = true;
+        }
+
+        //The System Alerts (Drops down every time the dashboard loads if alerts exist)
+        processSystemAlerts();
+    }
+
+    private void processSystemAlerts() {
+        List<String> systemAlerts = AppController.getPendingNotifications();
+
+        for (String alertMessage : systemAlerts) {
+
+            if (alertMessage.startsWith("You haven't logged any STI tests yet")) {
+                continue;
+            }
+
+            addBannerToScreen("System Alert", alertMessage);
+        }
     }
 
     private String buildWelcomeText() {
@@ -69,6 +110,7 @@ public class DashboardPage {
 
     @FXML
     private void handleLogout() {
+        hasShownLoginReminder = false;
         AppController.updateView(State.LOGIN);
     }
 
@@ -125,9 +167,58 @@ public class DashboardPage {
 
         Button button = new Button(buttonText);
         button.getStyleClass().add("primary-button");
-        button.setOnAction(e -> action.run());
+        button.setOnAction(_ -> action.run());
 
         card.getChildren().addAll(title, description, button);
         return card;
     }
+
+    private void addBannerToScreen(String title, String message) {
+        if (notificationContainer == null) {
+            notificationContainer = new VBox(10);
+            notificationContainer.setAlignment(Pos.TOP_CENTER);
+            notificationContainer.setPickOnBounds(false);
+            notificationContainer.setPadding(new Insets(20, 0, 0, 0));
+            dashboardRoot.getChildren().add(notificationContainer);
+        }
+
+        try {
+            // NOTE: Check that this path is correct for your project structure
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/scenes/reminderBanner.fxml"));
+            Node banner = loader.load();
+
+
+            app.NotificationBannerController controller = loader.getController();
+            controller.setTitle(title);
+            controller.setMessage(message);
+
+            controller.setOnCloseCallback(() -> {
+                TranslateTransition slideOut = new TranslateTransition(Duration.millis(300), banner);
+                slideOut.setByY(-50);
+                FadeTransition fadeOut = new FadeTransition(Duration.millis(300), banner);
+                fadeOut.setToValue(0);
+
+                ParallelTransition popOut = new ParallelTransition(slideOut, fadeOut);
+                popOut.setOnFinished(_ -> notificationContainer.getChildren().remove(banner));
+                popOut.play();
+            });
+
+            banner.setTranslateY(-50);
+            banner.setOpacity(0);
+            notificationContainer.getChildren().add(banner);
+
+            TranslateTransition slideIn = new TranslateTransition(Duration.millis(400), banner);
+            slideIn.setToY(0);
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(400), banner);
+            fadeIn.setToValue(1);
+
+            ParallelTransition popIn = new ParallelTransition(slideIn, fadeIn);
+            popIn.play();
+
+        } catch (IOException e) {
+            System.err.println("Failed to load the notification banner FXML.");
+            e.printStackTrace();
+        }
+    }
+
 }
