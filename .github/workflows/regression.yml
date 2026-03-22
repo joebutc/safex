@@ -1,0 +1,54 @@
+name: Regression Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  merge_group:
+
+jobs:
+  regression:
+    name: Run Regression Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run regression tests
+        run: mvn test --batch-mode
+        env:
+          DISPLAY: ':99'   # needed if any headless JavaFX tests run
+
+      - name: Upload Surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ github.sha }}
+          path: target/surefire-reports/
+          retention-days: 90
+
+      - name: Test summary
+        if: always()
+        run: |
+          echo "### Regression Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Suite | Tests | Failures | Errors | Skipped |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|---|---|---|" >> $GITHUB_STEP_SUMMARY
+          for xml in target/surefire-reports/TEST-*.xml; do
+            [ -f "$xml" ] || continue
+            suite=$(basename "$xml" .xml | sed 's/TEST-//')
+            tests=$(grep -oP 'tests="\K[0-9]+' "$xml" | head -1)
+            failures=$(grep -oP 'failures="\K[0-9]+' "$xml" | head -1)
+            errors=$(grep -oP 'errors="\K[0-9]+' "$xml" | head -1)
+            skipped=$(grep -oP 'skipped="\K[0-9]+' "$xml" | head -1)
+            echo "| $suite | ${tests:-0} | ${failures:-0} | ${errors:-0} | ${skipped:-0} |" >> $GITHUB_STEP_SUMMARY
+          done

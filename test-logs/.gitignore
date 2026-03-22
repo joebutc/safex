@@ -1,0 +1,2 @@
+# Ignore raw log files (large), but track the history index and proof report
+regression-*.log
