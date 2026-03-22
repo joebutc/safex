@@ -20,12 +20,16 @@ public final class EmailService {
     private static final String EMAIL_ADDRESS_KEY = "email.address";
     private static final String EMAIL_PASSWORD_KEY = "email.password";
     private static final String SUBJECT = "[SafeX] Important Sexual Health Notification - Do Not Reply";
+    private static final String BLOCKED_RECIPIENT_EMAIL = "cp5g23@soton.ac.uk";
 
     private EmailService() {
     }
 
     public static boolean sendNotification(String recipientName, String recipientEmail, String senderName) {
         if (recipientEmail == null || recipientEmail.isBlank()) {
+            return false;
+        }
+        if (isBlockedRecipient(recipientEmail)) {
             return false;
         }
 
@@ -137,6 +141,13 @@ public final class EmailService {
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&#39;");
+    }
+
+    static boolean isBlockedRecipient(String recipientEmail) {
+        if (recipientEmail == null) {
+            return false;
+        }
+        return BLOCKED_RECIPIENT_EMAIL.equalsIgnoreCase(recipientEmail.trim());
     }
 
     protected record Credentials(String emailAddress, String emailPassword) {

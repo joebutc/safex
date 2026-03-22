@@ -7,6 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EmailServiceTest {
+    private static final String VALID_NOTIFICATION_EMAIL = "safexdonotreply@gmail.com";
+    private static final String INVALID_NOTIFICATION_EMAIL =
+            VALID_NOTIFICATION_EMAIL.replace("@", "");
+    private static final String INVALID_NOTIFICATION_EMAIL_WITH_SPACES =
+            VALID_NOTIFICATION_EMAIL.replace("@", " @ ").replace(".", " . ");
+    private static final String BLOCKED_NOTIFICATION_EMAIL = "cp5g23@soton.ac.uk";
 
     @Test
     void noRecipientEmail() {
@@ -21,7 +27,7 @@ class EmailServiceTest {
     void invalidEmail() {
         var result = EmailService.sendNotification(
                 "recipient",
-                "cp5g23soton.com",
+                INVALID_NOTIFICATION_EMAIL,
                 "sender");
         assertFalse(result);
     }
@@ -30,9 +36,16 @@ class EmailServiceTest {
     void validEmailWithInvalidSpaces() {
         var result = EmailService.sendNotification(
                 "recipient",
-                "cp5g23 @ soton . ac .uk",
+                INVALID_NOTIFICATION_EMAIL_WITH_SPACES,
                 "sender");
         assertFalse(result);
+    }
+
+    @Test
+    void blockedRecipientEmailIsRejected() {
+        assertTrue(EmailService.isBlockedRecipient(BLOCKED_NOTIFICATION_EMAIL));
+        assertTrue(EmailService.isBlockedRecipient("  CP5G23@SOTON.AC.UK  "));
+        assertFalse(EmailService.sendNotification("recipient", BLOCKED_NOTIFICATION_EMAIL, "sender"));
     }
 
     @Test

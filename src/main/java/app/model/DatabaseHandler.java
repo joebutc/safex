@@ -166,6 +166,8 @@ public final class DatabaseHandler {
                         + DEFAULT_CLINIC_USERNAME + "'");
             } catch (SQLException ignored) {}
 
+            migrateClinicAvailabilitySchema(conn);
+
         } catch (SQLException e) {
             System.out.println("Error initialising database: " + e.getMessage());
         }
@@ -877,6 +879,49 @@ public final class DatabaseHandler {
             return DEFAULT_CLINIC_USERNAME;
         }
         return clinicUsername;
+    }
+
+    private static void migrateClinicAvailabilitySchema(Connection conn) throws SQLException {
+        List<String> primaryKeyColumns = new ArrayList<>();
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("PRAGMA table_info('clinic_availability')")) {
+            while (rs.next()) {
+                int pkOrder = rs.getInt("pk");
+                if (pkOrder > 0) {
+                    while (primaryKeyColumns.size() < pkOrder) {
+                        primaryKeyColumns.add(null);
+                    }
+                    primaryKeyColumns.set(pkOrder - 1, rs.getString("name"));
+                }
+            }
+        }
+
+        List<String> expectedPrimaryKey = List.of("clinic_username", "appointment_date", "appointment_time");
+        if (expectedPrimaryKey.equals(primaryKeyColumns)) {
+            return;
+        }
+
+        boolean originalAutoCommit = conn.getAutoCommit();
+        conn.setAutoCommit(false);
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute("ALTER TABLE clinic_availability RENAME TO clinic_availability_legacy");
+            stmt.execute("CREATE TABLE clinic_availability ("
+                    + "clinic_username TEXT NOT NULL DEFAULT '" + DEFAULT_CLINIC_USERNAME + "',"
+                    + "appointment_date TEXT NOT NULL,"
+                    + "appointment_time TEXT NOT NULL,"
+                    + "PRIMARY KEY (clinic_username, appointment_date, appointment_time)"
+                    + ")");
+            stmt.execute("INSERT OR IGNORE INTO clinic_availability (clinic_username, appointment_date, appointment_time) "
+                    + "SELECT COALESCE(clinic_username, '" + DEFAULT_CLINIC_USERNAME + "'), appointment_date, appointment_time "
+                    + "FROM clinic_availability_legacy");
+            stmt.execute("DROP TABLE clinic_availability_legacy");
+            conn.commit();
+        } catch (SQLException e) {
+            conn.rollback();
+            throw e;
+        } finally {
+            conn.setAutoCommit(originalAutoCommit);
+        }
     }
 
     // Checks if a user or clinic exists in the respective database table
