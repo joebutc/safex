@@ -13,7 +13,7 @@
 <?import javafx.scene.text.Font?>
 
 <VBox alignment="TOP_CENTER" stylesheets="@../styles/app.css" xmlns="http://javafx.com/javafx/23.0.1"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.Schedule.CalendarController">
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.view.CalendarPage">
     <HBox prefHeight="35.0" prefWidth="581.0" styleClass="app-header">
         <Button mnemonicParsing="false" onAction="#handleHome" styleClass="icon-button">
             <graphic>
@@ -23,7 +23,7 @@
             </graphic>
         </Button>
         <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="57.0"
-               prefWidth="508.0" styleClass="app-header-title" text="Doctors app.Schedule">
+               prefWidth="508.0" styleClass="app-header-title" text="Doctor's Schedule">
             <font>
                 <Font name="System Bold" size="36.0"/>
             </font>

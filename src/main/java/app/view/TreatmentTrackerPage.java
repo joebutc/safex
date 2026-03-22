@@ -3,12 +3,11 @@ package app.view;
 import app.AppController;
 import app.model.DatabaseHandler;
 import app.model.TreatmentEntry;
+import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -19,9 +18,11 @@ import javafx.stage.Stage;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 
-public class TreatmentTrackerPage implements Page {
+public class TreatmentTrackerPage {
+    @FXML private Button homeButton;
+    @FXML private Button addMedicationBtn;
+    @FXML private VBox listContainer;
 
     static final List<String> MEDICATION_PRESETS = List.of(
             "PrEP (Tenofovir/Emtricitabine)",
@@ -52,87 +53,18 @@ public class TreatmentTrackerPage implements Page {
             "Other (type below)..."
     );
 
-    private final AppController controller;
-    private VBox listContainer;
+    @FXML
+    private void initialize() {
+        homeButton.setOnAction(event -> AppController.goToHomeDashboard());
 
-    public TreatmentTrackerPage(AppController controller) {
-        this.controller = controller;
-    }
-
-    @Override
-    public Scene createScene() {
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: #F8FAFC;");
-        root.setMinSize(900, 650);
-        root.setTop(buildHeader());
-
-        VBox content = new VBox(16);
-        content.setPadding(new Insets(24));
-
-        Label subtitle = new Label(
-                "Track your medications, dose schedules, and supply levels. You'll be notified when stock runs low.");
-        subtitle.setFont(Font.font("System", 13));
-        subtitle.setTextFill(Color.web("#475569"));
-        subtitle.setWrapText(true);
-
-        Button addBtn = new Button("+ Add Medication");
-        addBtn.getStyleClass().add("primary-button");
-        addBtn.setMinHeight(40);
-        addBtn.setOnAction(e -> showAddDialog(null));
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox topRow = new HBox(12, subtitle, spacer, addBtn);
-        topRow.setAlignment(Pos.CENTER_LEFT);
-
-        listContainer = new VBox(14);
-        listContainer.setAlignment(Pos.TOP_LEFT);
-        listContainer.setPadding(new Insets(0, 0, 16, 0));
-
-        ScrollPane scroll = new ScrollPane(listContainer);
-        scroll.setFitToWidth(true);
-        scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
-        VBox.setVgrow(scroll, Priority.ALWAYS);
-
-        content.getChildren().addAll(topRow, scroll);
-        VBox.setVgrow(content, Priority.ALWAYS);
-        root.setCenter(content);
-
+        addMedicationBtn.setOnAction(event -> showAddDialog(null));
         refresh();
-        return new Scene(root, AppStyles.SCENE_WIDTH, AppStyles.SCENE_HEIGHT);
     }
 
-    private HBox buildHeader() {
-        Image homeImage = new Image(
-                Objects.requireNonNull(getClass().getResourceAsStream("/images/Home.png")), 25, 25, true, true);
-        ImageView icon = new ImageView(homeImage);
-        icon.setFitWidth(28);
-        icon.setFitHeight(28);
-
-        Button homeBtn = new Button();
-        homeBtn.setGraphic(icon);
-        homeBtn.getStyleClass().add("icon-button");
-        homeBtn.setFocusTraversable(false);
-        homeBtn.setOnAction(e -> { if (controller != null) controller.goToDashboard(); });
-
-        Label title = new Label("My Treatment Plan");
-        title.getStyleClass().add("app-header-title");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox header = new HBox(10, homeBtn, title, spacer);
-        header.getStyleClass().add("app-header");
-        header.setAlignment(Pos.CENTER_LEFT);
-        return header;
-    }
-
-    void refresh() {
+    private void refresh() {
         listContainer.getChildren().clear();
-        if (controller == null) return;
 
-        List<TreatmentEntry> treatments = controller.getTreatments();
+        List<TreatmentEntry> treatments = AppController.getTreatments();
         if (treatments.isEmpty()) {
             Label empty = new Label(
                     "No medications added yet. Click '+ Add Medication' to log your first treatment.");
@@ -148,10 +80,9 @@ public class TreatmentTrackerPage implements Page {
         }
     }
 
-    VBox buildTreatmentCard(TreatmentEntry t) {
+    private VBox buildTreatmentCard(TreatmentEntry t) {
         return t.isClinicIssued() ? buildClinicCard(t) : buildPatientCard(t);
     }
-
     // ── Clinic-issued card ───────────────────────────────────────────────────
     // Read-only: Log Dose + Refill + Note to Clinic only.
     // Blue left accent + light blue tint distinguishes it from self-entered cards.
@@ -232,8 +163,8 @@ public class TreatmentTrackerPage implements Page {
             confirm.setHeaderText(null);
             confirm.setTitle("Log Dose");
             confirm.showAndWait().ifPresent(bt -> {
-                if (bt == ButtonType.YES && controller != null) {
-                    controller.updateTreatmentQuantity(t.getId(), newQty);
+                if (bt == ButtonType.YES) {
+                    AppController.updateTreatmentQuantity(t.getId(), newQty);
                     refresh();
                 }
             });
@@ -336,8 +267,8 @@ public class TreatmentTrackerPage implements Page {
             confirm.setHeaderText(null);
             confirm.setTitle("Log Dose");
             confirm.showAndWait().ifPresent(bt -> {
-                if (bt == ButtonType.YES && controller != null) {
-                    controller.updateTreatmentQuantity(t.getId(), newQty);
+                if (bt == ButtonType.YES) {
+                    AppController.updateTreatmentQuantity(t.getId(), newQty);
                     refresh();
                 }
             });
@@ -363,8 +294,8 @@ public class TreatmentTrackerPage implements Page {
             confirm.setHeaderText(null);
             confirm.setTitle("Remove Medication");
             confirm.showAndWait().ifPresent(bt -> {
-                if (bt == ButtonType.YES && controller != null) {
-                    controller.deleteTreatment(t.getId());
+                if (bt == ButtonType.YES) {
+                    AppController.deleteTreatment(t.getId());
                     refresh();
                 }
             });
@@ -396,7 +327,7 @@ public class TreatmentTrackerPage implements Page {
             try {
                 double add = Double.parseDouble(val.trim());
                 if (add <= 0) return;
-                controller.updateTreatmentQuantity(t.getId(), t.getQuantityRemaining() + add);
+                AppController.updateTreatmentQuantity(t.getId(), t.getQuantityRemaining() + add);
                 refresh();
             } catch (NumberFormatException ignored) {
                 new Alert(Alert.AlertType.ERROR, "Please enter a valid number.", ButtonType.OK).showAndWait();
@@ -432,7 +363,7 @@ public class TreatmentTrackerPage implements Page {
         saveBtn.setMaxWidth(Double.MAX_VALUE);
         saveBtn.setMinHeight(40);
         saveBtn.setOnAction(e -> {
-            if (controller != null) controller.updatePatientNote(t.getId(), noteArea.getText().trim());
+            AppController.updatePatientNote(t.getId(), noteArea.getText().trim());
             dialog.close();
             refresh();
         });
@@ -570,7 +501,7 @@ public class TreatmentTrackerPage implements Page {
                 DatabaseHandler.updateTreatmentPlan(editTarget.getId(), editTarget.getUsername(),
                         name, dose, freq, qty, thresh, notes);
             } else {
-                controller.addTreatment(name, dose, freq, qty, thresh, date, notes);
+                AppController.addTreatment(name, dose, freq, qty, thresh, date, notes);
             }
             dialog.close();
             refresh();
@@ -617,7 +548,4 @@ public class TreatmentTrackerPage implements Page {
         l.setTextFill(Color.web("#374151"));
         return l;
     }
-
-    @Override
-    public void onEnter() {}
 }

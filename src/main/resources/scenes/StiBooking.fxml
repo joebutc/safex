@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.StiTestBookingPage" style="-fx-background-color: #F8FAFC;" prefWidth="900" prefHeight="650">
+
+    <!-- HEADER -->
+    <top>
+        <BorderPane styleClass="app-header">
+
+            <left>
+                <Button fx:id="headerBackBtn"
+                        text="← Back"
+                        styleClass="secondary-button"/>
+            </left>
+
+            <center>
+                <VBox alignment="CENTER" spacing="4">
+
+                    <Label text="Book an STI Test"
+                           style="-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#0F172A;"/>
+
+                    <VBox alignment="CENTER" spacing="3">
+
+                        <Label fx:id="stepLabel"
+                               text="Step 1 of 11"
+                               style="-fx-font-size:12px;-fx-text-fill:#64748B;"/>
+
+                        <ProgressBar fx:id="progressBar"
+                                     prefWidth="180"
+                                     prefHeight="6"/>
+                    </VBox>
+
+                </VBox>
+            </center>
+
+            <right>
+                <Region prefWidth="100"/>
+            </right>
+
+        </BorderPane>
+    </top>
+
+    <!-- MAIN CONTENT -->
+    <center>
+
+        <ScrollPane fitToWidth="true"
+                    style="-fx-background-color:#F8FAFC;-fx-background:#F8FAFC;">
+
+            <VBox fx:id="contentArea"
+                  alignment="TOP_CENTER"
+                  spacing="24">
+                <padding>
+                    <Insets top="36" right="36" bottom="36" left="36" />
+                </padding>
+            </VBox>
+        </ScrollPane>
+
+    </center>
+
+</BorderPane>

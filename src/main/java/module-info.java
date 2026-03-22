@@ -1,25 +1,21 @@
 module safex {
-    // Dependencies
-    requires transitive javafx.controls;
-    requires javafx.graphics; // Added for Scene class
-    requires javafx.fxml;
+    requires javafx.controls;
+    requires transitive javafx.graphics;
     requires java.desktop;
     requires java.sql;
     requires jakarta.mail;
+    requires org.apache.logging.log4j.core;
+    requires javafx.fxml;
 
-    // Open packages broadly so JavaFX and IDE JUnit launches can use reflection.
     opens app;
     opens app.model;
     opens app.service;
     opens app.view;
-    opens app.Schedule;
     opens app.util;
 
-    // Exports for visibility to other modules
     exports app;
     exports app.model;
     exports app.view;
     exports app.service;
-    exports app.Schedule;
     exports app.util;
 }

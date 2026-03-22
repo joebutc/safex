@@ -4,254 +4,123 @@ import app.model.DatabaseHandler;
 import app.model.State;
 import app.model.StiTestEntry;
 import app.model.TreatmentEntry;
-import app.view.LoginPage.LoginType;
+import app.view.AppStyles;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AppController {
-    private final AppModel model;
-    private final AppView view;
+public final class AppController {
+    private static boolean initialised = false;
+    private static Stage primaryStage;
+    private static String currentUser;
+    private static String patientUser;
+    private static String currentLoginType;
+    private static String selectedDate;
 
-    // 1. Added the primaryStage variable here
-    private javafx.stage.Stage primaryStage;
-
-    public AppController(AppModel model, AppView view) {
-        this.model = model;
-        this.view = view;
+    private AppController() {
     }
 
-    // 2. Added the setter method so the Stage can be passed in
-    public void setPrimaryStage(javafx.stage.Stage stage) {
-        this.primaryStage = stage;
+    static void initForTest(String username) {
+        currentUser = username;
+        patientUser = null;
+        currentLoginType = "USER";
+        selectedDate = null;
+        initialised = true;
     }
 
-    public void updateView() {
-        view.updateView(model.getState());
+    static void resetForTest() {
+        currentUser = null;
+        patientUser = null;
+        currentLoginType = null;
+        selectedDate = null;
+        primaryStage = null;
+        initialised = false;
     }
 
-    public String getCurrentUser() {
-        return model.getCurrentUser();
+    public static void init(Stage stage, State state) {
+        if (initialised) {
+            System.err.println("AppController already initialised");
+            return;
+        }
+        primaryStage = stage;
+        Parent root = loadRoot(state);
+        Scene scene = new Scene(root);
+        AppStyles.apply(scene);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+        initialised = true;
     }
 
-    public boolean attemptRegister(String username, String password, LoginType loginType) {
-        if (DatabaseHandler.registerUser(username, password, loginType.name())) {
-            model.setCurrentUser(username);
-            model.setClinicSession(loginType == LoginType.CLINIC);
+    public static void updateView(State state) {
+        assertInitialised();
+        if (state == State.LOGIN || state == State.CLINIC_LOGIN) {
+            currentUser = null;
+            patientUser = null;
+            currentLoginType = null;
+            selectedDate = null;
+        }
+        Parent root = loadRoot(state);
+        Scene scene = primaryStage.getScene();
+        if (scene != null) {
+            AppStyles.apply(scene);
+            scene.setRoot(root);
+        } else {
+            scene = new Scene(root);
+            AppStyles.apply(scene);
+            primaryStage.setScene(scene);
+        }
+        primaryStage.show();
+    }
 
-            if (loginType == LoginType.CLINIC) {
-                model.setState(State.ClinicDashboard);
-            } else {
-                model.setState(State.Dashboard);
-            }
-
-            updateView();
+    public static boolean attemptLogin(String username, String password, String loginType) {
+        assertInitialised();
+        if (DatabaseHandler.checkLogin(username, password, loginType)) {
+            currentUser = username;
+            currentLoginType = loginType;
+            updateView(homeDashboardStateFor(loginType));
             return true;
         }
         return false;
     }
 
-    public void goToDashboard() {
-        if (model.isClinicSession()) {
-            model.setState(State.ClinicDashboard);
-        } else {
-            model.setState(State.Dashboard);
-        }
-        updateView();
-    }
-
-    public void goToRegister(LoginType loginType) {
-        model.setClinicSession(loginType == LoginType.CLINIC);
-        if (loginType == LoginType.CLINIC) {
-            model.setState(State.ClinicRegister);
-        } else {
-            model.setState(State.Register);
-        }
-        updateView();
-    }
-
-    public void goToRegister() {
-        goToRegister(LoginType.STANDARD);
-    }
-
-    public void goToLogin(LoginType loginType) {
-        model.setCurrentUser(null);
-        model.setClinicSession(loginType == LoginType.CLINIC);
-        if (loginType == LoginType.CLINIC) {
-            model.setState(State.ClinicLogin);
-        } else {
-            model.setState(State.Login);
-        }
-        updateView();
-    }
-
-    public void goToLogin() {
-        goToLogin(LoginType.STANDARD);
-    }
-
-    public void goToNotify() {
-        model.setState(State.Notify);
-        updateView();
-    }
-
-    public void goToSettings() {
-        model.setState(State.Settings);
-        updateView();
-    }
-
-    public void goToLegalOnboard() {
-        model.setState(State.LegalOnboard);
-        updateView();
-    }
-
-    public void goToClinicSchedule() {
-        model.setState(State.ClinicSchedule);
-        updateView();
-    }
-
-    public void goToStiTestTracker() {
-        model.setState(State.StiTestTracker);
-        updateView();
-    }
-
-    public void goToStiTestBooking() {
-        model.setState(State.StiTestBooking);
-        updateView();
-    }
-
-    public List<StiTestEntry> getStiTests() {
-        return DatabaseHandler.getStiTests(model.getCurrentUser());
-    }
-
-    public boolean addStiTest(String testDate, String stiType, String result, String notes) {
-        return DatabaseHandler.addStiTest(model.getCurrentUser(), testDate, stiType, result, notes);
-    }
-
-    public boolean deleteStiTest(int id) {
-        return DatabaseHandler.deleteStiTest(id, model.getCurrentUser());
-    }
-
-    public boolean[] getTestPermissions() {
-        return DatabaseHandler.getTestPermissions(model.getCurrentUser());
-    }
-
-    public int getReminderIntervalMonths() {
-        return DatabaseHandler.getReminderIntervalMonths(model.getCurrentUser());
-    }
-
-    public boolean saveTestPermissions(boolean allowReminders, boolean allowShareWithDoctor, int intervalMonths) {
-        return DatabaseHandler.saveTestPermissions(model.getCurrentUser(), allowReminders, allowShareWithDoctor,
-                intervalMonths);
-    }
-
-    public boolean shouldShowReminder() {
-        boolean[] perms = DatabaseHandler.getTestPermissions(model.getCurrentUser());
-        if (!perms[0])
-            return false;
-        String latestDate = DatabaseHandler.getLatestTestDate(model.getCurrentUser());
-        if (latestDate == null)
+    public static boolean attemptRegister(String username, String password, String loginType) {
+        assertInitialised();
+        if (DatabaseHandler.registerUser(username, password, loginType)) {
+            currentUser = username;
+            currentLoginType = loginType;
+            updateView(homeDashboardStateFor(loginType));
             return true;
-        try {
-            LocalDate last = LocalDate.parse(latestDate, DateTimeFormatter.ofPattern("dd MMM yyyy"));
-            int interval = DatabaseHandler.getReminderIntervalMonths(model.getCurrentUser());
-            return LocalDate.now().isAfter(last.plusMonths(interval));
-        } catch (Exception e) {
-            return false;
         }
+        return false;
     }
 
-    public String getReminderMessage() {
-        if (!shouldShowReminder())
-            return null;
-        String latestDate = DatabaseHandler.getLatestTestDate(model.getCurrentUser());
-        int interval = DatabaseHandler.getReminderIntervalMonths(model.getCurrentUser());
-        if (latestDate == null) {
-            return "You haven't logged any STI tests yet.\n\nRegular testing is important for your sexual health. Consider getting tested and logging your results in 'Track Your Tests'.";
-        }
-        return "It has been more than " + interval + " month(s) since your last logged STI test (" + latestDate
-                + ").\n\nConsider booking a new test and logging your results.";
+    public static String getCurrentUser() {
+        assertInitialised();
+        return currentUser;
     }
 
-    // ── Treatment tracker ────────────────────────────────────────────────────
-
-    public void goToTreatmentTracker() {
-        model.setState(State.TreatmentTracker);
-        updateView();
+    public static String getCurrentLoginType() {
+        return currentLoginType;
     }
 
-    public List<TreatmentEntry> getTreatments() {
-        return DatabaseHandler.getTreatments(model.getCurrentUser());
+    public static State getHomeDashboardState() {
+        assertInitialised();
+        return homeDashboardStateFor(currentLoginType);
     }
 
-    public boolean addTreatment(String medicationName, String dose, String frequency,
-            double quantity, int lowStockThreshold, String startDate, String notes) {
-        return DatabaseHandler.addTreatment(model.getCurrentUser(), medicationName, dose,
-                frequency, quantity, lowStockThreshold, startDate, notes, "patient");
+    public static void goToHomeDashboard() {
+        updateView(getHomeDashboardState());
     }
 
-    public boolean updatePatientNote(int id, String note) {
-        return DatabaseHandler.updatePatientNote(id, model.getCurrentUser(), note);
-    }
-
-    public boolean deleteTreatment(int id) {
-        return DatabaseHandler.deleteTreatment(id, model.getCurrentUser());
-    }
-
-    public boolean updateTreatmentQuantity(int id, double newQuantity) {
-        return DatabaseHandler.updateTreatmentQuantity(id, model.getCurrentUser(), newQuantity);
-    }
-
-    public boolean[] getTreatmentPermissions() {
-        return DatabaseHandler.getTreatmentPermissions(model.getCurrentUser());
-    }
-
-    public boolean saveTreatmentPermissions(boolean allowReminders, boolean allowClinicAccess) {
-        return DatabaseHandler.saveTreatmentPermissions(model.getCurrentUser(), allowReminders, allowClinicAccess);
-    }
-
-    // ── Clinic patient treatment management ─────────────────────────────────
-
-    public void goToClinicPatientTreatment(String patientUsername) {
-        model.setClinicPatientUsername(patientUsername);
-        model.setState(State.ClinicPatientTreatment);
-        updateView();
-    }
-
-    public String getClinicPatientUsername() {
-        return model.getClinicPatientUsername();
-    }
-
-    public boolean[] getPatientTreatmentPermissions(String patientUsername) {
-        return DatabaseHandler.getTreatmentPermissions(patientUsername);
-    }
-
-    public List<TreatmentEntry> getPatientTreatmentsForClinic(String patientUsername) {
-        return DatabaseHandler.getPatientTreatmentsForClinic(patientUsername);
-    }
-
-    public boolean addTreatmentForPatient(String patientUsername, String medicationName, String dose,
-            String frequency, double quantity, int lowStockThreshold,
-            String startDate, String notes) {
-        return DatabaseHandler.addTreatment(patientUsername, medicationName, dose,
-                frequency, quantity, lowStockThreshold, startDate, notes, "clinic");
-    }
-
-    public boolean updateTreatmentPlanForPatient(int id, String patientUsername, String medicationName,
-            String dose, String frequency,
-            double quantity, int lowStockThreshold, String notes) {
-        return DatabaseHandler.updateTreatmentPlan(id, patientUsername, medicationName, dose,
-                frequency, quantity, lowStockThreshold, notes);
-    }
-
-    public boolean deleteTreatmentForPatient(int id, String patientUsername) {
-        return DatabaseHandler.deleteTreatment(id, patientUsername);
-    }
-
-    // ── Notification aggregation ─────────────────────────────────────────────
-
-    public List<String> getPendingNotifications() {
+    public static List<String> getPendingNotifications() {
+        assertInitialised();
         List<String> notifications = new ArrayList<>();
 
         String testMsg = getReminderMessage();
@@ -259,13 +128,13 @@ public class AppController {
             notifications.add(testMsg);
         }
 
-        boolean[] treatPerms = DatabaseHandler.getTreatmentPermissions(model.getCurrentUser());
+        boolean[] treatPerms = DatabaseHandler.getTreatmentPermissions(currentUser);
         if (treatPerms[0]) {
-            for (TreatmentEntry t : DatabaseHandler.getTreatments(model.getCurrentUser())) {
-                if (t.isLowStock()) {
-                    int days = (int) Math.ceil(t.daysRemaining());
-                    notifications.add("Low supply: " + t.getMedicationName()
-                            + " — approx. " + days + " day(s) remaining. Consider requesting a refill.");
+            for (TreatmentEntry treatment : DatabaseHandler.getTreatments(currentUser)) {
+                if (treatment.isLowStock()) {
+                    int days = (int) Math.ceil(treatment.daysRemaining());
+                    notifications.add("Low supply: " + treatment.getMedicationName()
+                            + " - approx. " + days + " day(s) remaining. Consider requesting a refill.");
                 }
             }
         }
@@ -273,62 +142,256 @@ public class AppController {
         return notifications;
     }
 
-    public void goToPatientCalendar() {
-        if (primaryStage == null) {
-            System.out.println("Error: primaryStage has not been set in AppController!");
-            return;
+    public static String getReminderMessage() {
+        assertInitialised();
+        if (!shouldShowReminder()) {
+            return null;
         }
 
-        String loggedInPatient = getCurrentUser();
-        List<String> clinicUsernames = DatabaseHandler.getClinicUsernames();
-        if (clinicUsernames.isEmpty()) {
-            System.out.println("No clinics found. A clinic account is required before booking appointments.");
-            return;
+        String latestDate = DatabaseHandler.getLatestTestDate(currentUser);
+        int interval = DatabaseHandler.getReminderIntervalMonths(currentUser);
+        if (latestDate == null) {
+            return "You haven't logged any STI tests yet.\n\nRegular testing is important for your sexual health. Consider getting tested and logging your results in 'Track Your Tests'.";
         }
-
-        app.Schedule.PatientCalendarPage calendarPage = new app.Schedule.PatientCalendarPage(
-                this, loggedInPatient, clinicUsernames);
-
-        primaryStage.setScene(calendarPage.createScene());
-        primaryStage.show();
+        return "It has been more than " + interval + " month(s) since your last logged STI test (" + latestDate
+                + ").\n\nConsider booking a new test and logging your results.";
     }
 
-    public void goToPatientDaySchedule(String patientUsername, String clinicUsername, java.time.LocalDate date) {
-        if (primaryStage == null) {
-            System.out.println("Error: primaryStage has not been set in AppController!");
-            return;
-        }
-        if (clinicUsername == null || clinicUsername.isBlank()) {
-            System.out.println("Cannot open schedule: clinic username is missing.");
-            return;
-        }
-        String resolvedPatientUsername = patientUsername;
-        if (resolvedPatientUsername == null || resolvedPatientUsername.isBlank()) {
-            resolvedPatientUsername = getCurrentUser();
+    public static boolean shouldShowReminder() {
+        assertInitialised();
+        boolean[] perms = DatabaseHandler.getTestPermissions(currentUser);
+        if (!perms[0]) {
+            return false;
         }
 
-        app.Schedule.PatientSchedulePage schedulePage = new app.Schedule.PatientSchedulePage(this,
-                resolvedPatientUsername,
-                clinicUsername, date);
-
-        primaryStage.setScene(schedulePage.createScene());
-        primaryStage.show();
-    }
-
-    public boolean attemptLogin(String username, String password, LoginType loginType) {
-        if (DatabaseHandler.checkLogin(username, password, loginType.name())) {
-            model.setCurrentUser(username);
-            model.setClinicSession(loginType == LoginType.CLINIC);
-
-            if (loginType == LoginType.CLINIC) {
-                model.setState(State.ClinicDashboard);
-            } else {
-                model.setState(State.Dashboard);
-            }
-
-            updateView();
+        String latestDate = DatabaseHandler.getLatestTestDate(currentUser);
+        if (latestDate == null) {
             return true;
         }
-        return false;
+
+        try {
+            LocalDate last = LocalDate.parse(latestDate, DateTimeFormatter.ofPattern("dd MMM yyyy"));
+            int interval = DatabaseHandler.getReminderIntervalMonths(currentUser);
+            return LocalDate.now().isAfter(last.plusMonths(interval));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static void getPatientTreatment(String patientUsername) {
+        assertInitialised();
+        patientUser = patientUsername;
+        updateView(State.PATIENT_TREATMENT);
+    }
+
+    public static boolean saveTreatmentPermissions(boolean allowReminders, boolean allowClinicAccess) {
+        assertInitialised();
+        return DatabaseHandler.saveTreatmentPermissions(currentUser, allowReminders, allowClinicAccess);
+    }
+
+    public static boolean[] getTestPermissions() {
+        assertInitialised();
+        return DatabaseHandler.getTestPermissions(currentUser);
+    }
+
+    public static boolean[] getDataAccessPermissions() {
+        assertInitialised();
+        return DatabaseHandler.getDataAccessPermissions(currentUser);
+    }
+
+    public static void saveDataAccessPermissions(boolean staff, boolean analytics, boolean partners) {
+        assertInitialised();
+        DatabaseHandler.saveDataAccessPermissions(currentUser, staff, analytics, partners);
+    }
+
+    public static String getDataRetention() {
+        assertInitialised();
+        return DatabaseHandler.getDataRetention(currentUser);
+    }
+
+    public static void saveDataRetention(String option) {
+        assertInitialised();
+        DatabaseHandler.saveDataRetention(currentUser, option);
+    }
+
+    public static void acceptTerms() {
+        assertInitialised();
+        DatabaseHandler.saveTermsAccepted(currentUser);
+    }
+
+    public static int getReminderIntervalMonths() {
+        assertInitialised();
+        return DatabaseHandler.getReminderIntervalMonths(currentUser);
+    }
+
+    public static boolean saveTestPermissions(boolean allowReminders, boolean allowShareWithDoctor, int intervalMonths) {
+        assertInitialised();
+        return DatabaseHandler.saveTestPermissions(currentUser, allowReminders, allowShareWithDoctor, intervalMonths);
+    }
+
+    public static boolean[] getTreatmentPermissions() {
+        assertInitialised();
+        return DatabaseHandler.getTreatmentPermissions(currentUser);
+    }
+
+    public static void setSelectedDate(String date) {
+        selectedDate = date;
+    }
+
+    public static String getSelectedDate() {
+        return selectedDate;
+    }
+
+    public static List<String> getClinicUsernames() {
+        assertInitialised();
+        return DatabaseHandler.getClinicUsernames();
+    }
+
+    public static List<String> getAvailableTimesForDate(String date) {
+        assertInitialised();
+        if ("CLINIC".equals(currentLoginType)) {
+            return DatabaseHandler.getAvailableTimesForDate(date, currentUser);
+        }
+        return DatabaseHandler.getAvailableTimesForDate(date);
+    }
+
+    public static List<String> getAvailableTimesForDate(String date, String clinicUsername) {
+        assertInitialised();
+        return DatabaseHandler.getAvailableTimesForDate(date, clinicUsername);
+    }
+
+    public static boolean saveAvailableTimesForDate(String date, List<String> times) {
+        assertInitialised();
+        return DatabaseHandler.saveAvailableTimesForDate(currentUser, date, times);
+    }
+
+    public static boolean bookAppointment(String date, String time) {
+        assertInitialised();
+        return DatabaseHandler.bookAppointment(currentUser, date, time);
+    }
+
+    public static boolean bookAppointment(String clinicUsername, String date, String time) {
+        assertInitialised();
+        return DatabaseHandler.bookAppointment(currentUser, clinicUsername, date, time);
+    }
+
+    public static List<String> getBookedTimesForDate(String date) {
+        assertInitialised();
+        if ("CLINIC".equals(currentLoginType)) {
+            return DatabaseHandler.getBookedTimesForDate(date, currentUser);
+        }
+        return DatabaseHandler.getBookedTimesForDate(date);
+    }
+
+    public static List<String> getBookedTimesForDate(String date, String clinicUsername) {
+        assertInitialised();
+        return DatabaseHandler.getBookedTimesForDate(date, clinicUsername);
+    }
+
+    public static List<String[]> getMyAppointments() {
+        assertInitialised();
+        return DatabaseHandler.getAppointmentsForPatient(currentUser);
+    }
+
+    public static boolean cancelAppointment(int id) {
+        assertInitialised();
+        return DatabaseHandler.cancelAppointment(id, currentUser);
+    }
+
+    public static List<TreatmentEntry> getTreatments() {
+        assertInitialised();
+        return DatabaseHandler.getTreatments(currentUser);
+    }
+
+    public static boolean updateTreatmentQuantity(int id, double newQuantity) {
+        assertInitialised();
+        return DatabaseHandler.updateTreatmentQuantity(id, currentUser, newQuantity);
+    }
+
+    public static boolean deleteTreatmentForPatient(int id, String patientUsername) {
+        assertInitialised();
+        return DatabaseHandler.deleteTreatment(id, patientUsername);
+    }
+
+    public static boolean deleteTreatment(int id) {
+        assertInitialised();
+        return DatabaseHandler.deleteTreatment(id, currentUser);
+    }
+
+    public static boolean updatePatientNote(int id, String note) {
+        assertInitialised();
+        return DatabaseHandler.updatePatientNote(id, currentUser, note);
+    }
+
+    public static boolean addTreatment(String medicationName, String dose, String frequency,
+                                       double quantity, int lowStockThreshold, String startDate, String notes) {
+        assertInitialised();
+        return DatabaseHandler.addTreatment(currentUser, medicationName, dose,
+                frequency, quantity, lowStockThreshold, startDate, notes, "patient");
+    }
+
+    public static boolean addTreatmentForPatient(String patientUsername, String medicationName, String dose,
+                                                 String frequency, double quantity, int lowStockThreshold,
+                                                 String startDate, String notes) {
+        assertInitialised();
+        return DatabaseHandler.addTreatment(patientUsername, medicationName, dose,
+                frequency, quantity, lowStockThreshold, startDate, notes, "clinic");
+    }
+
+    public static List<StiTestEntry> getStiTests() {
+        assertInitialised();
+        return DatabaseHandler.getStiTests(currentUser);
+    }
+
+    public static boolean deleteStiTest(int id) {
+        assertInitialised();
+        return DatabaseHandler.deleteStiTest(id, currentUser);
+    }
+
+    public static boolean addStiTest(String testDate, String stiType, String result, String notes) {
+        assertInitialised();
+        return DatabaseHandler.addStiTest(currentUser, testDate, stiType, result, notes);
+    }
+
+    public static String getClinicPatientUsername() {
+        assertInitialised();
+        return patientUser;
+    }
+
+    public static boolean[] getPatientTreatmentPermissions(String patientUsername) {
+        assertInitialised();
+        return DatabaseHandler.getTreatmentPermissions(patientUsername);
+    }
+
+    public static List<TreatmentEntry> getPatientTreatmentsForClinic(String patientUsername) {
+        assertInitialised();
+        return DatabaseHandler.getPatientTreatmentsForClinic(patientUsername);
+    }
+
+    public static boolean updateTreatmentPlanForPatient(int id, String patientUsername, String medicationName,
+                                                        String dose, String frequency,
+                                                        double quantity, int lowStockThreshold, String notes) {
+        assertInitialised();
+        return DatabaseHandler.updateTreatmentPlan(id, patientUsername, medicationName, dose,
+                frequency, quantity, lowStockThreshold, notes);
+    }
+
+    private static Parent loadRoot(State state) {
+        try {
+            FXMLLoader loader = new FXMLLoader(AppController.class.getResource(state.getFxmlPath()));
+            return loader.load();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not load FXML for " + state, e);
+        }
+    }
+
+    private static State homeDashboardStateFor(String loginType) {
+        return "CLINIC".equals(loginType) ? State.CLINIC_DASHBOARD : State.DASHBOARD;
+    }
+
+    private static void assertInitialised() {
+        if (!initialised) {
+            throw new RuntimeException("AppController not initialised");
+        }
     }
 }

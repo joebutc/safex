@@ -2,33 +2,14 @@ package app.service;
 
 import org.junit.jupiter.api.Test;
 
-
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EmailServiceTest {
 
-    // successful email send.
     @Test
-    void successfulSend() {
-        var result = EmailService.sendNotification(
-                "Cam",
-                "safexdonotreply@gmail.com",
-                "SAFEX.");
-        assertTrue(result);
-    }
-
-    @Test
-    void noRecipientName(){
-        var result = EmailService.sendNotification(
-                "",
-                "safexdonotreply@gmail.com",
-                "Harvey");
-        assertTrue(result);
-    }
-
-    @Test
-    void noRecipientEmail(){
+    void noRecipientEmail() {
         var result = EmailService.sendNotification(
                 "John",
                 "",
@@ -37,61 +18,51 @@ class EmailServiceTest {
     }
 
     @Test
-    void noSenderName(){
-        var result = EmailService.sendNotification(
-                "Jake Sully.",
-                "safexdonotreply@gmail.com",
-                "");
-        assertTrue(result);
-    }
-
-    @Test
-    void spaceInNames(){
-        var result = EmailService.sendNotification(
-                "John Doe",
-                "safexdonotreply@gmail.com",
-                "Patrick Bateman");
-        assertTrue(result);
-    }
-
-    @Test
-    void invalidEmail(){
+    void invalidEmail() {
         var result = EmailService.sendNotification(
                 "recipient",
-                "safexdonotreplygmail.com",
+                "cp5g23soton.com",
                 "sender");
         assertFalse(result);
     }
 
     @Test
-    void validEmailWithInvalidSpaces(){
+    void validEmailWithInvalidSpaces() {
         var result = EmailService.sendNotification(
                 "recipient",
-                "safexdonotreply @ gmail . com",
+                "cp5g23 @ soton . ac .uk",
                 "sender");
         assertFalse(result);
     }
 
     @Test
-    void escapeHtmlTests(){
+    void buildHtmlBodyUsesEscapedNames() {
+        String body = EmailService.buildHtmlBody("Cam & Co", "SafeX <Admin>");
+        assertTrue(body.contains("Dear Cam &amp; Co,"));
+        assertTrue(body.contains("SafeX &lt;Admin&gt; has used SafeX to notify you"));
+    }
+
+    @Test
+    void buildHtmlBodyFallsBackWhenNamesBlank() {
+        String body = EmailService.buildHtmlBody("   ", "");
+        assertTrue(body.contains("Dear there,"));
+        assertTrue(body.contains("a SafeX user has used SafeX to notify you"));
+    }
+
+    @Test
+    void escapeHtmlTests() {
         String result = EmailService.escapeHtml("& , < , > , \" , '");
-        assertEquals("&amp; , &lt; , &gt; , &quot; , &#39;",result);
+        assertEquals("&amp; , &lt; , &gt; , &quot; , &#39;", result);
     }
 
     @Test
-    void formatDisplayNameTests(){
-        String result1 = EmailService.formatDisplayName("name","fallback");
-        String result2 = EmailService.formatDisplayName("","fallback");
-        String result3 = EmailService.formatDisplayName("    ","fallback");
+    void formatDisplayNameTests() {
+        String result1 = EmailService.formatDisplayName("name", "fallback");
+        String result2 = EmailService.formatDisplayName("", "fallback");
+        String result3 = EmailService.formatDisplayName("    ", "fallback");
 
-        assertEquals("name",result1);
-        assertEquals("fallback",result2);
-        assertEquals("fallback",result3);
+        assertEquals("name", result1);
+        assertEquals("fallback", result2);
+        assertEquals("fallback", result3);
     }
-
 }
-
-
-
-
-

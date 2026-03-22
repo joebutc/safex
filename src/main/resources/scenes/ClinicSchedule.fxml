@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="TOP_CENTER"
+      maxHeight="-Infinity"
+      maxWidth="-Infinity"
+      minHeight="-Infinity"
+      minWidth="-Infinity"
+      stylesheets="@../styles/app.css"
+      xmlns="http://javafx.com/javafx/23.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.view.DoctorSchedule">
+    <HBox prefHeight="65.0" prefWidth="605.0" styleClass="app-header">
+        <Button mnemonicParsing="false" onAction="#backToCalendar" prefHeight="28.0" prefWidth="28.0" styleClass="icon-button">
+            <graphic>
+                <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../images/arrow_back.png" />
+                </ImageView>
+            </graphic>
+        </Button>
+        <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="35.0" prefWidth="576.0" styleClass="app-header-title" text="Today's Schedule" HBox.hgrow="ALWAYS">
+            <opaqueInsets>
+                <Insets />
+            </opaqueInsets>
+        </Label>
+        <Button fx:id="confirmButton" minWidth="140.0" mnemonicParsing="false" onAction="#handleConfirm" styleClass="primary-button" text="Confirm" />
+    </HBox>
+    <VBox prefWidth="746.0" spacing="12" VBox.vgrow="ALWAYS">
+        <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+        </padding>
+        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="list-header-row">
+            <Label minWidth="120.0" styleClass="list-header-label" text="Time" />
+            <Label minWidth="110.0" styleClass="list-header-label" text="Status" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label minWidth="100.0" styleClass="list-header-label" text="Action" />
+        </HBox>
+        <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="358.0" prefWidth="746.0" styleClass="list-scroll-pane" VBox.vgrow="ALWAYS">
+            <VBox fx:id="timetableListContainer" spacing="8" styleClass="schedule-list">
+                <padding>
+                    <Insets bottom="16.0" />
+                </padding>
+            </VBox>
+        </ScrollPane>
+    </VBox>
+</VBox>

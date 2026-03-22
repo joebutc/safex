@@ -1,0 +1,34 @@
+stages:
+  - regression
+
+default:
+  image: maven:3.9.14-eclipse-temurin-25
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  MAVEN_CLI_OPTS: "-B -ntp"
+
+cache:
+  key: safeX-maven-cache
+  paths:
+    - .m2/repository
+
+fxml-main-regression:
+  stage: regression
+  before_script:
+    - chmod +x scripts/run-regression.sh
+  script:
+    - echo "Running regression gate for merges targeting main."
+    - echo "Manual migration checklist: docs/FXML_MIGRATION_CHECKLIST.md"
+    - ./scripts/run-regression.sh
+  artifacts:
+    when: always
+    paths:
+      - target/surefire-reports/
+      - docs/FXML_MIGRATION_CHECKLIST.md
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main"'

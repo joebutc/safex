@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefWidth="420"
+      spacing="16"
+      styleClass="dialog-shell"
+      xmlns="http://javafx.com/javafx/23.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.view.TestPermissionsDialogController">
+    <padding>
+        <Insets bottom="24" left="24" right="24" top="24"/>
+    </padding>
+    <Label styleClass="dialog-title" text="Testing Data Permissions"/>
+    <Label styleClass="dialog-copy" text="Choose how SafeX can use your STI test log data." wrapText="true"/>
+    <CheckBox fx:id="remindersCheckBox"
+              maxWidth="380"
+              text="Send me reminders when it's time for my next STI test"
+              wrapText="true"/>
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="Remind me every:"/>
+        <ComboBox fx:id="intervalCombo" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS"/>
+    </HBox>
+    <CheckBox fx:id="shareCheckBox"
+              maxWidth="380"
+              text="Allow sharing my test log with my healthcare provider"
+              wrapText="true"/>
+    <Label styleClass="dialog-note" text="You can change these preferences at any time." wrapText="true"/>
+    <HBox spacing="10">
+        <Button onAction="#handleCancel" styleClass="secondary-button" text="Cancel" HBox.hgrow="ALWAYS"/>
+        <Button fx:id="saveButton" onAction="#handleSave" styleClass="primary-button" text="Save Preferences" HBox.hgrow="ALWAYS"/>
+    </HBox>
+</VBox>

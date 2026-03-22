@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+
+<HBox spacing="12"
+      styleClass="partner-contact-row"
+      xmlns="http://javafx.com/javafx/23.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.view.PartnerContactRowController">
+    <padding>
+        <Insets bottom="20" left="20" right="20" top="20"/>
+    </padding>
+    <TextField fx:id="nameField" promptText="Enter contact name (Optional)." HBox.hgrow="ALWAYS"/>
+    <TextField fx:id="emailField" promptText="Enter email address." HBox.hgrow="ALWAYS"/>
+    <Button onAction="#handleDelete" styleClass="icon-button">
+        <graphic>
+            <ImageView fitHeight="30" preserveRatio="true">
+                <Image url="@../images/deleteIcon.png"/>
+            </ImageView>
+        </graphic>
+    </Button>
+</HBox>

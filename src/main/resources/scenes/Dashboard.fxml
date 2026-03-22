@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<StackPane fx:id="dashboardRoot" xmlns="http://javafx.com/javafx/23.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="app.view.DashboardPage">
+    <BorderPane minHeight="650" minWidth="900" styleClass="patient-dashboard-shell">
+        <top>
+            <BorderPane>
+                <styleClass>
+                    <String fx:value="app-header"/>
+                    <String fx:value="patient-dashboard-header"/>
+                </styleClass>
+                <left>
+                    <Label text="SafeX" styleClass="patient-brand-label"/>
+                </left>
+                <center>
+                    <VBox alignment="CENTER" spacing="2">
+                        <Label fx:id="welcomeLabel" styleClass="patient-welcome-label"/>
+                        <Label text="Private care dashboard" styleClass="patient-subtitle-label"/>
+                    </VBox>
+                </center>
+                <right>
+                    <HBox alignment="CENTER_RIGHT" spacing="10">
+                        <Button fx:id="bellButton" onAction="#handleNotifications" styleClass="icon-button"/>
+                        <Button onAction="#handleLogout" text="Logout">
+                            <styleClass>
+                                <String fx:value="secondary-button"/>
+                                <String fx:value="patient-logout-button"/>
+                            </styleClass>
+                        </Button>
+                    </HBox>
+                </right>
+            </BorderPane>
+        </top>
+
+        <center>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="dashboard-scroll-pane">
+                <VBox alignment="CENTER" spacing="18">
+                    <padding>
+                        <Insets bottom="24" left="24" right="24" top="24"/>
+                    </padding>
+
+                    <VBox maxWidth="860" spacing="8" styleClass="patient-hero-card">
+                        <Label text="Personal Care Hub" styleClass="patient-hero-eyebrow"/>
+                        <Label text="Book appointments, manage treatment, and stay on top of your sexual health."
+                               styleClass="patient-hero-title" wrapText="true"/>
+                        <Label text="Everything on this dashboard is organised around patient actions, so the next step is always visible and easy to reach."
+                               styleClass="patient-hero-copy" wrapText="true"/>
+                    </VBox>
+
+                    <FlowPane fx:id="cardContainer" alignment="TOP_CENTER" hgap="18" prefWrapLength="1000" vgap="18">
+                        <VBox maxWidth="520" minWidth="360" prefWidth="400" spacing="12">
+                            <styleClass>
+                                <String fx:value="patient-dashboard-card"/>
+                                <String fx:value="patient-dashboard-card-primary"/>
+                            </styleClass>
+                            <padding>
+                                <Insets bottom="18" left="18" right="18" top="18"/>
+                            </padding>
+                            <HBox alignment="TOP_LEFT" spacing="12">
+                                <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
+                                    <styleClass>
+                                        <String fx:value="patient-icon-badge"/>
+                                        <String fx:value="patient-icon-badge-notify"/>
+                                    </styleClass>
+                                    <SVGPath content="M12 2a1 1 0 011 1v1.07A7.002 7.002 0 0119 11v3.764l1.447 2.894A1 1 0 0119.553 19H4.447a1 1 0 01-.894-1.342L5 14.764V11a7.002 7.002 0 016-6.93V3a1 1 0 011-1zm0 20a3 3 0 01-2.995-2.824L9 19h6a3 3 0 01-3 3z"
+                                             fill="#C2410C" scaleX="0.9" scaleY="0.9"/>
+                                </StackPane>
+                                <VBox alignment="TOP_LEFT" spacing="6">
+                                    <Label text="Notify Partners" styleClass="patient-dashboard-card-title"/>
+                                    <Label maxWidth="300" styleClass="patient-dashboard-card-copy"
+                                           text="Send anonymous notifications to recent partners." wrapText="true"/>
+                                </VBox>
+                            </HBox>
+                            <Region VBox.vgrow="ALWAYS"/>
+                            <Button maxWidth="Infinity" minHeight="40" onAction="#handleNotifyPartners" styleClass="primary-button" text="Start"/>
+                        </VBox>
+
+                        <VBox maxWidth="520" minWidth="360" prefWidth="400" spacing="12" styleClass="patient-dashboard-card">
+                            <padding>
+                                <Insets bottom="18" left="18" right="18" top="18"/>
+                            </padding>
+                            <HBox alignment="TOP_LEFT" spacing="12">
+                                <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
+                                    <styleClass>
+                                        <String fx:value="patient-icon-badge"/>
+                                        <String fx:value="patient-icon-badge-test"/>
+                                    </styleClass>
+                                    <SVGPath content="M8 2a1 1 0 000 2h1v5.586l-4.707 4.707A1 1 0 004 15v3a4 4 0 004 4h8a4 4 0 004-4v-3a1 1 0 00-.293-.707L15 9.586V4h1a1 1 0 100-2H8zm3 2h2v6a1 1 0 00.293.707L18 15.414V18a2 2 0 01-2 2H8a2 2 0 01-2-2v-2.586l4.707-4.707A1 1 0 0011 10.999V4z"
+                                             fill="#1D4ED8" scaleX="0.9" scaleY="0.9"/>
+                                </StackPane>
+                                <VBox alignment="TOP_LEFT" spacing="6">
+                                    <Label text="Book an STI Test" styleClass="patient-dashboard-card-title"/>
+                                    <Label maxWidth="300" styleClass="patient-dashboard-card-copy"
+                                           text="Check your eligibility and order the right testing route." wrapText="true"/>
+                                </VBox>
+                            </HBox>
+                            <Region VBox.vgrow="ALWAYS"/>
+                            <Button maxWidth="Infinity" minHeight="40" onAction="#handleStiBooking" styleClass="primary-button" text="Check"/>
+                        </VBox>
+
+                        <VBox maxWidth="520" minWidth="360" prefWidth="400" spacing="12" styleClass="patient-dashboard-card">
+                            <padding>
+                                <Insets bottom="18" left="18" right="18" top="18"/>
+                            </padding>
+                            <HBox alignment="TOP_LEFT" spacing="12">
+                                <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
+                                    <styleClass>
+                                        <String fx:value="patient-icon-badge"/>
+                                        <String fx:value="patient-icon-badge-appointment"/>
+                                    </styleClass>
+                                    <SVGPath content="M7 2a1 1 0 012 0v1h6V2a1 1 0 112 0v1h1a2 2 0 012 2v11a4 4 0 01-4 4H8a4 4 0 01-4-4V5a2 2 0 012-2h1V2zm11 7H6v7a2 2 0 002 2h8a2 2 0 002-2V9z"
+                                             fill="#7C3AED" scaleX="0.9" scaleY="0.9"/>
+                                </StackPane>
+                                <VBox alignment="TOP_LEFT" spacing="6">
+                                    <Label text="Book Appointment" styleClass="patient-dashboard-card-title"/>
+                                    <Label maxWidth="300" styleClass="patient-dashboard-card-copy"
+                                           text="Reserve one of the clinic slots currently being offered." wrapText="true"/>
+                                </VBox>
+                            </HBox>
+                            <Region VBox.vgrow="ALWAYS"/>
+                            <Button maxWidth="Infinity" minHeight="40" onAction="#handleBookAppointment" styleClass="primary-button" text="Book"/>
+                        </VBox>
+
+                        <VBox maxWidth="520" minWidth="360" prefWidth="400" spacing="12" styleClass="patient-dashboard-card">
+                            <padding>
+                                <Insets bottom="18" left="18" right="18" top="18"/>
+                            </padding>
+                            <HBox alignment="TOP_LEFT" spacing="12">
+                                <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
+                                    <styleClass>
+                                        <String fx:value="patient-icon-badge"/>
+                                        <String fx:value="patient-icon-badge-results"/>
+                                    </styleClass>
+                                    <SVGPath content="M7 3h10a2 2 0 012 2v14l-4-2-4 2-4-2-4 2V5a2 2 0 012-2h2zm1 4v2h8V7H8zm0 4v2h5v-2H8z"
+                                             fill="#0F766E" scaleX="0.9" scaleY="0.9"/>
+                                </StackPane>
+                                <VBox alignment="TOP_LEFT" spacing="6">
+                                    <Label text="Track Your Tests" styleClass="patient-dashboard-card-title"/>
+                                    <Label maxWidth="300" styleClass="patient-dashboard-card-copy"
+                                           text="Review your STI history and keep your records current." wrapText="true"/>
+                                </VBox>
+                            </HBox>
+                            <Region VBox.vgrow="ALWAYS"/>
+                            <Button maxWidth="Infinity" minHeight="40" onAction="#handleStiTracker" styleClass="primary-button" text="View"/>
+                        </VBox>
+
+                        <VBox maxWidth="520" minWidth="360" prefWidth="400" spacing="12" styleClass="patient-dashboard-card">
+                            <padding>
+                                <Insets bottom="18" left="18" right="18" top="18"/>
+                            </padding>
+                            <HBox alignment="TOP_LEFT" spacing="12">
+                                <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
+                                    <styleClass>
+                                        <String fx:value="patient-icon-badge"/>
+                                        <String fx:value="patient-icon-badge-treatment"/>
+                                    </styleClass>
+                                    <SVGPath content="M9.586 2.586a2 2 0 012.828 0l6 6a2 2 0 010 2.828l-3.586 3.586a2 2 0 01-2.828 0l-6-6a2 2 0 010-2.828l3.586-3.586zM11 9l4 4"
+                                             fill="#BE123C" scaleX="0.9" scaleY="0.9"/>
+                                </StackPane>
+                                <VBox alignment="TOP_LEFT" spacing="6">
+                                    <Label text="My Treatment Plan" styleClass="patient-dashboard-card-title"/>
+                                    <Label maxWidth="300" styleClass="patient-dashboard-card-copy"
+                                           text="Manage medications, quantities, and refill awareness." wrapText="true"/>
+                                </VBox>
+                            </HBox>
+                            <Region VBox.vgrow="ALWAYS"/>
+                            <Button maxWidth="Infinity" minHeight="40" onAction="#handleTreatmentTracker" styleClass="primary-button" text="Open"/>
+                        </VBox>
+
+                        <VBox maxWidth="520" minWidth="360" prefWidth="400" spacing="12" styleClass="patient-dashboard-card">
+                            <padding>
+                                <Insets bottom="18" left="18" right="18" top="18"/>
+                            </padding>
+                            <HBox alignment="TOP_LEFT" spacing="12">
+                                <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
+                                    <styleClass>
+                                        <String fx:value="patient-icon-badge"/>
+                                        <String fx:value="patient-icon-badge-settings"/>
+                                    </styleClass>
+                                    <SVGPath content="M19.14 12.94a7.43 7.43 0 000-1.88l2.03-1.58a.5.5 0 00.12-.64l-1.92-3.32a.5.5 0 00-.6-.22l-2.39.96a7.62 7.62 0 00-1.63-.95l-.36-2.54A.5.5 0 0013.9 2h-3.8a.5.5 0 00-.49.42l-.36 2.54c-.57.22-1.12.53-1.63.95l-2.39-.96a.5.5 0 00-.6.22L2.71 8.84a.5.5 0 00.12.64l2.03 1.58a7.43 7.43 0 000 1.88l-2.03 1.58a.5.5 0 00-.12.64l1.92 3.32a.5.5 0 00.6.22l2.39-.96c.51.42 1.06.73 1.63.95l.36 2.54a.5.5 0 00.49.42h3.8a.5.5 0 00.49-.42l.36-2.54c.57-.22 1.12-.53 1.63-.95l2.39.96a.5.5 0 00.6-.22l1.92-3.32a.5.5 0 00-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1112 8a3.5 3.5 0 010 7.5z"
+                                             fill="#1E293B" scaleX="0.9" scaleY="0.9"/>
+                                </StackPane>
+                                <VBox alignment="TOP_LEFT" spacing="6">
+                                    <Label text="Privacy &amp; Settings" styleClass="patient-dashboard-card-title"/>
+                                    <Label maxWidth="300" styleClass="patient-dashboard-card-copy"
+                                           text="Control reminders, permissions, and account privacy options." wrapText="true"/>
+                                </VBox>
+                            </HBox>
+                            <Region VBox.vgrow="ALWAYS"/>
+                            <Button maxWidth="Infinity" minHeight="40" onAction="#handleSettings" styleClass="secondary-button" text="Open"/>
+                        </VBox>
+
+                        <VBox maxWidth="860" minWidth="360" prefWidth="820" spacing="12">
+                            <styleClass>
+                                <String fx:value="patient-dashboard-card"/>
+                                <String fx:value="patient-dashboard-card-wide"/>
+                            </styleClass>
+                            <padding>
+                                <Insets bottom="18" left="18" right="18" top="18"/>
+                            </padding>
+                            <HBox alignment="TOP_LEFT" spacing="12">
+                                <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
+                                    <styleClass>
+                                        <String fx:value="patient-icon-badge"/>
+                                        <String fx:value="patient-icon-badge-legal"/>
+                                    </styleClass>
+                                    <SVGPath content="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zm8 1.5L19.5 9H14V3.5z"
+                                             fill="#4338CA" scaleX="0.9" scaleY="0.9"/>
+                                </StackPane>
+                                <VBox alignment="TOP_LEFT" spacing="6">
+                                    <Label text="Terms &amp; Conditions" styleClass="patient-dashboard-card-title"/>
+                                    <Label maxWidth="640" styleClass="patient-dashboard-card-copy"
+                                           text="Review SafeX terms, privacy policy, and platform responsibilities." wrapText="true"/>
+                                </VBox>
+                            </HBox>
+                            <Region VBox.vgrow="ALWAYS"/>
+                            <Button maxWidth="Infinity" minHeight="40" onAction="#handleLegal" styleClass="secondary-button" text="View Terms"/>
+                        </VBox>
+                    </FlowPane>
+                </VBox>
+            </ScrollPane>
+        </center>
+
+        <bottom>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <padding>
+                    <Insets bottom="18" left="24" right="24" top="12"/>
+                </padding>
+                <Label styleClass="patient-footer-text" text="SafeX patient portal"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label styleClass="patient-footer-text" text="v0.0.1"/>
+            </HBox>
+        </bottom>
+    </BorderPane>
+</StackPane>
