@@ -1,6 +1,14 @@
 # SafeX
 
+## Regression Gate
 
+Merge requests targeting `main` now trigger the GitLab CI regression job `fxml-main-regression`.
+
+- Automated command: `bash scripts/run-regression.sh`
+- CI target: merge requests into `main`, plus direct pushes to `main`
+- Manual migration checklist: `docs/FXML_MIGRATION_CHECKLIST.md`
+
+This is specifically intended to protect the FXML migration so functionality from `main` is preserved while Java-built screens are replaced.
 
 ## Getting started
 
