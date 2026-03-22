@@ -12,11 +12,6 @@ public class ClinicRegisterPage extends RegisterBase {
     @Override
     protected void onInitialize() {
 
-        buildBrandPanel("Secure patient care\nstarts here.");
-
-        titleLabel.setText("Register your clinic");
-        subtitleLabel.setText("Set up your clinic portal.");
-
         loginLink.setText("Already registered? Log in to clinic");
         loginLink.setOnAction(e ->
                 AppController.updateView(State.CLINIC_LOGIN));

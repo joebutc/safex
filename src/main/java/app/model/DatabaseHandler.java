@@ -11,6 +11,7 @@ import java.util.List;
 
 public final class DatabaseHandler {
     private static final String DB_URL = "jdbc:sqlite:useraccounts.db";
+    private static final String DEFAULT_CLINIC_USERNAME = "__default_clinic__";
 
     private DatabaseHandler() {
     }
@@ -107,8 +108,153 @@ public final class DatabaseHandler {
                 stmt.execute("ALTER TABLE treatment_plans ADD COLUMN patient_note TEXT");
             } catch (SQLException ignored) {}
 
+            // Privacy settings table
+            String privacySettingsSql = "CREATE TABLE IF NOT EXISTS privacy_settings ("
+                    + "username TEXT PRIMARY KEY,"
+                    + "allow_internal_staff INTEGER NOT NULL DEFAULT 0,"
+                    + "allow_analytics INTEGER NOT NULL DEFAULT 0,"
+                    + "allow_trusted_partners INTEGER NOT NULL DEFAULT 0,"
+                    + "data_retention TEXT NOT NULL DEFAULT 'While account is active',"
+                    + "terms_accepted_date TEXT"
+                    + ");";
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(privacySettingsSql);
+            } catch (SQLException ignored) {}
+
+            // Appointments table
+            String appointmentsSql = "CREATE TABLE IF NOT EXISTS appointments ("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "clinic_username TEXT NOT NULL DEFAULT '" + DEFAULT_CLINIC_USERNAME + "',"
+                    + "appointment_date TEXT NOT NULL,"
+                    + "appointment_time TEXT NOT NULL,"
+                    + "is_booked INTEGER NOT NULL DEFAULT 1,"
+                    + "patient_username TEXT,"
+                    + "status TEXT NOT NULL DEFAULT 'booked'"
+                    + ");";
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(appointmentsSql);
+            } catch (SQLException ignored) {}
+
+            String clinicAvailabilitySql = "CREATE TABLE IF NOT EXISTS clinic_availability ("
+                    + "clinic_username TEXT NOT NULL DEFAULT '" + DEFAULT_CLINIC_USERNAME + "',"
+                    + "appointment_date TEXT NOT NULL,"
+                    + "appointment_time TEXT NOT NULL,"
+                    + "PRIMARY KEY (clinic_username, appointment_date, appointment_time)"
+                    + ");";
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(clinicAvailabilitySql);
+            } catch (SQLException ignored) {}
+
+            // Migration: keep the appointments schema compatible with older DBs.
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE appointments ADD COLUMN clinic_username TEXT NOT NULL DEFAULT '"
+                        + DEFAULT_CLINIC_USERNAME + "'");
+            } catch (SQLException ignored) {}
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE appointments ADD COLUMN is_booked INTEGER NOT NULL DEFAULT 1");
+            } catch (SQLException ignored) {}
+
+            // Migration: add status column to legacy appointments tables.
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE appointments ADD COLUMN status TEXT NOT NULL DEFAULT 'booked'");
+            } catch (SQLException ignored) {}
+
+            // Migration: keep clinic availability scoped to a clinic account.
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE clinic_availability ADD COLUMN clinic_username TEXT NOT NULL DEFAULT '"
+                        + DEFAULT_CLINIC_USERNAME + "'");
+            } catch (SQLException ignored) {}
+
         } catch (SQLException e) {
             System.out.println("Error initialising database: " + e.getMessage());
+        }
+    }
+
+    // ── Privacy Settings ─────────────────────────────────────────────────────
+
+    /** Returns [allowInternalStaff, allowAnalytics, allowTrustedPartners]. Defaults all false. */
+    public static boolean[] getDataAccessPermissions(String username) {
+        String sql = "SELECT allow_internal_staff, allow_analytics, allow_trusted_partners "
+                + "FROM privacy_settings WHERE username = ?";
+        try (Connection conn = connect()) {
+            if (conn == null) return new boolean[]{false, false, false};
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, username);
+                ResultSet rs = p.executeQuery();
+                if (rs.next()) {
+                    return new boolean[]{
+                            rs.getInt("allow_internal_staff") == 1,
+                            rs.getInt("allow_analytics") == 1,
+                            rs.getInt("allow_trusted_partners") == 1
+                    };
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("getDataAccessPermissions error: " + e.getMessage());
+        }
+        return new boolean[]{false, false, false};
+    }
+
+    public static void saveDataAccessPermissions(String username,
+            boolean staff, boolean analytics, boolean partners) {
+        String sql = "INSERT INTO privacy_settings (username, allow_internal_staff, allow_analytics, allow_trusted_partners) "
+                + "VALUES (?, ?, ?, ?) "
+                + "ON CONFLICT(username) DO UPDATE SET "
+                + "allow_internal_staff = excluded.allow_internal_staff, "
+                + "allow_analytics = excluded.allow_analytics, "
+                + "allow_trusted_partners = excluded.allow_trusted_partners";
+        try (Connection conn = connect(); PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setString(1, username);
+            p.setInt(2, staff ? 1 : 0);
+            p.setInt(3, analytics ? 1 : 0);
+            p.setInt(4, partners ? 1 : 0);
+            p.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("saveDataAccessPermissions error: " + e.getMessage());
+        }
+    }
+
+    /** Returns the saved retention option, or the default if none set. */
+    public static String getDataRetention(String username) {
+        String sql = "SELECT data_retention FROM privacy_settings WHERE username = ?";
+        try (Connection conn = connect()) {
+            if (conn == null) return "While account is active";
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, username);
+                ResultSet rs = p.executeQuery();
+                if (rs.next()) return rs.getString("data_retention");
+            }
+        } catch (SQLException e) {
+            System.out.println("getDataRetention error: " + e.getMessage());
+        }
+        return "While account is active";
+    }
+
+    public static void saveDataRetention(String username, String option) {
+        String sql = "INSERT INTO privacy_settings (username, data_retention) VALUES (?, ?) "
+                + "ON CONFLICT(username) DO UPDATE SET data_retention = excluded.data_retention";
+        try (Connection conn = connect(); PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setString(1, username);
+            p.setString(2, option);
+            p.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("saveDataRetention error: " + e.getMessage());
+        }
+    }
+
+    /** Records the current date as the terms acceptance date for the user. */
+    public static void saveTermsAccepted(String username) {
+        String date = java.time.LocalDate.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy"));
+        String sql = "INSERT INTO privacy_settings (username, terms_accepted_date) VALUES (?, ?) "
+                + "ON CONFLICT(username) DO UPDATE SET terms_accepted_date = excluded.terms_accepted_date";
+        try (Connection conn = connect(); PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setString(1, username);
+            p.setString(2, date);
+            p.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("saveTermsAccepted error: " + e.getMessage());
         }
     }
 
@@ -486,6 +632,192 @@ public final class DatabaseHandler {
                 rs.getString("source"),
                 rs.getString("patient_note")
         );
+    }
+
+    // ── Appointments ──────────────────────────────────────────────────────────
+
+    /** Returns the offered appointment times (HH:mm) for a given date across all clinics. */
+    public static List<String> getAvailableTimesForDate(String date) {
+        String sql = "SELECT DISTINCT appointment_time FROM clinic_availability "
+                + "WHERE appointment_date = ? ORDER BY appointment_time";
+        List<String> times = new ArrayList<>();
+        try (Connection conn = connect()) {
+            if (conn == null) return times;
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, date);
+                ResultSet rs = p.executeQuery();
+                while (rs.next()) times.add(rs.getString("appointment_time"));
+            }
+        } catch (SQLException e) {
+            System.out.println("getAvailableTimesForDate error: " + e.getMessage());
+        }
+        return times;
+    }
+
+    /** Returns the offered appointment times (HH:mm) for a specific clinic on a given date. */
+    public static List<String> getAvailableTimesForDate(String date, String clinicUsername) {
+        String sql = "SELECT appointment_time FROM clinic_availability "
+                + "WHERE appointment_date = ? AND clinic_username = ? ORDER BY appointment_time";
+        List<String> times = new ArrayList<>();
+        try (Connection conn = connect()) {
+            if (conn == null) return times;
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, date);
+                p.setString(2, normalizeClinicUsername(clinicUsername));
+                ResultSet rs = p.executeQuery();
+                while (rs.next()) times.add(rs.getString("appointment_time"));
+            }
+        } catch (SQLException e) {
+            System.out.println("getAvailableTimesForDate error: " + e.getMessage());
+        }
+        return times;
+    }
+
+    /** Replaces the offered appointment times for a date with the provided set. */
+    public static boolean saveAvailableTimesForDate(String date, List<String> times) {
+        return saveAvailableTimesForDate(DEFAULT_CLINIC_USERNAME, date, times);
+    }
+
+    /** Replaces the offered appointment times for a clinic on a date with the provided set. */
+    public static boolean saveAvailableTimesForDate(String clinicUsername, String date, List<String> times) {
+        String deleteSql = "DELETE FROM clinic_availability WHERE clinic_username = ? AND appointment_date = ?";
+        String insertSql = "INSERT INTO clinic_availability (clinic_username, appointment_date, appointment_time) "
+                + "VALUES (?, ?, ?)";
+        try (Connection conn = connect()) {
+            if (conn == null) return false;
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+                    deleteStmt.setString(1, normalizeClinicUsername(clinicUsername));
+                    deleteStmt.setString(2, date);
+                    deleteStmt.executeUpdate();
+                }
+                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    for (String time : times) {
+                        insertStmt.setString(1, normalizeClinicUsername(clinicUsername));
+                        insertStmt.setString(2, date);
+                        insertStmt.setString(3, time);
+                        insertStmt.addBatch();
+                    }
+                    insertStmt.executeBatch();
+                }
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            System.out.println("saveAvailableTimesForDate error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /** Books a time slot for a patient. Returns false if already booked or not offered. */
+    public static boolean bookAppointment(String username, String date, String time) {
+        String availabilitySql = "SELECT clinic_username FROM clinic_availability "
+                + "WHERE appointment_date = ? AND appointment_time = ? "
+                + "ORDER BY clinic_username LIMIT 1";
+        // Check if already booked
+        String checkSql = "SELECT id FROM appointments "
+                + "WHERE appointment_date = ? AND appointment_time = ? AND status = 'booked'";
+        try (Connection conn = connect()) {
+            if (conn == null) return false;
+            String clinicUsername;
+            try (PreparedStatement p = conn.prepareStatement(availabilitySql)) {
+                p.setString(1, date);
+                p.setString(2, time);
+                ResultSet rs = p.executeQuery();
+                if (!rs.next()) return false;
+                clinicUsername = rs.getString("clinic_username");
+            }
+            try (PreparedStatement p = conn.prepareStatement(checkSql)) {
+                p.setString(1, date);
+                p.setString(2, time);
+                ResultSet rs = p.executeQuery();
+                if (rs.next()) return false; // already booked
+            }
+            String insertSql = "INSERT INTO appointments "
+                    + "(clinic_username, appointment_date, appointment_time, is_booked, patient_username, status) "
+                    + "VALUES (?, ?, ?, 1, ?, 'booked')";
+            try (PreparedStatement p = conn.prepareStatement(insertSql)) {
+                p.setString(1, normalizeClinicUsername(clinicUsername));
+                p.setString(2, date);
+                p.setString(3, time);
+                p.setString(4, username);
+                p.executeUpdate();
+                return true;
+            }
+        } catch (SQLException e) {
+            System.out.println("bookAppointment error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /** Returns the list of booked times (HH:mm) for a given date. */
+    public static List<String> getBookedTimesForDate(String date) {
+        String sql = "SELECT appointment_time FROM appointments "
+                + "WHERE appointment_date = ? AND status = 'booked' AND is_booked = 1";
+        List<String> times = new ArrayList<>();
+        try (Connection conn = connect()) {
+            if (conn == null) return times;
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, date);
+                ResultSet rs = p.executeQuery();
+                while (rs.next()) times.add(rs.getString("appointment_time"));
+            }
+        } catch (SQLException e) {
+            System.out.println("getBookedTimesForDate error: " + e.getMessage());
+        }
+        return times;
+    }
+
+    /** Returns appointments for a patient as [id, date, time, status] arrays, newest first. */
+    public static List<String[]> getAppointmentsForPatient(String username) {
+        String sql = "SELECT id, appointment_date, appointment_time, status FROM appointments WHERE patient_username = ? ORDER BY id DESC";
+        List<String[]> results = new ArrayList<>();
+        try (Connection conn = connect()) {
+            if (conn == null) return results;
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, username);
+                ResultSet rs = p.executeQuery();
+                while (rs.next()) {
+                    results.add(new String[]{
+                            String.valueOf(rs.getInt("id")),
+                            rs.getString("appointment_date"),
+                            rs.getString("appointment_time"),
+                            rs.getString("status")
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("getAppointmentsForPatient error: " + e.getMessage());
+        }
+        return results;
+    }
+
+    /** Cancels an appointment by id, guarded by patient_username. */
+    public static boolean cancelAppointment(int id, String username) {
+        String sql = "UPDATE appointments SET status = 'cancelled', is_booked = 0 "
+                + "WHERE id = ? AND patient_username = ?";
+        try (Connection conn = connect()) {
+            if (conn == null) return false;
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setInt(1, id);
+                p.setString(2, username);
+                return p.executeUpdate() > 0;
+            }
+        } catch (SQLException e) {
+            System.out.println("cancelAppointment error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private static String normalizeClinicUsername(String clinicUsername) {
+        if (clinicUsername == null || clinicUsername.isBlank()) {
+            return DEFAULT_CLINIC_USERNAME;
+        }
+        return clinicUsername;
     }
 
     // Checks if a user or clinic exists in the respective database table

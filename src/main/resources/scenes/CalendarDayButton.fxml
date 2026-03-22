@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+
+<Button fx:id="dayButton"
+        maxHeight="1.7976931348623157E308"
+        maxWidth="1.7976931348623157E308"
+        onAction="#handleSelect"
+        styleClass="calendar-day-button"
+        xmlns="http://javafx.com/javafx/23.0.1"
+        xmlns:fx="http://javafx.com/fxml/1"
+        fx:controller="app.view.CalendarDayButtonController"/>

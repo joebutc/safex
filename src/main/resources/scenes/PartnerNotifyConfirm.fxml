@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxWidth="520"
+      spacing="14"
+      styleClass="card"
+      xmlns="http://javafx.com/javafx/23.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.view.PartnerNotifyConfirmController">
+    <padding>
+        <Insets bottom="24" left="24" right="24" top="24"/>
+    </padding>
+    <Label styleClass="partner-confirm-title" text="Ready to send notifications"/>
+    <VBox spacing="12">
+        <Label styleClass="partner-confirm-copy" text="We'll take it from here."/>
+        <Label styleClass="partner-confirm-copy" text="Press &quot;Notify&quot; to send now."/>
+        <Button fx:id="notifyButton" minWidth="120" onAction="#handleNotify" styleClass="primary-button" text="Notify">
+            <graphic>
+                <ImageView fitHeight="25" fitWidth="25" preserveRatio="true">
+                    <Image url="@../images/Bell.png"/>
+                </ImageView>
+            </graphic>
+        </Button>
+        <ProgressIndicator fx:id="progressIndicator" maxHeight="64" maxWidth="64" visible="false"/>
+    </VBox>
+</VBox>

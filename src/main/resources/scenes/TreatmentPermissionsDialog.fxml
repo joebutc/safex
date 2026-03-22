@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefWidth="420"
+      spacing="16"
+      styleClass="dialog-shell"
+      xmlns="http://javafx.com/javafx/23.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.view.TreatmentPermissionsDialogController">
+    <padding>
+        <Insets bottom="24" left="24" right="24" top="24"/>
+    </padding>
+    <Label styleClass="dialog-title" text="Treatment Data Permissions"/>
+    <Label styleClass="dialog-copy" text="Choose how SafeX can use your treatment plan data." wrapText="true"/>
+    <CheckBox fx:id="remindersCheckBox"
+              maxWidth="380"
+              text="Notify me when any medication is running low on supply"
+              wrapText="true"/>
+    <CheckBox fx:id="clinicCheckBox"
+              maxWidth="380"
+              text="Allow my healthcare provider to view and update my treatment plan"
+              wrapText="true"/>
+    <Label styleClass="dialog-note"
+           text="Clinic access lets your doctor issue prescriptions directly through SafeX."
+           wrapText="true"/>
+    <HBox spacing="10">
+        <Button onAction="#handleCancel" styleClass="secondary-button" text="Cancel" HBox.hgrow="ALWAYS"/>
+        <Button fx:id="saveButton" onAction="#handleSave" styleClass="primary-button" text="Save Preferences" HBox.hgrow="ALWAYS"/>
+    </HBox>
+</VBox>

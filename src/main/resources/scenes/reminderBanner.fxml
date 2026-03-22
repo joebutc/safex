@@ -1,39 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.shape.SVGPath?>
 
-<HBox fx:id="bannerRoot" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-      minWidth="-Infinity" prefHeight="81.0" prefWidth="600.0" spacing="10.0" xmlns="http://javafx.com/javafx/23.0.1"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.NotificationBannerController">
-   <ImageView fitHeight="79.0" fitWidth="113.0" pickOnBounds="true" preserveRatio="true">
-      <Image url="@../images/pill.png"/>
-   </ImageView>
-   <VBox prefHeight="113.0" prefWidth="441.0">
-      <Label fx:id="titleLabel" prefHeight="55.0" prefWidth="440.0" text="Reminder">
-         <font>
-            <Font name="System Bold" size="24.0"/>
-         </font>
-      </Label>
-      <Label fx:id="messageLabel" prefHeight="67.0" prefWidth="449.0" text="Don't forget to take your medication.">
-         <font>
-            <Font name="System Bold" size="18.0"/>
-         </font>
-      </Label>
-   </VBox>
-   <Button alignment="CENTER" mnemonicParsing="false" onAction="#handleClose" prefHeight="81.0" prefWidth="70.0">
-      <font>
-         <Font size="24.0"/>
-      </font>
-      <graphic>
-         <ImageView fitHeight="19.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true">
-            <Image url="@../images/close.png"/>
-         </ImageView>
-      </graphic>
-   </Button>
+<HBox fx:id="bannerRoot"
+      alignment="CENTER_LEFT"
+      maxWidth="760.0"
+      prefWidth="760.0"
+      spacing="16.0"
+      styleClass="reminder-banner"
+      xmlns="http://javafx.com/javafx/23.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.NotificationBannerController">
+    <padding>
+        <Insets bottom="16.0" left="18.0" right="18.0" top="16.0"/>
+    </padding>
+    <StackPane maxHeight="52.0" maxWidth="52.0" minHeight="52.0" minWidth="52.0" prefHeight="52.0" prefWidth="52.0"
+               styleClass="reminder-banner-icon">
+        <SVGPath content="M9.586 2.586a2 2 0 012.828 0l6 6a2 2 0 010 2.828l-3.586 3.586a2 2 0 01-2.828 0l-6-6a2 2 0 010-2.828l3.586-3.586zM11 9l4 4"
+                 fill="#FFFFFF" scaleX="0.9" scaleY="0.9"/>
+    </StackPane>
+    <VBox spacing="4.0">
+        <Label fx:id="titleLabel" styleClass="reminder-banner-title" text="Reminder"/>
+        <Label fx:id="messageLabel" styleClass="reminder-banner-message" text="Don't forget to take your medication." wrapText="true"/>
+    </VBox>
+    <Region HBox.hgrow="ALWAYS"/>
+    <Button alignment="CENTER" mnemonicParsing="false" onAction="#handleClose" styleClass="reminder-banner-close">
+        <graphic>
+            <SVGPath content="M6.225 4.811L10 8.586l3.775-3.775 1.414 1.414L11.414 10l3.775 3.775-1.414 1.414L10 11.414l-3.775 3.775-1.414-1.414L8.586 10 4.811 6.225z"
+                     fill="#C7D2FE" scaleX="0.8" scaleY="0.8"/>
+        </graphic>
+    </Button>
 </HBox>

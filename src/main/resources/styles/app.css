@@ -45,15 +45,6 @@
   -fx-background-color: rgba(15, 23, 42, 0.06);
 }
 
-.card {
-  -fx-background-color: #ffffff;
-  -fx-background-radius: 18;
-  -fx-border-radius: 18;
-  -fx-border-color: #E5E7EB;
-  -fx-border-width: 1;
-  -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.10), 20, 0.2, 0, 6);
-}
-
 .card-padding {
   -fx-padding: 24;
 }
@@ -140,9 +131,515 @@
 }
 
 .card {
-    -fx-background-color: white;
+    -fx-background-color: #ffffff;
     -fx-background-radius: 12;
     -fx-border-radius: 12;
     -fx-border-color: #E5E7EB;
+    -fx-border-width: 1;
     -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.10), 20, 0.2, 0, 6);
+}
+
+.clinic-dashboard-shell {
+    -fx-background-color: linear-gradient(to bottom, #E8F1FF 0%, #F8FAFC 38%, #F8FAFC 100%);
+}
+
+.clinic-dashboard-header {
+    -fx-background-color: linear-gradient(to right, #0F172A, #1D4ED8);
+    -fx-border-color: transparent;
+}
+
+.clinic-brand-label {
+    -fx-font-size: 22px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #FFFFFF;
+}
+
+.clinic-welcome-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #DBEAFE;
+}
+
+.clinic-subtitle-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: rgba(255, 255, 255, 0.85);
+}
+
+.clinic-logout-button {
+    -fx-background-color: rgba(255, 255, 255, 0.16);
+    -fx-border-color: rgba(255, 255, 255, 0.24);
+    -fx-border-radius: 12;
+    -fx-text-fill: #FFFFFF;
+}
+
+.clinic-logout-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.24);
+}
+
+.clinic-hero-card {
+    -fx-background-color: linear-gradient(to right, rgba(15, 23, 42, 0.96), rgba(30, 64, 175, 0.94));
+    -fx-background-radius: 22;
+    -fx-padding: 26 28 26 28;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.18), 28, 0.18, 0, 8);
+}
+
+.clinic-hero-eyebrow {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #BFDBFE;
+}
+
+.clinic-hero-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #FFFFFF;
+}
+
+.clinic-hero-copy {
+    -fx-font-size: 13px;
+    -fx-text-fill: rgba(255, 255, 255, 0.86);
+}
+
+.clinic-dashboard-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: #CBD5E1;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.12), 20, 0.18, 0, 6);
+}
+
+.clinic-dashboard-card-primary {
+    -fx-background-color: linear-gradient(to bottom, #FFFFFF, #EFF6FF);
+    -fx-border-color: #1D4ED8;
+    -fx-border-width: 2;
+}
+
+.clinic-dashboard-card-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0F172A;
+}
+
+.clinic-dashboard-card-copy {
+    -fx-font-size: 13px;
+    -fx-text-fill: #475569;
+}
+
+.clinic-icon-badge {
+    -fx-background-radius: 999;
+}
+
+.clinic-icon-badge-primary {
+    -fx-background-color: #DBEAFE;
+}
+
+.clinic-icon-badge-patient {
+    -fx-background-color: #FCE7F3;
+}
+
+.clinic-icon-badge-legal {
+    -fx-background-color: #E0E7FF;
+}
+
+.clinic-footer-text {
+    -fx-text-fill: #475569;
+    -fx-font-size: 12px;
+}
+
+.patient-dashboard-shell {
+    -fx-background-color: linear-gradient(to bottom, #FFF8F1 0%, #FFFDF8 28%, #F8FAFC 100%);
+}
+
+.patient-dashboard-header {
+    -fx-background-color: linear-gradient(to right, #FFF7ED, #F8FAFC);
+    -fx-border-color: transparent transparent #FED7AA transparent;
+}
+
+.patient-brand-label {
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #9A3412;
+}
+
+.patient-welcome-label {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #7C2D12;
+}
+
+.patient-subtitle-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #9A3412;
+}
+
+.patient-logout-button {
+    -fx-background-color: #0F172A;
+    -fx-border-color: transparent;
+    -fx-text-fill: #FFFFFF;
+}
+
+.patient-hero-card {
+    -fx-background-color: linear-gradient(to right, rgba(124, 45, 18, 0.97), rgba(234, 88, 12, 0.92));
+    -fx-background-radius: 22;
+    -fx-padding: 26 28 26 28;
+    -fx-effect: dropshadow(gaussian, rgba(124, 45, 18, 0.18), 28, 0.18, 0, 8);
+}
+
+.patient-hero-eyebrow {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #FED7AA;
+}
+
+.patient-hero-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #FFFFFF;
+}
+
+.patient-hero-copy {
+    -fx-font-size: 13px;
+    -fx-text-fill: rgba(255, 247, 237, 0.9);
+}
+
+.dashboard-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.dashboard-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.patient-dashboard-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.10), 18, 0.16, 0, 6);
+}
+
+.patient-dashboard-card-primary {
+    -fx-background-color: linear-gradient(to bottom, #FFFFFF, #FFF7ED);
+    -fx-border-color: #EA580C;
+    -fx-border-width: 2;
+}
+
+.patient-dashboard-card-wide {
+    -fx-background-color: linear-gradient(to right, #FFFFFF, #FFF7ED);
+}
+
+.patient-dashboard-card-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0F172A;
+}
+
+.patient-dashboard-card-copy {
+    -fx-font-size: 13px;
+    -fx-text-fill: #475569;
+}
+
+.patient-icon-badge {
+    -fx-background-radius: 999;
+}
+
+.patient-icon-badge-notify {
+    -fx-background-color: #FFEDD5;
+}
+
+.patient-icon-badge-test {
+    -fx-background-color: #DBEAFE;
+}
+
+.patient-icon-badge-appointment {
+    -fx-background-color: #EDE9FE;
+}
+
+.patient-icon-badge-results {
+    -fx-background-color: #CCFBF1;
+}
+
+.patient-icon-badge-treatment {
+    -fx-background-color: #FFE4E6;
+}
+
+.patient-icon-badge-settings {
+    -fx-background-color: #E2E8F0;
+}
+
+.patient-icon-badge-legal {
+    -fx-background-color: #E0E7FF;
+}
+
+.patient-footer-text {
+    -fx-text-fill: #78716C;
+    -fx-font-size: 12px;
+}
+
+.notification-stack {
+    -fx-alignment: top-center;
+    -fx-padding: 18 0 0 0;
+}
+
+.reminder-banner {
+    -fx-background-color: linear-gradient(to right, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.94));
+    -fx-background-radius: 22;
+    -fx-border-color: rgba(251, 146, 60, 0.42);
+    -fx-border-radius: 22;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.24), 24, 0.18, 0, 10);
+}
+
+.reminder-banner-icon {
+    -fx-background-color: linear-gradient(to bottom, #EA580C, #C2410C);
+    -fx-background-radius: 999;
+}
+
+.reminder-banner-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #FED7AA;
+}
+
+.reminder-banner-message {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #FFFFFF;
+}
+
+.reminder-banner-close {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    -fx-background-radius: 999;
+    -fx-padding: 10;
+    -fx-cursor: hand;
+}
+
+.reminder-banner-close:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+}
+
+.notification-badge {
+    -fx-background-color: #EA580C;
+    -fx-background-radius: 999;
+}
+
+.notification-badge-label {
+    -fx-text-fill: white;
+    -fx-font-size: 8px;
+    -fx-font-weight: bold;
+}
+
+.list-header-row {
+    -fx-padding: 8 16 8 16;
+}
+
+.list-header-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #64748B;
+}
+
+.list-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.list-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.schedule-list {
+    -fx-padding: 0;
+}
+
+.slot-row {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 12 16 12 16;
+}
+
+.slot-time-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #0F172A;
+}
+
+.slot-status-pill {
+    -fx-background-radius: 999;
+    -fx-padding: 4 12 4 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+.slot-status-available {
+    -fx-background-color: #DCFCE7;
+    -fx-text-fill: #166534;
+}
+
+.slot-status-booked {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #991B1B;
+}
+
+.slot-status-offered {
+    -fx-background-color: #DBEAFE;
+    -fx-text-fill: #1D4ED8;
+}
+
+.slot-status-closed {
+    -fx-background-color: #E2E8F0;
+    -fx-text-fill: #475569;
+}
+
+.slot-status-past {
+    -fx-background-color: #E2E8F0;
+    -fx-text-fill: #475569;
+}
+
+.sti-tracker-caption {
+    -fx-font-size: 13px;
+    -fx-text-fill: #475569;
+}
+
+.sti-empty-state {
+    -fx-font-size: 14px;
+    -fx-text-fill: #94A3B8;
+    -fx-padding: 24 4 0 4;
+}
+
+.sti-test-row {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 12 16 12 16;
+}
+
+.sti-test-date {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #0F172A;
+}
+
+.sti-test-type {
+    -fx-font-size: 13px;
+    -fx-text-fill: #334155;
+}
+
+.sti-test-notes {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748B;
+}
+
+.sti-result-badge {
+    -fx-alignment: center;
+    -fx-background-radius: 999;
+    -fx-padding: 4 12 4 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #FFFFFF;
+}
+
+.sti-result-positive {
+    -fx-background-color: #DC2626;
+}
+
+.sti-result-negative {
+    -fx-background-color: #16A34A;
+}
+
+.sti-result-pending {
+    -fx-background-color: #D97706;
+}
+
+.sti-result-default {
+    -fx-background-color: #64748B;
+}
+
+.calendar-day-button {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 10;
+    -fx-padding: 10 0 10 0;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #0F172A;
+    -fx-cursor: hand;
+}
+
+.calendar-day-button:hover {
+    -fx-background-color: #DBEAFE;
+    -fx-border-color: #60A5FA;
+}
+
+.dialog-shell {
+    -fx-background-color: #FFFFFF;
+}
+
+.dialog-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0F172A;
+}
+
+.dialog-copy {
+    -fx-font-size: 13px;
+    -fx-text-fill: #475569;
+}
+
+.dialog-note {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748B;
+}
+
+.partner-prompt-pill {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 999;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+}
+
+.partner-action-pill {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 999;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+}
+
+.partner-contact-row {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.partner-confirm-card {
+    -fx-max-width: 520;
+}
+
+.partner-confirm-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0F172A;
+}
+
+.partner-confirm-copy {
+    -fx-font-size: 18px;
+    -fx-text-fill: #475569;
 }

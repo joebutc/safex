@@ -12,8 +12,6 @@ public class ClinicLoginPage extends LoginBase {
 
     @Override
     protected void onInitialize() {
-        buildBrandPanel("Managing care,\nprotecting privacy.");
-
         titleLabel.setText("Clinic Portal");
         subtitleLabel.setText("Sign in to manage your clinic.");
 

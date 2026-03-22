@@ -3,6 +3,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.TreatmentTrackerPage" style="-fx-background-color: #F8FAFC;" prefWidth="900" prefHeight="650">
     <!-- Top Header -->
@@ -11,7 +13,13 @@
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10" />
             </padding>
-            <Button fx:id="homeButton" styleClass="icon-button"/>
+            <Button fx:id="homeButton" styleClass="icon-button">
+                <graphic>
+                    <ImageView fitWidth="28" fitHeight="28" preserveRatio="true">
+                        <Image url="@../images/Home.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
             <Label text="My Treatment Plan" styleClass="app-header-title"/>
             <Region HBox.hgrow="ALWAYS"/>
         </HBox>

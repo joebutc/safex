@@ -2,7 +2,8 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.ClinicLoginPage">
@@ -15,6 +16,15 @@
               spacing="20"
               style="-fx-background-color: #0A0A0A;"
               BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="48" right="28" bottom="48" left="28"/>
+            </padding>
+            <ImageView fitWidth="254" fitHeight="200" preserveRatio="true">
+                <Image url="@../images/safex_logo.png"/>
+            </ImageView>
+            <Label fx:id="taglineLabel" text="Managing care,&#10;protecting privacy."
+                   wrapText="true" maxWidth="240"
+                   style="-fx-font-size:13px;-fx-text-fill:#94A3B8;"/>
         </VBox>
     </left>
 

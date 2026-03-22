@@ -1,75 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
 <?import javafx.geometry.Insets?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.StiTestTrackerPage" prefWidth="900" prefHeight="650"
-            style="-fx-background-color:#F8FAFC;">
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-    <!-- HEADER -->
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="app.view.StiTestTrackerPage"
+            prefHeight="650"
+            prefWidth="900"
+            styleClass="sti-tracker-shell">
+
     <top>
-        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="app-header">
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="app-header">
             <Button fx:id="homeButton" styleClass="icon-button">
                 <graphic>
-                    <ImageView fitWidth="28" fitHeight="28" preserveRatio="true">
+                    <ImageView fitHeight="28" fitWidth="28" preserveRatio="true">
                         <Image url="@../images/Home.png"/>
                     </ImageView>
                 </graphic>
             </Button>
 
-            <Label text="Track Your Tests" styleClass="app-header-title"/>
+            <Label styleClass="app-header-title" text="Track Your Tests"/>
 
             <Region HBox.hgrow="ALWAYS"/>
         </HBox>
     </top>
 
-    <!-- MAIN CONTENT -->
     <center>
         <VBox spacing="16">
             <padding>
-                <Insets top="24" right="24" bottom="24" left="24" />
+                <Insets bottom="24" left="24" right="24" top="24"/>
             </padding>
 
-            <!-- Actions row -->
-            <HBox spacing="12" alignment="CENTER_LEFT">
-                <Label wrapText="true"
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label styleClass="sti-tracker-caption"
                        text="Keep a private record of your STI testing history. All data is stored locally on this device."
-                       style="-fx-font-size:13; -fx-text-fill:#475569;"/>
+                       wrapText="true"/>
 
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <Button fx:id="addButton"
-                        text="+ Log New Test"
+                        minHeight="40"
                         styleClass="primary-button"
-                        minHeight="40"/>
+                        text="+ Log New Test"/>
             </HBox>
 
-            <!-- Column headers -->
-            <HBox spacing="16" alignment="CENTER_LEFT">
+            <HBox alignment="CENTER_LEFT" spacing="16" styleClass="list-header-row">
                 <padding>
-                    <Insets top="4" right="16" bottom="4" left="16" />
+                    <Insets bottom="4" left="16" right="16" top="4"/>
                 </padding>
-                <Label text="Date" minWidth="110"
-                       style="-fx-font-size:12; -fx-font-weight:bold; -fx-text-fill:#64748B;"/>
-
-                <Label text="Test Type" minWidth="160"
-                       style="-fx-font-size:12; -fx-font-weight:bold; -fx-text-fill:#64748B;"/>
-
-                <Label text="Result" minWidth="100"
-                       style="-fx-font-size:12; -fx-font-weight:bold; -fx-text-fill:#64748B;"/>
-
-                <Label text="Notes"
-                       HBox.hgrow="ALWAYS"
-                       style="-fx-font-size:12; -fx-font-weight:bold; -fx-text-fill:#64748B;"/>
+                <Label minWidth="110" styleClass="list-header-label" text="Date"/>
+                <Label minWidth="160" styleClass="list-header-label" text="Test Type"/>
+                <Label minWidth="100" styleClass="list-header-label" text="Result"/>
+                <Label styleClass="list-header-label" text="Notes" HBox.hgrow="ALWAYS"/>
             </HBox>
 
-            <!-- Test list -->
-            <ScrollPane fitToWidth="true" style="-fx-background-color:transparent;">
-                <VBox fx:id="testListContainer"
-                      spacing="8">
+            <ScrollPane fitToWidth="true" styleClass="list-scroll-pane">
+                <VBox spacing="8">
+                    <Label fx:id="emptyStateLabel"
+                           managed="false"
+                           styleClass="sti-empty-state"
+                           text="No tests logged yet. Click '+ Log New Test' to add your first entry."
+                           visible="false"
+                           wrapText="true"/>
+                    <VBox fx:id="testListContainer" spacing="8">
+                        <padding>
+                            <Insets bottom="16"/>
+                        </padding>
+                    </VBox>
                     <padding>
                         <Insets bottom="16"/>
                     </padding>

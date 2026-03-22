@@ -21,8 +21,21 @@ public final class AppController {
     private static String currentUser;
     private static String patientUser;
     private static String currentLoginType;
+    private static String selectedDate;
 
     private AppController() {
+    }
+
+    /** Test-only: initialise the static state without a JavaFX Stage. */
+    static void initForTest(String username) {
+        currentUser = username;
+        initialised = true;
+    }
+
+    /** Test-only: reset static state between tests. */
+    static void resetForTest() {
+        currentUser = null;
+        initialised = false;
     }
 
     public static void init(Stage stage, State state) {
@@ -41,8 +54,9 @@ public final class AppController {
 
     public static void updateView(State state) {
         assertInitialised();
-        if (state == State.LOGIN) {
+        if (state == State.LOGIN || state == State.CLINIC_LOGIN) {
             currentUser = null;
+            currentLoginType = null;
         }
         Parent root = loadRoot(state);
         Scene scene = primaryStage.getScene();
@@ -60,7 +74,7 @@ public final class AppController {
         if (DatabaseHandler.checkLogin(username, password, loginType)) {
             currentUser = username;
             currentLoginType = loginType;
-            updateView(State.DASHBOARD);
+            updateView(homeDashboardStateFor(loginType));
             return true;
         }
         return false;
@@ -71,7 +85,7 @@ public final class AppController {
         if (DatabaseHandler.registerUser(username, password, loginType)) {
             currentUser = username;
             currentLoginType = loginType;
-            updateView(State.DASHBOARD);
+            updateView(homeDashboardStateFor(loginType));
             return true;
         }
         return false;
@@ -80,6 +94,19 @@ public final class AppController {
     public static String getCurrentUser() {
         assertInitialised();
         return currentUser;
+    }
+
+    public static String getCurrentLoginType() {
+        return currentLoginType;
+    }
+
+    public static State getHomeDashboardState() {
+        assertInitialised();
+        return homeDashboardStateFor(currentLoginType);
+    }
+
+    public static void goToHomeDashboard() {
+        updateView(getHomeDashboardState());
     }
 
     public static List<String> getPendingNotifications() {
@@ -149,6 +176,33 @@ public final class AppController {
         return DatabaseHandler.getTestPermissions(currentUser);
     }
 
+    // ── Privacy Settings ─────────────────────────────────────────────────────
+
+    public static boolean[] getDataAccessPermissions() {
+        assertInitialised();
+        return DatabaseHandler.getDataAccessPermissions(currentUser);
+    }
+
+    public static void saveDataAccessPermissions(boolean staff, boolean analytics, boolean partners) {
+        assertInitialised();
+        DatabaseHandler.saveDataAccessPermissions(currentUser, staff, analytics, partners);
+    }
+
+    public static String getDataRetention() {
+        assertInitialised();
+        return DatabaseHandler.getDataRetention(currentUser);
+    }
+
+    public static void saveDataRetention(String option) {
+        assertInitialised();
+        DatabaseHandler.saveDataRetention(currentUser, option);
+    }
+
+    public static void acceptTerms() {
+        assertInitialised();
+        DatabaseHandler.saveTermsAccepted(currentUser);
+    }
+
     public static int getReminderIntervalMonths() {
         assertInitialised();
         return DatabaseHandler.getReminderIntervalMonths(currentUser);
@@ -162,6 +216,49 @@ public final class AppController {
     public static boolean[] getTreatmentPermissions() {
         assertInitialised();
         return DatabaseHandler.getTreatmentPermissions(currentUser);
+    }
+
+    // ── Appointments ──────────────────────────────────────────────────────────
+
+    public static void setSelectedDate(String date) {
+        selectedDate = date;
+    }
+
+    public static String getSelectedDate() {
+        return selectedDate;
+    }
+
+    public static List<String> getAvailableTimesForDate(String date) {
+        assertInitialised();
+        if ("CLINIC".equals(currentLoginType)) {
+            return DatabaseHandler.getAvailableTimesForDate(date, currentUser);
+        }
+        return DatabaseHandler.getAvailableTimesForDate(date);
+    }
+
+    public static boolean saveAvailableTimesForDate(String date, List<String> times) {
+        assertInitialised();
+        return DatabaseHandler.saveAvailableTimesForDate(currentUser, date, times);
+    }
+
+    public static boolean bookAppointment(String date, String time) {
+        assertInitialised();
+        return DatabaseHandler.bookAppointment(currentUser, date, time);
+    }
+
+    public static List<String> getBookedTimesForDate(String date) {
+        assertInitialised();
+        return DatabaseHandler.getBookedTimesForDate(date);
+    }
+
+    public static List<String[]> getMyAppointments() {
+        assertInitialised();
+        return DatabaseHandler.getAppointmentsForPatient(currentUser);
+    }
+
+    public static boolean cancelAppointment(int id) {
+        assertInitialised();
+        return DatabaseHandler.cancelAppointment(id, currentUser);
     }
 
     public static List<TreatmentEntry> getTreatments() {
@@ -248,6 +345,10 @@ public final class AppController {
         } catch (IOException e) {
             throw new RuntimeException("Could not load FXML for " + state, e);
         }
+    }
+
+    private static State homeDashboardStateFor(String loginType) {
+        return "CLINIC".equals(loginType) ? State.CLINIC_DASHBOARD : State.DASHBOARD;
     }
 
     private static void assertInitialised() {

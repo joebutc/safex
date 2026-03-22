@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ScrollPane?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="app.view.BookAppointmentPage">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="app-header">
+            <padding>
+                <Insets left="10" right="10"/>
+            </padding>
+            <Button onAction="#handleBack" styleClass="icon-button">
+                <graphic>
+                    <ImageView fitHeight="28" fitWidth="28">
+                        <Image url="@../images/arrow_back.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Label styleClass="app-header-title" text="Book an Appointment"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox alignment="TOP_CENTER" spacing="16">
+            <padding>
+                <Insets bottom="24" left="24" right="24" top="24"/>
+            </padding>
+
+            <Label styleClass="muted-text"
+                   text="Select a date and available time slot to book your appointment."
+                   wrapText="true"/>
+
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="Date:"/>
+                <DatePicker fx:id="datePicker" prefWidth="200"/>
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT" spacing="16" styleClass="list-header-row">
+                <Label minWidth="120" styleClass="list-header-label" text="Time"/>
+                <Label minWidth="110" styleClass="list-header-label" text="Status"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label minWidth="100" styleClass="list-header-label" text="Action"/>
+            </HBox>
+
+            <ScrollPane fitToWidth="true" prefHeight="420" styleClass="list-scroll-pane" VBox.vgrow="ALWAYS">
+                <VBox fx:id="slotListContainer" spacing="8" styleClass="schedule-list">
+                    <padding>
+                        <Insets bottom="16"/>
+                    </padding>
+                </VBox>
+            </ScrollPane>
+        </VBox>
+    </center>
+
+</BorderPane>

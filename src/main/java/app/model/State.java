@@ -6,6 +6,7 @@ public enum State {
     CLINIC_LOGIN("/scenes/ClinicLogin.fxml"),
     CLINIC_REGISTER("/scenes/ClinicRegister.fxml"),
     DASHBOARD("/scenes/Dashboard.fxml"),
+    CLINIC_DASHBOARD("/scenes/ClinicDashboard.fxml"),
     NOTIFY("/scenes/PartnerNotify.fxml"),
     LEGAL("/scenes/LegalOnBoard.fxml"),
     SETTINGS("/scenes/Settings.fxml"),
@@ -13,8 +14,9 @@ public enum State {
     STI_BOOKING("/scenes/StiBooking.fxml"),
     STI_TRACKER("/scenes/StiTracker.fxml"),
     CLINIC_SCHEDULE("/scenes/ClinicSchedule.fxml"),
-    CALENDER("/scenes/Calendar.fxml"),
-    PATIENT_TREATMENT("/scenes/PatientTreatment.fxml");
+    CALENDER("/scenes/Calender.fxml"),
+    PATIENT_TREATMENT("/scenes/PatientTreatment.fxml"),
+    BOOK_APPOINTMENT("/scenes/BookAppointment.fxml");
 
     private final String fxmlPath;
 

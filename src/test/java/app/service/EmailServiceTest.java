@@ -22,7 +22,7 @@ class EmailServiceTest {
     @Test
     void noRecipientName(){
         var result = EmailService.sendNotification(
-                "", // TODO correct the grammatical error for dear.
+                "",
                 "cp5g23@soton.ac.uk",
                 "Harvey");
         assertTrue(result);

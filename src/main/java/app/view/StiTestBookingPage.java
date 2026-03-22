@@ -4,12 +4,10 @@ import app.AppController;
 import app.model.Action;
 import app.model.Context;
 import app.model.Result;
-import app.model.State;
 import app.service.GateService;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -85,7 +83,7 @@ public class StiTestBookingPage {
     public void initialize(){
         headerBackBtn.setOnAction(e -> {
             if(history.isEmpty()){
-                AppController.updateView(State.DASHBOARD);
+                AppController.goToHomeDashboard();
             } else {
                 goBack();
             }
@@ -471,49 +469,6 @@ public class StiTestBookingPage {
                 + " -fx-border-radius: 18;"
                 + " -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.10), 24, 0.15, 0, 6);");
         return card;
-    }
-
-    // ── Header ────────────────────────────────────────────────────────────────
-
-    private BorderPane buildHeader() {
-        BorderPane header = new BorderPane();
-        header.getStyleClass().add("app-header");
-
-        headerBackBtn = new Button("\u2190 Back");
-        headerBackBtn.getStyleClass().add("secondary-button");
-
-        Label title = new Label("Book an STI Test");
-        title.setFont(Font.font("System", FontWeight.BOLD, 20));
-        title.setTextFill(Color.web("#0F172A"));
-
-        progressBar = new ProgressBar(0);
-        progressBar.setPrefWidth(180);
-        progressBar.setPrefHeight(6);
-        progressBar.setStyle("-fx-accent: #2563EB;");
-
-        stepLabel = new Label("Step 1 of " + TOTAL_STEPS);
-        stepLabel.setFont(Font.font("System", 12));
-        stepLabel.setTextFill(Color.web("#64748B"));
-
-        VBox progressGroup = new VBox(3, stepLabel, progressBar);
-        progressGroup.setAlignment(Pos.CENTER);
-
-        Region spacer = new Region();
-        spacer.setPrefWidth(100);
-
-        title.setAlignment(Pos.CENTER);
-        title.setMaxWidth(Double.MAX_VALUE);
-
-        VBox centerBox = new VBox(4, title, progressGroup);
-        centerBox.setAlignment(Pos.CENTER);
-
-        header.setLeft(headerBackBtn);
-        header.setCenter(centerBox);
-        header.setRight(spacer);
-        BorderPane.setAlignment(headerBackBtn, Pos.CENTER_LEFT);
-        BorderPane.setAlignment(centerBox, Pos.CENTER);
-        BorderPane.setAlignment(spacer, Pos.CENTER_RIGHT);
-        return header;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

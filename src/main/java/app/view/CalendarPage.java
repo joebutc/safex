@@ -3,14 +3,16 @@ package app.view;
 
 import app.AppController;
 import app.model.State;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
 
@@ -47,14 +49,7 @@ public class CalendarPage {
 
         // Loop through and add Buttons.
         for (int day = 1; day <= daysInMonth; day++){
-            Button dayButton = new Button(String.valueOf(day));
-
-            dayButton.setMaxSize(Double.MAX_VALUE,Double.MAX_VALUE);
-
-            // Styling hook for day buttons can be applied here if needed.
-            dayButton.setOnAction(this::openDaySchedule);
-
-
+            Node dayButton = loadDayButton(day);
             calendarGrid.add(dayButton,currentColumn,currentRow);
 
             currentColumn++;
@@ -67,13 +62,27 @@ public class CalendarPage {
 
     }
 
-    public void openDaySchedule(ActionEvent e)  {
+    private Node loadDayButton(int day) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/scenes/CalendarDayButton.fxml"));
+            Node dayButton = loader.load();
+            CalendarDayButtonController controller = loader.getController();
+            controller.configure(day, () -> openDaySchedule(day));
+            return dayButton;
+        } catch (IOException e) {
+            throw new RuntimeException("Could not load calendar day button", e);
+        }
+    }
+
+    public void openDaySchedule(int day) {
+        LocalDate date = displayedMonth.atDay(day);
+        AppController.setSelectedDate(date.format(DateTimeFormatter.ofPattern("dd MMM yyyy")));
         AppController.updateView(State.CLINIC_SCHEDULE);
     }
 
     @FXML
     private void handleHome() {
-        AppController.updateView(State.DASHBOARD);
+        AppController.goToHomeDashboard();
     }
 
 

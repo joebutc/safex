@@ -28,99 +28,74 @@ public class DashboardPage {
     @FXML private Label welcomeLabel;
     @FXML private FlowPane cardContainer;
     @FXML private Button bellButton;
-
-    // Added for the sliding banners
     @FXML private StackPane dashboardRoot;
+
     private VBox notificationContainer;
     private static boolean hasShownLoginReminder = false;
 
     @FXML
     private void initialize() {
         welcomeLabel.setText(buildWelcomeText());
-        buildCards();
         buildBellIcon();
 
-        // The daily reminder (Only drops down once per login)
         if (!hasShownLoginReminder) {
             addBannerToScreen("Daily Reminder", "Don't forget to take your medication today.");
-
             String stiReminder = AppController.getReminderMessage();
             if (stiReminder != null && stiReminder.startsWith("You haven't logged any STI tests yet")) {
                 addBannerToScreen("Test Reminder", stiReminder);
             }
-
             hasShownLoginReminder = true;
         }
 
-        //The System Alerts (Drops down every time the dashboard loads if alerts exist)
         processSystemAlerts();
     }
 
     private void processSystemAlerts() {
-        List<String> systemAlerts = AppController.getPendingNotifications();
-
-        for (String alertMessage : systemAlerts) {
-
-            if (alertMessage.startsWith("You haven't logged any STI tests yet")) {
-                continue;
-            }
-
+        for (String alertMessage : AppController.getPendingNotifications()) {
+            if (alertMessage.startsWith("You haven't logged any STI tests yet")) continue;
             addBannerToScreen("System Alert", alertMessage);
         }
     }
 
     private String buildWelcomeText() {
         String user = AppController.getCurrentUser();
-        if (user == null || user.isBlank()) {
-            return "Welcome back";
-        }
-        return "Welcome back, " + user;
+        return (user == null || user.isBlank()) ? "Welcome back" : "Welcome back, " + user;
     }
 
     private void buildBellIcon() {
         Image bellImage = new Image(
                 Objects.requireNonNull(getClass().getResourceAsStream("/images/Bell.png")),
                 22, 22, true, true);
-
         ImageView bellView = new ImageView(bellImage);
 
         List<String> notifications = AppController.getPendingNotifications();
-
         int count = notifications.size();
 
         StackPane bellWithBadge;
-
         if (count > 0) {
             Label badgeLabel = new Label(count > 9 ? "9+" : String.valueOf(count));
-            badgeLabel.setStyle("-fx-text-fill: white; -fx-font-size: 8px; -fx-font-weight: bold;");
-
+            badgeLabel.getStyleClass().add("notification-badge-label");
             StackPane badge = new StackPane(badgeLabel);
             badge.setPrefSize(15, 15);
-            badge.setStyle("-fx-background-color: #DC2626; -fx-background-radius: 999;");
+            badge.getStyleClass().add("notification-badge");
             badge.setTranslateX(9);
             badge.setTranslateY(-9);
-
             bellWithBadge = new StackPane(bellView, badge);
         } else {
             bellWithBadge = new StackPane(bellView);
         }
-
         bellButton.setGraphic(bellWithBadge);
     }
 
-    @FXML
-    private void handleLogout() {
+    @FXML private void handleLogout() {
         hasShownLoginReminder = false;
         AppController.updateView(State.LOGIN);
     }
 
-    @FXML
-    private void handleNotifications() {
+    @FXML private void handleNotifications() {
         List<String> notifications = AppController.getPendingNotifications();
-
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Notifications");
-
         if (notifications.isEmpty()) {
             alert.setHeaderText("No new notifications");
             alert.setContentText("You're all up to date.");
@@ -128,50 +103,16 @@ public class DashboardPage {
             alert.setHeaderText(notifications.size() + " notification(s)");
             alert.setContentText(String.join("\n\n", notifications));
         }
-
         alert.showAndWait();
     }
 
-    private void buildCards() {
-        cardContainer.getChildren().addAll(
-                buildCard("Notify Partners", "Send anonymous notifications.", "Start", () -> AppController.updateView(State.NOTIFY)),
-                buildCard("Book an STI Test", "Check eligibility for testing.", "Check", () -> AppController.updateView(State.STI_BOOKING)),
-                buildCard("Track Your Tests", "Log and review STI tests.", "View", () -> AppController.updateView(State.STI_TRACKER)),
-                buildCard("My Treatment Plan", "Track medications and supply.", "Open", () -> AppController.updateView(State.TREATMENT_TRACKER)),
-                buildCard("Privacy & Settings", "Manage your privacy settings.", "Open", () -> AppController.updateView(State.SETTINGS)),
-                buildCard("Terms & Conditions", "Review privacy policy.", "View", () -> AppController.updateView(State.LEGAL))
-        );
-    }
-
-    private VBox buildCard(String titleText,
-                           String descriptionText,
-                           String buttonText,
-                           Runnable action) {
-
-        VBox card = new VBox(12);
-        card.setPadding(new Insets(18));
-        card.setPrefWidth(400);
-        card.setStyle("""
-                -fx-background-color: white;
-                -fx-background-radius: 18;
-                -fx-border-radius: 18;
-                -fx-border-color: #E5E7EB;
-                """);
-
-        Label title = new Label(titleText);
-        title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-
-        Label description = new Label(descriptionText);
-        description.setWrapText(true);
-        description.setStyle("-fx-text-fill: #475569;");
-
-        Button button = new Button(buttonText);
-        button.getStyleClass().add("primary-button");
-        button.setOnAction(_ -> action.run());
-
-        card.getChildren().addAll(title, description, button);
-        return card;
-    }
+    @FXML private void handleNotifyPartners()     { AppController.updateView(State.NOTIFY); }
+    @FXML private void handleStiBooking()         { AppController.updateView(State.STI_BOOKING); }
+    @FXML private void handleBookAppointment()    { AppController.updateView(State.BOOK_APPOINTMENT); }
+    @FXML private void handleStiTracker()         { AppController.updateView(State.STI_TRACKER); }
+    @FXML private void handleTreatmentTracker()   { AppController.updateView(State.TREATMENT_TRACKER); }
+    @FXML private void handleSettings()           { AppController.updateView(State.SETTINGS); }
+    @FXML private void handleLegal()              { AppController.updateView(State.LEGAL); }
 
     private void addBannerToScreen(String title, String message) {
         if (notificationContainer == null) {
@@ -179,46 +120,35 @@ public class DashboardPage {
             notificationContainer.setAlignment(Pos.TOP_CENTER);
             notificationContainer.setPickOnBounds(false);
             notificationContainer.setPadding(new Insets(20, 0, 0, 0));
+            notificationContainer.getStyleClass().add("notification-stack");
             dashboardRoot.getChildren().add(notificationContainer);
         }
-
         try {
-            // NOTE: Check that this path is correct for your project structure
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/scenes/reminderBanner.fxml"));
             Node banner = loader.load();
-
-
             app.NotificationBannerController controller = loader.getController();
             controller.setTitle(title);
             controller.setMessage(message);
-
             controller.setOnCloseCallback(() -> {
                 TranslateTransition slideOut = new TranslateTransition(Duration.millis(300), banner);
                 slideOut.setByY(-50);
                 FadeTransition fadeOut = new FadeTransition(Duration.millis(300), banner);
                 fadeOut.setToValue(0);
-
                 ParallelTransition popOut = new ParallelTransition(slideOut, fadeOut);
                 popOut.setOnFinished(_ -> notificationContainer.getChildren().remove(banner));
                 popOut.play();
             });
-
             banner.setTranslateY(-50);
             banner.setOpacity(0);
             notificationContainer.getChildren().add(banner);
-
             TranslateTransition slideIn = new TranslateTransition(Duration.millis(400), banner);
             slideIn.setToY(0);
             FadeTransition fadeIn = new FadeTransition(Duration.millis(400), banner);
             fadeIn.setToValue(1);
-
-            ParallelTransition popIn = new ParallelTransition(slideIn, fadeIn);
-            popIn.play();
-
+            new ParallelTransition(slideIn, fadeIn).play();
         } catch (IOException e) {
-            System.err.println("Failed to load the notification banner FXML.");
+            System.err.println("Failed to load notification banner FXML.");
             e.printStackTrace();
         }
     }
-
 }

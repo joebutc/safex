@@ -1,59 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
 <?import javafx.geometry.Insets?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.PartnerNotifyPage" prefWidth="900" prefHeight="650" style="-fx-background-color: #F8FAFC;">
-    <!-- ================= HEADER ================= -->
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="app.view.PartnerNotifyPage"
+            prefWidth="900"
+            prefHeight="650"
+            styleClass="partner-notify-shell">
+
     <top>
         <HBox spacing="10" alignment="CENTER_LEFT" styleClass="app-header">
             <padding>
-                <Insets top="20" right="20" bottom="20" left="20" />
+                <Insets top="20" right="20" bottom="20" left="20"/>
             </padding>
-
-            <Button onAction="#handleHome"/>
+            <Button onAction="#handleHome" text="Back" styleClass="secondary-button"/>
             <Label text="Notify Partners" styleClass="app-header-title"/>
             <Region HBox.hgrow="ALWAYS"/>
         </HBox>
     </top>
 
-    <!-- ================= CENTER CONTENT ================= -->
     <center>
         <VBox spacing="18">
             <padding>
-                <Insets top="20" right="20" bottom="20" left="20" />
+                <Insets top="20" right="20" bottom="20" left="20"/>
             </padding>
 
-            <!-- Instruction row + add button -->
-            <HBox spacing="12">
+            <HBox spacing="12" alignment="CENTER_LEFT">
                 <Label fx:id="promptLabel"
                        text="Send anonymous email notifications to chosen partners."
-                       wrapText="true"/>
-                <Button fx:id="addContactButton"/>
+                       wrapText="true"
+                       styleClass="partner-prompt-pill">
+                    <padding>
+                        <Insets top="10" right="16" bottom="10" left="16"/>
+                    </padding>
+                </Label>
+                <Button fx:id="addContactButton"
+                        focusTraversable="false"
+                        styleClass="partner-action-pill"
+                        onAction="#handleAddContact">
+                    <padding>
+                        <Insets top="12" right="12" bottom="12" left="12"/>
+                    </padding>
+                    <graphic>
+                        <ImageView fitWidth="30" fitHeight="30" preserveRatio="true">
+                            <Image url="@../images/+.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
             </HBox>
 
-            <!-- Contact list scroll pane -->
-            <ScrollPane fitToWidth="true" pannable="true"
-                        style="-fx-background-color: transparent;">
+            <ScrollPane fitToWidth="true" pannable="true" VBox.vgrow="ALWAYS" styleClass="list-scroll-pane">
                 <VBox fx:id="contactsContainer" spacing="12">
                     <padding>
-                        <Insets top="12" right="12" bottom="12" left="12" />
+                        <Insets top="12" right="12" bottom="12" left="12"/>
                     </padding>
                 </VBox>
-
             </ScrollPane>
 
-            <!-- Disclaimer + Notify button -->
             <HBox spacing="16" alignment="CENTER_LEFT" styleClass="card">
-            <padding>
-                <Insets top="18" right="18" bottom="18" left="18"/>
-            </padding>
+                <padding>
+                    <Insets top="18" right="18" bottom="18" left="18"/>
+                </padding>
                 <Label text="Note: the following message will be sent anonymously to all contacts in the list above."
-                       wrapText="true"/>
-                <Button fx:id="notifyButton" text="Notify"/>
+                       wrapText="true"
+                       HBox.hgrow="ALWAYS"/>
+                <Button fx:id="notifyButton"
+                        text="Notify"
+                        onAction="#handleNotify"
+                        styleClass="partner-action-pill">
+                    <graphic>
+                        <ImageView fitWidth="25" fitHeight="25" preserveRatio="true">
+                            <Image url="@../images/Bell.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
             </HBox>
-
         </VBox>
     </center>
 </BorderPane>

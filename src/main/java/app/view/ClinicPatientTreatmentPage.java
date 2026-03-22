@@ -1,15 +1,12 @@
 package app.view;
 
 import app.AppController;
-import app.model.State;
 import app.model.TreatmentEntry;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -20,7 +17,6 @@ import javafx.stage.Stage;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 
 public class ClinicPatientTreatmentPage {
 
@@ -47,7 +43,7 @@ public class ClinicPatientTreatmentPage {
 
         patientNameLabel.setText(patientUsername);
 
-        homeButton.setOnAction(e -> AppController.updateView(State.DASHBOARD));
+        homeButton.setOnAction(e -> AppController.goToHomeDashboard());
         prescribeButton.setOnAction(e -> showPrescribeDialog(null));
 
         boolean[] perms = AppController.getPatientTreatmentPermissions(patientUsername);

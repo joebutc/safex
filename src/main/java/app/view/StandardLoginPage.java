@@ -11,8 +11,6 @@ public class StandardLoginPage extends LoginBase {
 
     @Override
     protected void onInitialize() {
-        buildBrandPanel("Safer choices,\nsmarter health.");
-
         titleLabel.setText("Welcome back");
         subtitleLabel.setText("Sign in to continue.");
 

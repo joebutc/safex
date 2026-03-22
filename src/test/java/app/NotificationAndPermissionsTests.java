@@ -33,20 +33,17 @@ class NotificationAndPermissionsTests {
     private static final String DB_URL = "jdbc:sqlite:useraccounts.db";
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
-    private AppController controller;
-
     @BeforeEach
     void setup() {
         DatabaseHandler.initialiseDatabase();
-        AppModel model = new AppModel();
-        model.setCurrentUser(TEST_USER);
-        controller = new AppController(model, null); // null view — no UI methods invoked
+        AppController.initForTest(TEST_USER);
         cleanAll();
     }
 
     @AfterEach
     void teardown() {
         cleanAll();
+        AppController.resetForTest();
     }
 
     // ── shouldShowReminder ──────────────────────────────────────────────────
@@ -54,20 +51,20 @@ class NotificationAndPermissionsTests {
     @Test
     void shouldShowReminder_falseWhenRemindersDisabled() {
         DatabaseHandler.saveTestPermissions(TEST_USER, false, false, 3);
-        assertFalse(controller.shouldShowReminder());
+        assertFalse(AppController.shouldShowReminder());
     }
 
     @Test
     void shouldShowReminder_trueWhenNoTestsAndRemindersEnabled() {
         // No STI tests at all → should always remind
         DatabaseHandler.saveTestPermissions(TEST_USER, true, false, 3);
-        assertTrue(controller.shouldShowReminder());
+        assertTrue(AppController.shouldShowReminder());
     }
 
     @Test
     void shouldShowReminder_falseWhenNoPermissionRow() {
         // No row in test_permissions → defaults to allow_reminders=false
-        assertFalse(controller.shouldShowReminder());
+        assertFalse(AppController.shouldShowReminder());
     }
 
     @Test
@@ -75,7 +72,7 @@ class NotificationAndPermissionsTests {
         DatabaseHandler.saveTestPermissions(TEST_USER, true, false, 3);
         String yesterday = LocalDate.now().minusDays(1).format(FMT);
         DatabaseHandler.addStiTest(TEST_USER, yesterday, "HIV", "Negative", "");
-        assertFalse(controller.shouldShowReminder());
+        assertFalse(AppController.shouldShowReminder());
     }
 
     @Test
@@ -83,7 +80,7 @@ class NotificationAndPermissionsTests {
         DatabaseHandler.saveTestPermissions(TEST_USER, true, false, 3);
         String twoYearsAgo = LocalDate.now().minusYears(2).format(FMT);
         DatabaseHandler.addStiTest(TEST_USER, twoYearsAgo, "HIV", "Negative", "");
-        assertTrue(controller.shouldShowReminder());
+        assertTrue(AppController.shouldShowReminder());
     }
 
     @Test
@@ -92,7 +89,7 @@ class NotificationAndPermissionsTests {
         DatabaseHandler.saveTestPermissions(TEST_USER, true, false, 3);
         String exactlyThreeMonthsAgo = LocalDate.now().minusMonths(3).format(FMT);
         DatabaseHandler.addStiTest(TEST_USER, exactlyThreeMonthsAgo, "HIV", "Negative", "");
-        assertFalse(controller.shouldShowReminder());
+        assertFalse(AppController.shouldShowReminder());
     }
 
     @Test
@@ -100,7 +97,7 @@ class NotificationAndPermissionsTests {
         DatabaseHandler.saveTestPermissions(TEST_USER, true, false, 3);
         String justOverThreeMonthsAgo = LocalDate.now().minusMonths(3).minusDays(1).format(FMT);
         DatabaseHandler.addStiTest(TEST_USER, justOverThreeMonthsAgo, "HIV", "Negative", "");
-        assertTrue(controller.shouldShowReminder());
+        assertTrue(AppController.shouldShowReminder());
     }
 
     @Test
@@ -109,7 +106,7 @@ class NotificationAndPermissionsTests {
         DatabaseHandler.saveTestPermissions(TEST_USER, true, false, 1);
         String fortyDaysAgo = LocalDate.now().minusDays(40).format(FMT);
         DatabaseHandler.addStiTest(TEST_USER, fortyDaysAgo, "HIV", "Negative", "");
-        assertTrue(controller.shouldShowReminder());
+        assertTrue(AppController.shouldShowReminder());
     }
 
     @Test
@@ -118,7 +115,7 @@ class NotificationAndPermissionsTests {
         DatabaseHandler.saveTestPermissions(TEST_USER, true, false, 6);
         String twoMonthsAgo = LocalDate.now().minusMonths(2).format(FMT);
         DatabaseHandler.addStiTest(TEST_USER, twoMonthsAgo, "HIV", "Negative", "");
-        assertFalse(controller.shouldShowReminder());
+        assertFalse(AppController.shouldShowReminder());
     }
 
     // ── getReminderMessage ──────────────────────────────────────────────────
@@ -126,18 +123,18 @@ class NotificationAndPermissionsTests {
     @Test
     void getReminderMessage_nullWhenRemindersDisabled() {
         DatabaseHandler.saveTestPermissions(TEST_USER, false, false, 3);
-        assertNull(controller.getReminderMessage());
+        assertNull(AppController.getReminderMessage());
     }
 
     @Test
     void getReminderMessage_nullWhenNoPermissionRow() {
-        assertNull(controller.getReminderMessage());
+        assertNull(AppController.getReminderMessage());
     }
 
     @Test
     void getReminderMessage_noTestsMessage() {
         DatabaseHandler.saveTestPermissions(TEST_USER, true, false, 3);
-        String msg = controller.getReminderMessage();
+        String msg = AppController.getReminderMessage();
         assertNotNull(msg);
         assertTrue(msg.contains("haven't logged any STI tests"));
     }
@@ -147,7 +144,7 @@ class NotificationAndPermissionsTests {
         DatabaseHandler.saveTestPermissions(TEST_USER, true, false, 3);
         String overdueDate = LocalDate.now().minusYears(1).format(FMT);
         DatabaseHandler.addStiTest(TEST_USER, overdueDate, "HIV", "Negative", "");
-        String msg = controller.getReminderMessage();
+        String msg = AppController.getReminderMessage();
         assertNotNull(msg);
         assertTrue(msg.contains("3 month"), "Message should mention the interval");
         assertTrue(msg.contains(overdueDate), "Message should mention the last test date");
@@ -158,7 +155,7 @@ class NotificationAndPermissionsTests {
         DatabaseHandler.saveTestPermissions(TEST_USER, true, false, 6);
         String overdueDate = LocalDate.now().minusYears(1).format(FMT);
         DatabaseHandler.addStiTest(TEST_USER, overdueDate, "HIV", "Negative", "");
-        String msg = controller.getReminderMessage();
+        String msg = AppController.getReminderMessage();
         assertNotNull(msg);
         assertTrue(msg.contains("6 month"));
     }
@@ -167,92 +164,92 @@ class NotificationAndPermissionsTests {
 
     @Test
     void getTestPermissions_defaultFalseWhenNoRow() {
-        boolean[] perms = controller.getTestPermissions();
+        boolean[] perms = AppController.getTestPermissions();
         assertFalse(perms[0]); // allow_reminders
         assertFalse(perms[1]); // allow_share_with_doctor
     }
 
     @Test
     void saveAndGetTestPermissions_bothEnabled() {
-        assertTrue(controller.saveTestPermissions(true, true, 6));
-        boolean[] perms = controller.getTestPermissions();
+        assertTrue(AppController.saveTestPermissions(true, true, 6));
+        boolean[] perms = AppController.getTestPermissions();
         assertTrue(perms[0]);
         assertTrue(perms[1]);
     }
 
     @Test
     void saveAndGetTestPermissions_remindersOnlyNoShare() {
-        controller.saveTestPermissions(true, false, 3);
-        boolean[] perms = controller.getTestPermissions();
+        AppController.saveTestPermissions(true, false, 3);
+        boolean[] perms = AppController.getTestPermissions();
         assertTrue(perms[0]);
         assertFalse(perms[1]);
     }
 
     @Test
     void saveTestPermissions_upsertOverwritesPrevious() {
-        controller.saveTestPermissions(true, true, 3);
-        controller.saveTestPermissions(false, false, 12);
-        boolean[] perms = controller.getTestPermissions();
+        AppController.saveTestPermissions(true, true, 3);
+        AppController.saveTestPermissions(false, false, 12);
+        boolean[] perms = AppController.getTestPermissions();
         assertFalse(perms[0]);
         assertFalse(perms[1]);
     }
 
     @Test
     void getReminderIntervalMonths_defaultThreeWhenNoRow() {
-        assertEquals(3, controller.getReminderIntervalMonths());
+        assertEquals(3, AppController.getReminderIntervalMonths());
     }
 
     @Test
     void getReminderIntervalMonths_returnsSavedValue() {
-        controller.saveTestPermissions(true, false, 6);
-        assertEquals(6, controller.getReminderIntervalMonths());
+        AppController.saveTestPermissions(true, false, 6);
+        assertEquals(6, AppController.getReminderIntervalMonths());
     }
 
     @Test
     void getReminderIntervalMonths_upsertedValueIsUsed() {
-        controller.saveTestPermissions(true, false, 3);
-        controller.saveTestPermissions(true, false, 12);
-        assertEquals(12, controller.getReminderIntervalMonths());
+        AppController.saveTestPermissions(true, false, 3);
+        AppController.saveTestPermissions(true, false, 12);
+        assertEquals(12, AppController.getReminderIntervalMonths());
     }
 
     // ── P&S: treatment permissions via controller ───────────────────────────
 
     @Test
     void getTreatmentPermissions_defaultFalseWhenNoRow() {
-        boolean[] perms = controller.getTreatmentPermissions();
+        boolean[] perms = AppController.getTreatmentPermissions();
         assertFalse(perms[0]); // allow_treatment_reminders
         assertFalse(perms[1]); // allow_clinic_access
     }
 
     @Test
     void saveAndGetTreatmentPermissions_bothEnabled() {
-        assertTrue(controller.saveTreatmentPermissions(true, true));
-        boolean[] perms = controller.getTreatmentPermissions();
+        assertTrue(AppController.saveTreatmentPermissions(true, true));
+        boolean[] perms = AppController.getTreatmentPermissions();
         assertTrue(perms[0]);
         assertTrue(perms[1]);
     }
 
     @Test
     void saveAndGetTreatmentPermissions_remindersOnlyNoClinicAccess() {
-        controller.saveTreatmentPermissions(true, false);
-        boolean[] perms = controller.getTreatmentPermissions();
+        AppController.saveTreatmentPermissions(true, false);
+        boolean[] perms = AppController.getTreatmentPermissions();
         assertTrue(perms[0]);
         assertFalse(perms[1]);
     }
 
     @Test
     void saveAndGetTreatmentPermissions_clinicAccessOnlyNoReminders() {
-        controller.saveTreatmentPermissions(false, true);
-        boolean[] perms = controller.getTreatmentPermissions();
+        AppController.saveTreatmentPermissions(false, true);
+        boolean[] perms = AppController.getTreatmentPermissions();
         assertFalse(perms[0]);
         assertTrue(perms[1]);
     }
 
     @Test
     void saveTreatmentPermissions_upsertOverwritesPrevious() {
-        controller.saveTreatmentPermissions(true, true);
-        controller.saveTreatmentPermissions(false, false);
-        boolean[] perms = controller.getTreatmentPermissions();
+        AppController.saveTreatmentPermissions(true, true);
+        AppController.saveTreatmentPermissions(false, false);
+        boolean[] perms = AppController.getTreatmentPermissions();
         assertFalse(perms[0]);
         assertFalse(perms[1]);
     }
@@ -262,117 +259,117 @@ class NotificationAndPermissionsTests {
     @Test
     void getPendingNotifications_emptyWhenNoPermissionsSet() {
         // No permission rows at all → everything defaults to disabled
-        assertTrue(controller.getPendingNotifications().isEmpty());
+        assertTrue(AppController.getPendingNotifications().isEmpty());
     }
 
     @Test
     void getPendingNotifications_emptyWhenAllPermissionsDisabled() {
-        controller.saveTestPermissions(false, false, 3);
-        controller.saveTreatmentPermissions(false, false);
-        assertTrue(controller.getPendingNotifications().isEmpty());
+        AppController.saveTestPermissions(false, false, 3);
+        AppController.saveTreatmentPermissions(false, false);
+        assertTrue(AppController.getPendingNotifications().isEmpty());
     }
 
     @Test
     void getPendingNotifications_includesTestReminderWhenOverdue() {
-        controller.saveTestPermissions(true, false, 3);
+        AppController.saveTestPermissions(true, false, 3);
         String overdueDate = LocalDate.now().minusYears(1).format(FMT);
         DatabaseHandler.addStiTest(TEST_USER, overdueDate, "HIV", "Negative", "");
-        List<String> notifications = controller.getPendingNotifications();
+        List<String> notifications = AppController.getPendingNotifications();
         assertEquals(1, notifications.size());
         assertTrue(notifications.get(0).contains("month"));
     }
 
     @Test
     void getPendingNotifications_noTestReminderWhenRecentlyTested() {
-        controller.saveTestPermissions(true, false, 3);
+        AppController.saveTestPermissions(true, false, 3);
         String recentDate = LocalDate.now().minusDays(5).format(FMT);
         DatabaseHandler.addStiTest(TEST_USER, recentDate, "HIV", "Negative", "");
-        assertTrue(controller.getPendingNotifications().isEmpty());
+        assertTrue(AppController.getPendingNotifications().isEmpty());
     }
 
     @Test
     void getPendingNotifications_includesTreatmentLowStock() {
-        controller.saveTreatmentPermissions(true, false);
+        AppController.saveTreatmentPermissions(true, false);
         // 5 doses "Once daily" with threshold 7 → 5 days remaining ≤ 7 → low stock
-        controller.addTreatment("PrEP", "1 tablet", "Once daily", 5, 7, "01 Jan 2026", "");
-        List<String> notifications = controller.getPendingNotifications();
+        AppController.addTreatment("PrEP", "1 tablet", "Once daily", 5, 7, "01 Jan 2026", "");
+        List<String> notifications = AppController.getPendingNotifications();
         assertEquals(1, notifications.size());
         assertTrue(notifications.get(0).contains("PrEP"));
     }
 
     @Test
     void getPendingNotifications_excludesTreatmentWhenRemindersOff() {
-        controller.saveTreatmentPermissions(false, false);
-        controller.addTreatment("PrEP", "1 tablet", "Once daily", 5, 7, "01 Jan 2026", "");
-        assertTrue(controller.getPendingNotifications().isEmpty());
+        AppController.saveTreatmentPermissions(false, false);
+        AppController.addTreatment("PrEP", "1 tablet", "Once daily", 5, 7, "01 Jan 2026", "");
+        assertTrue(AppController.getPendingNotifications().isEmpty());
     }
 
     @Test
     void getPendingNotifications_excludesWellStockedTreatments() {
-        controller.saveTreatmentPermissions(true, false);
+        AppController.saveTreatmentPermissions(true, false);
         // 30 doses "Once daily", threshold 7 → 30 days remaining > 7 → not low stock
-        controller.addTreatment("PrEP", "1 tablet", "Once daily", 30, 7, "01 Jan 2026", "");
-        assertTrue(controller.getPendingNotifications().isEmpty());
+        AppController.addTreatment("PrEP", "1 tablet", "Once daily", 30, 7, "01 Jan 2026", "");
+        assertTrue(AppController.getPendingNotifications().isEmpty());
     }
 
     @Test
     void getPendingNotifications_excludesAsNeededTreatmentsAlways() {
-        controller.saveTreatmentPermissions(true, false);
+        AppController.saveTreatmentPermissions(true, false);
         // As needed: dosesPerDay=0 → isLowStock always false
-        controller.addTreatment("Ibuprofen", "400 mg", "As needed", 0, 7, "01 Jan 2026", "");
-        assertTrue(controller.getPendingNotifications().isEmpty());
+        AppController.addTreatment("Ibuprofen", "400 mg", "As needed", 0, 7, "01 Jan 2026", "");
+        assertTrue(AppController.getPendingNotifications().isEmpty());
     }
 
     @Test
     void getPendingNotifications_combinesTestAndTreatmentNotifications() {
         // Both STI overdue + low-stock treatment active
-        controller.saveTestPermissions(true, false, 3);
+        AppController.saveTestPermissions(true, false, 3);
         String overdueDate = LocalDate.now().minusYears(1).format(FMT);
         DatabaseHandler.addStiTest(TEST_USER, overdueDate, "HIV", "Negative", "");
 
-        controller.saveTreatmentPermissions(true, false);
-        controller.addTreatment("PrEP", "1 tablet", "Once daily", 5, 7, "01 Jan 2026", "");
+        AppController.saveTreatmentPermissions(true, false);
+        AppController.addTreatment("PrEP", "1 tablet", "Once daily", 5, 7, "01 Jan 2026", "");
 
-        List<String> notifications = controller.getPendingNotifications();
+        List<String> notifications = AppController.getPendingNotifications();
         assertEquals(2, notifications.size());
     }
 
     @Test
     void getPendingNotifications_multipleLoStockTreatments() {
-        controller.saveTreatmentPermissions(true, false);
+        AppController.saveTreatmentPermissions(true, false);
         // 3 doses "Once daily", threshold 7 → low stock
-        controller.addTreatment("PrEP", "1 tablet", "Once daily", 3, 7, "01 Jan 2026", "");
+        AppController.addTreatment("PrEP", "1 tablet", "Once daily", 3, 7, "01 Jan 2026", "");
         // 5 doses "Twice daily" = 2.5 days, threshold 14 → low stock
-        controller.addTreatment("Doxycycline", "200 mg", "Twice daily", 5, 14, "01 Jan 2026", "");
-        List<String> notifications = controller.getPendingNotifications();
+        AppController.addTreatment("Doxycycline", "200 mg", "Twice daily", 5, 14, "01 Jan 2026", "");
+        List<String> notifications = AppController.getPendingNotifications();
         assertEquals(2, notifications.size());
     }
 
     @Test
     void getPendingNotifications_onlyLowStockCountedNotWellStocked() {
-        controller.saveTreatmentPermissions(true, false);
-        controller.addTreatment("PrEP", "1 tablet", "Once daily", 3, 7, "01 Jan 2026", "");   // low stock
-        controller.addTreatment("ART", "1 tablet", "Once daily", 90, 7, "01 Jan 2026", "");   // well stocked
-        List<String> notifications = controller.getPendingNotifications();
+        AppController.saveTreatmentPermissions(true, false);
+        AppController.addTreatment("PrEP", "1 tablet", "Once daily", 3, 7, "01 Jan 2026", "");   // low stock
+        AppController.addTreatment("ART", "1 tablet", "Once daily", 90, 7, "01 Jan 2026", "");   // well stocked
+        List<String> notifications = AppController.getPendingNotifications();
         assertEquals(1, notifications.size());
         assertTrue(notifications.get(0).contains("PrEP"));
     }
 
     @Test
     void getPendingNotifications_treatmentReminderContainsMedicationName() {
-        controller.saveTreatmentPermissions(true, false);
-        controller.addTreatment("Azithromycin", "500 mg", "Once daily", 2, 7, "01 Jan 2026", "");
-        List<String> notifications = controller.getPendingNotifications();
+        AppController.saveTreatmentPermissions(true, false);
+        AppController.addTreatment("Azithromycin", "500 mg", "Once daily", 2, 7, "01 Jan 2026", "");
+        List<String> notifications = AppController.getPendingNotifications();
         assertEquals(1, notifications.size());
         assertTrue(notifications.get(0).contains("Azithromycin"));
     }
 
     @Test
     void getPendingNotifications_treatmentReminderContainsDaysRemaining() {
-        controller.saveTreatmentPermissions(true, false);
+        AppController.saveTreatmentPermissions(true, false);
         // 2 doses "Once daily" = 2 days remaining
-        controller.addTreatment("PrEP", "1 tablet", "Once daily", 2, 7, "01 Jan 2026", "");
-        List<String> notifications = controller.getPendingNotifications();
+        AppController.addTreatment("PrEP", "1 tablet", "Once daily", 2, 7, "01 Jan 2026", "");
+        List<String> notifications = AppController.getPendingNotifications();
         assertEquals(1, notifications.size());
         assertTrue(notifications.get(0).contains("2 day"));
     }

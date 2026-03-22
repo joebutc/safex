@@ -2,15 +2,12 @@ package app.view;
 
 import app.AppController;
 import app.model.DatabaseHandler;
-import app.model.State;
 import app.model.TreatmentEntry;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -21,7 +18,6 @@ import javafx.stage.Stage;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 
 public class TreatmentTrackerPage {
     @FXML private Button homeButton;
@@ -59,10 +55,7 @@ public class TreatmentTrackerPage {
 
     @FXML
     private void initialize() {
-        Image homeImage = new Image(
-                Objects.requireNonNull(getClass().getResourceAsStream("/images/Home.png")), 25, 25, true, true);
-        homeButton.setGraphic(new ImageView(homeImage));
-        homeButton.setOnAction(event -> AppController.updateView(State.DASHBOARD));
+        homeButton.setOnAction(event -> AppController.goToHomeDashboard());
 
         addMedicationBtn.setOnAction(event -> showAddDialog(null));
         refresh();
