@@ -7,7 +7,7 @@ public class SettingsPageController {
 
     @FXML
     private void handleBackToDashboard() {
-        AppController.goToHomeDashboard(); // Assuming this is your state name
+        AppController.goToHomeDashboard();
     }
 
     @FXML private void handleSettings() {
