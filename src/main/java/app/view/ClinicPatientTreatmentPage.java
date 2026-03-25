@@ -59,6 +59,7 @@ public class ClinicPatientTreatmentPage {
             topRow.setVisible(false);
             topRow.setManaged(false);
         } else {
+            AppController.logClinicAccess(patientUsername, "VIEW_TREATMENTS", null);
             refresh();
         }
     }
@@ -159,6 +160,8 @@ public class ClinicPatientTreatmentPage {
             confirm.showAndWait().ifPresent(bt -> {
                 if (bt == ButtonType.YES) {
                     AppController.deleteTreatmentForPatient(t.getId(), patientUsername);
+                    AppController.logClinicAccess(patientUsername, "DISCONTINUE_TREATMENT",
+                            t.getMedicationName() + " - " + t.getDose());
                     refresh();
                 }
             });
@@ -298,6 +301,9 @@ public class ClinicPatientTreatmentPage {
             }
 
             if (ok) {
+                AppController.logClinicAccess(patientUsername,
+                        editTarget == null ? "ADD_TREATMENT" : "UPDATE_TREATMENT",
+                        name + " - " + dose);
                 dialog.close();
                 refresh();
             } else {

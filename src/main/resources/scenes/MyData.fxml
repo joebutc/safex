@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefWidth="540"
+      spacing="16"
+      styleClass="dialog-shell"
+      xmlns="http://javafx.com/javafx/23.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="app.view.MyDataController">
+    <padding>
+        <Insets bottom="24" left="24" right="24" top="24"/>
+    </padding>
+    <Label styleClass="dialog-title" text="Your Personal Data"/>
+    <Label styleClass="dialog-copy" text="This shows all the data we have stored about you." wrapText="true"/>
+    <ScrollPane fitToWidth="true" prefHeight="380" styleClass="log-scroll-pane">
+        <VBox fx:id="dataContainer" spacing="16">
+            <padding>
+                <Insets bottom="8" left="4" right="4" top="4"/>
+            </padding>
+        </VBox>
+    </ScrollPane>
+    <HBox spacing="10">
+        <Button onAction="#handleExportCsv" styleClass="secondary-button" text="Export CSV"/>
+        <Button onAction="#handleViewAccessLog" styleClass="secondary-button" text="View Access Log"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="closeButton" onAction="#handleClose" styleClass="primary-button" text="Close"/>
+    </HBox>
+</VBox>

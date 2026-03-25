@@ -2,10 +2,8 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.shape.Rectangle?>
 <?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="app.view.SettingsPage">
     <!-- Top header -->
@@ -28,101 +26,113 @@
 
     <!-- Center content -->
     <center>
-        <VBox spacing="16" alignment="TOP_CENTER">
-            <padding>
-                <Insets top="20" right="20" bottom="20" left="20" />
-            </padding>
-            <!-- Doc icon -->
-            <StackPane prefWidth="70" prefHeight="70">
-                <Rectangle width="52" height="52" arcWidth="14" arcHeight="14" fill="#F3F4F6"/>
-                <Label text="DOC"/>
-            </StackPane>
+        <ScrollPane fitToWidth="true" styleClass="edge-to-edge">
+            <VBox spacing="16" alignment="TOP_CENTER">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20" />
+                </padding>
 
-            <!-- Cards -->
+            <!-- Your Data Section -->
+            <Label text="Your Data" styleClass="settings-section-header"/>
             <FlowPane hgap="14" vgap="14" alignment="TOP_CENTER" prefWrapLength="940">
-
-                <Button onAction="#handleDataCollected" styleClass="card" prefWidth="300" prefHeight="100">
+                <Button onAction="#handleDataCollected" styleClass="card-setting" prefWidth="300" prefHeight="100">
                     <graphic>
-                        <VBox spacing="6" prefWidth="268">
-                            <Label text="What data is collected" styleClass="app-header-title"/>
-                            <Label text="Basic account info, usage patterns, device information" styleClass="muted-text" wrapText="true"/>
-                        </VBox>
+                        <HBox spacing="8" alignment="CENTER_LEFT" prefWidth="268">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="View your personal data" styleClass="card-setting-title"/>
+                                <Label text="See all data we have stored, export as CSV" styleClass="card-setting-subtitle" wrapText="true"/>
+                            </VBox>
+                            <Label text="›" styleClass="card-chevron"/>
+                        </HBox>
                     </graphic>
                 </Button>
-
-                <Button onAction="#handleWhyUsed" styleClass="card" prefWidth="300" prefHeight="100">
-                    <graphic>
-                        <VBox spacing="6" prefWidth="268">
-                            <Label text="Why the data is used" styleClass="app-header-title"/>
-                            <Label text="To provide and improve our services, ensure security" styleClass="muted-text" wrapText="true"/>
-                        </VBox>
-                    </graphic>
-                </Button>
-
-                <Button onAction="#handleAccess" styleClass="card" prefWidth="300" prefHeight="100">
-                    <graphic>
-                        <VBox spacing="6" prefWidth="268">
-                            <Label text="Who can access it" styleClass="app-header-title"/>
-                            <Label text="Authorized staff and service providers" styleClass="muted-text" wrapText="true"/>
-                        </VBox>
-                    </graphic>
-                </Button>
-
-                <Button onAction="#handleRetention" styleClass="card" prefWidth="300" prefHeight="100">
-                    <graphic>
-                        <VBox spacing="6" prefWidth="268">
-                            <Label text="How long data is kept" styleClass="app-header-title"/>
-                            <Label text="Retained while your account is active" styleClass="muted-text" wrapText="true"/>
-                        </VBox>
-                    </graphic>
-                </Button>
-
-                <Button onAction="#handleRights" styleClass="card" prefWidth="300" prefHeight="100">
-                    <graphic>
-                        <VBox spacing="6" prefWidth="268">
-                            <Label text="User rights" styleClass="app-header-title"/>
-                            <Label text="Access, modify, or delete your data" styleClass="muted-text" wrapText="true"/>
-                        </VBox>
-                    </graphic>
-                </Button>
-
-                <Button onAction="#handleTestingPermissions" styleClass="card" prefWidth="300" prefHeight="100">
-                    <graphic>
-                        <VBox spacing="6" prefWidth="268">
-                            <Label text="Testing data permissions" styleClass="app-header-title"/>
-                            <Label text="Control reminders and doctor sharing for your test logs" styleClass="muted-text" wrapText="true"/>
-                        </VBox>
-                    </graphic>
-                </Button>
-
-                <Button onAction="#handleTreatmentPermissions" styleClass="card" prefWidth="300" prefHeight="100">
-                    <graphic>
-                        <VBox spacing="6" prefWidth="268">
-                            <Label text="Treatment data permissions" styleClass="app-header-title"/>
-                            <Label text="Allow reminders for medication supply and clinic access to your treatment plan" styleClass="muted-text" wrapText="true"/>
-                        </VBox>
-                    </graphic>
-                </Button>
-
             </FlowPane>
 
-            <!-- Terms button -->
-            <Button onAction="#handleReadFullTerms" styleClass="secondary-button" text="Read full Terms &amp; Conditions"/>
+            <!-- Permissions Section -->
+            <Label text="Manage Your Preferences" styleClass="settings-section-header"/>
+            <FlowPane hgap="14" vgap="14" alignment="TOP_CENTER" prefWrapLength="940">
+                <Button onAction="#handleAccess" styleClass="card-setting" prefWidth="300" prefHeight="100">
+                    <graphic>
+                        <HBox spacing="8" alignment="CENTER_LEFT" prefWidth="268">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Who can access your data" styleClass="card-setting-title"/>
+                                <Label text="Choose which parties can view your info" styleClass="card-setting-subtitle" wrapText="true"/>
+                            </VBox>
+                            <Label text="›" styleClass="card-chevron"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Button onAction="#handleRetention" styleClass="card-setting" prefWidth="300" prefHeight="100">
+                    <graphic>
+                        <HBox spacing="8" alignment="CENTER_LEFT" prefWidth="268">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Data retention period" styleClass="card-setting-title"/>
+                                <Label text="Set how long health data is kept" styleClass="card-setting-subtitle" wrapText="true"/>
+                            </VBox>
+                            <Label text="›" styleClass="card-chevron"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Button onAction="#handleTestingPermissions" styleClass="card-setting" prefWidth="300" prefHeight="100">
+                    <graphic>
+                        <HBox spacing="8" alignment="CENTER_LEFT" prefWidth="268">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Testing data permissions" styleClass="card-setting-title"/>
+                                <Label text="Reminders and doctor sharing" styleClass="card-setting-subtitle" wrapText="true"/>
+                            </VBox>
+                            <Label text="›" styleClass="card-chevron"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+
+                <Button onAction="#handleTreatmentPermissions" styleClass="card-setting" prefWidth="300" prefHeight="100">
+                    <graphic>
+                        <HBox spacing="8" alignment="CENTER_LEFT" prefWidth="268">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Treatment data permissions" styleClass="card-setting-title"/>
+                                <Label text="Medication reminders and clinic access" styleClass="card-setting-subtitle" wrapText="true"/>
+                            </VBox>
+                            <Label text="›" styleClass="card-chevron"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+            </FlowPane>
+
+            <!-- Information Section -->
+            <Label text="Learn More" styleClass="settings-section-header"/>
+            <FlowPane hgap="14" vgap="14" alignment="TOP_CENTER" prefWrapLength="940">
+                <Button onAction="#handleWhyUsed" styleClass="card-info" prefWidth="300" prefHeight="90">
+                    <graphic>
+                        <VBox spacing="4" prefWidth="268">
+                            <Label text="Why your data is used" styleClass="card-info-title"/>
+                            <Label text="To improve services and ensure security" styleClass="card-info-subtitle" wrapText="true"/>
+                        </VBox>
+                    </graphic>
+                </Button>
+
+                <Button onAction="#handleRights" styleClass="card-info" prefWidth="300" prefHeight="90">
+                    <graphic>
+                        <VBox spacing="4" prefWidth="268">
+                            <Label text="Your rights" styleClass="card-info-title"/>
+                            <Label text="Access, modify, or delete your data" styleClass="card-info-subtitle" wrapText="true"/>
+                        </VBox>
+                    </graphic>
+                </Button>
+            </FlowPane>
+
+            <!-- Terms section -->
+            <VBox spacing="10" alignment="CENTER" styleClass="terms-acceptance-block">
+                <HBox spacing="12" alignment="CENTER">
+                    <Button onAction="#handleReadFullTerms" styleClass="secondary-button" text="Read full Terms &amp; Conditions"/>
+                    <Button fx:id="acceptBtn" text="Accept Terms &amp; Continue" styleClass="primary-button" onAction="#handleAccept"/>
+                </HBox>
+                <CheckBox fx:id="agreeCheckBox" text="I have read and accept the Terms &amp; Conditions"/>
+            </VBox>
 
         </VBox>
+        </ScrollPane>
     </center>
-
-    <!-- Bottom -->
-    <bottom>
-        <HBox spacing="12" alignment="CENTER_LEFT">
-            <padding>
-                <Insets top="12" right="6" left="6" />
-            </padding>
-            <CheckBox fx:id="agreeCheckBox" text="I agree to the Terms &amp; Conditions"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button fx:id="acceptBtn" text="Accept &amp; Continue" styleClass="primary-button"
-                    prefWidth="160" disable="true" onAction="#handleAccept"/>
-        </HBox>
-    </bottom>
 
 </BorderPane>

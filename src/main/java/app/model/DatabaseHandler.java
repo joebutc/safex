@@ -6,6 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,13 +20,12 @@ public final class DatabaseHandler {
     }
 
     private static Connection connect() {
-        Connection conn = null;
         try {
-            conn = DriverManager.getConnection(DB_URL);
+            return DriverManager.getConnection(DB_URL);
         } catch (SQLException e) {
             System.out.println("Connection error: " + e.getMessage());
+            return null;
         }
-        return conn;
     }
 
     // Creates both the users and clinics tables if they do not already exist
@@ -168,6 +170,27 @@ public final class DatabaseHandler {
 
             migrateClinicAvailabilitySchema(conn);
 
+            // Data access log table for P2 audit trail
+            String dataAccessLogSql = "CREATE TABLE IF NOT EXISTS data_access_log ("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "patient_username TEXT NOT NULL,"
+                    + "accessor_username TEXT NOT NULL,"
+                    + "accessor_type TEXT NOT NULL,"
+                    + "access_type TEXT NOT NULL,"
+                    + "access_timestamp TEXT NOT NULL,"
+                    + "details TEXT"
+                    + ");";
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(dataAccessLogSql);
+            } catch (SQLException ignored) {}
+
+            // Migration: convert old retention values to new 30/90/180 day options
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("UPDATE privacy_settings SET data_retention = '180 days' WHERE data_retention = '6 months'");
+                stmt.execute("UPDATE privacy_settings SET data_retention = 'While account is active' WHERE data_retention = '1 year'");
+                stmt.execute("UPDATE privacy_settings SET data_retention = 'While account is active' WHERE data_retention = 'Delete immediately'");
+            } catch (SQLException ignored) {}
+
         } catch (SQLException e) {
             System.out.println("Error initialising database: " + e.getMessage());
         }
@@ -247,8 +270,7 @@ public final class DatabaseHandler {
 
     /** Records the current date as the terms acceptance date for the user. */
     public static void saveTermsAccepted(String username) {
-        String date = java.time.LocalDate.now()
-                .format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy"));
+        String date = LocalDate.now().format(DATE_FMT);
         String sql = "INSERT INTO privacy_settings (username, terms_accepted_date) VALUES (?, ?) "
                 + "ON CONFLICT(username) DO UPDATE SET terms_accepted_date = excluded.terms_accepted_date";
         try (Connection conn = connect(); PreparedStatement p = conn.prepareStatement(sql)) {
@@ -396,10 +418,7 @@ public final class DatabaseHandler {
 
     // Safely maps the loginType string to the correct database table
     private static String getTableName(String accountType) {
-        if ("CLINIC".equals(accountType)) {
-            return "clinics";
-        }
-        return "users";
+        return "CLINIC".equals(accountType) ? "clinics" : "users";
     }
 
     // Returns all clinic usernames to support patient appointment booking.
@@ -875,10 +894,7 @@ public final class DatabaseHandler {
     }
 
     private static String normalizeClinicUsername(String clinicUsername) {
-        if (clinicUsername == null || clinicUsername.isBlank()) {
-            return DEFAULT_CLINIC_USERNAME;
-        }
-        return clinicUsername;
+        return (clinicUsername == null || clinicUsername.isBlank()) ? DEFAULT_CLINIC_USERNAME : clinicUsername;
     }
 
     private static void migrateClinicAvailabilitySchema(Connection conn) throws SQLException {
@@ -886,12 +902,8 @@ public final class DatabaseHandler {
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("PRAGMA table_info('clinic_availability')")) {
             while (rs.next()) {
-                int pkOrder = rs.getInt("pk");
-                if (pkOrder > 0) {
-                    while (primaryKeyColumns.size() < pkOrder) {
-                        primaryKeyColumns.add(null);
-                    }
-                    primaryKeyColumns.set(pkOrder - 1, rs.getString("name"));
+                if (rs.getInt("pk") > 0) {
+                    primaryKeyColumns.add(rs.getString("name"));
                 }
             }
         }
@@ -922,6 +934,244 @@ public final class DatabaseHandler {
         } finally {
             conn.setAutoCommit(originalAutoCommit);
         }
+    }
+
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd MMM yyyy");
+    private static final DateTimeFormatter TIMESTAMP_FMT = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss");
+
+    public static String getTermsAcceptedDate(String username) {
+        String sql = "SELECT terms_accepted_date FROM privacy_settings WHERE username = ?";
+        try (Connection conn = connect()) {
+            if (conn == null) return null;
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, username);
+                ResultSet rs = p.executeQuery();
+                if (rs.next()) return rs.getString("terms_accepted_date");
+            }
+        } catch (SQLException e) {
+            System.out.println("getTermsAcceptedDate error: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public static void logDataAccess(String patientUsername, String accessorUsername,
+                                     String accessorType, String accessType, String details) {
+        String timestamp = java.time.LocalDateTime.now().format(TIMESTAMP_FMT);
+        String sql = "INSERT INTO data_access_log (patient_username, accessor_username, accessor_type, access_type, access_timestamp, details) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = connect(); PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setString(1, patientUsername);
+            p.setString(2, accessorUsername);
+            p.setString(3, accessorType);
+            p.setString(4, accessType);
+            p.setString(5, timestamp);
+            p.setString(6, details);
+            p.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("logDataAccess error: " + e.getMessage());
+        }
+    }
+
+    public static List<DataAccessLogEntry> getDataAccessLog(String patientUsername) {
+        String sql = "SELECT id, patient_username, accessor_username, accessor_type, access_type, access_timestamp, details "
+                + "FROM data_access_log WHERE patient_username = ? ORDER BY id DESC LIMIT 50";
+        List<DataAccessLogEntry> entries = new ArrayList<>();
+        try (Connection conn = connect()) {
+            if (conn == null) return entries;
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, patientUsername);
+                ResultSet rs = p.executeQuery();
+                while (rs.next()) {
+                    entries.add(new DataAccessLogEntry(
+                            rs.getInt("id"),
+                            rs.getString("patient_username"),
+                            rs.getString("accessor_username"),
+                            rs.getString("accessor_type"),
+                            rs.getString("access_type"),
+                            rs.getString("access_timestamp"),
+                            rs.getString("details")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("getDataAccessLog error: " + e.getMessage());
+        }
+        return entries;
+    }
+
+
+    public static void enforceDataRetention(String username) {
+        String retention = getDataRetention(username);
+        if ("While account is active".equals(retention)) return;
+
+        int days = switch (retention) {
+            case "30 days" -> 30;
+            case "90 days" -> 90;
+            case "180 days" -> 180;
+            default -> -1;
+        };
+
+        if (days <= 0) return;
+
+        LocalDate cutoff = LocalDate.now().minusDays(days);
+
+        String selectTestsSql = "SELECT id, test_date FROM sti_tests WHERE username = ?";
+        String selectTreatmentsSql = "SELECT id, start_date FROM treatment_plans WHERE username = ? AND active = 0";
+        String deleteTestsSql = "DELETE FROM sti_tests WHERE id = ? AND username = ?";
+        String deleteTreatmentsSql = "DELETE FROM treatment_plans WHERE id = ? AND username = ?";
+
+        try (Connection conn = connect()) {
+            if (conn == null) return;
+
+            boolean originalAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+            try {
+                List<Integer> testIdsToDelete = new ArrayList<>();
+                try (PreparedStatement p = conn.prepareStatement(selectTestsSql)) {
+                    p.setString(1, username);
+                    ResultSet rs = p.executeQuery();
+                    while (rs.next()) {
+                        try {
+                            LocalDate testDate = LocalDate.parse(rs.getString("test_date"), DATE_FMT);
+                            if (testDate.isBefore(cutoff)) {
+                                testIdsToDelete.add(rs.getInt("id"));
+                            }
+                        } catch (DateTimeParseException ignored) {}
+                    }
+                }
+
+                List<Integer> treatmentIdsToDelete = new ArrayList<>();
+                try (PreparedStatement p = conn.prepareStatement(selectTreatmentsSql)) {
+                    p.setString(1, username);
+                    ResultSet rs = p.executeQuery();
+                    while (rs.next()) {
+                        try {
+                            LocalDate startDate = LocalDate.parse(rs.getString("start_date"), DATE_FMT);
+                            if (startDate.isBefore(cutoff)) {
+                                treatmentIdsToDelete.add(rs.getInt("id"));
+                            }
+                        } catch (DateTimeParseException ignored) {}
+                    }
+                }
+
+                if (!testIdsToDelete.isEmpty()) {
+                    try (PreparedStatement p = conn.prepareStatement(deleteTestsSql)) {
+                        for (int id : testIdsToDelete) {
+                            p.setInt(1, id);
+                            p.setString(2, username);
+                            p.addBatch();
+                        }
+                        p.executeBatch();
+                    }
+                    System.out.println("Data retention: deleted " + testIdsToDelete.size() + " old STI tests for " + username);
+                }
+
+                if (!treatmentIdsToDelete.isEmpty()) {
+                    try (PreparedStatement p = conn.prepareStatement(deleteTreatmentsSql)) {
+                        for (int id : treatmentIdsToDelete) {
+                            p.setInt(1, id);
+                            p.setString(2, username);
+                            p.addBatch();
+                        }
+                        p.executeBatch();
+                    }
+                    System.out.println("Data retention: deleted " + treatmentIdsToDelete.size() + " old inactive treatments for " + username);
+                }
+
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(originalAutoCommit);
+            }
+        } catch (SQLException e) {
+            System.err.println("enforceDataRetention error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public static UserDataExport getUserDataExport(String username) {
+        UserDataExport export = new UserDataExport(username);
+
+        PrivacySettingsSnapshot privacySettings = getPrivacySettingsSnapshot(username);
+        export.setTermsAcceptedDate(privacySettings.termsAcceptedDate);
+        export.setDataAccessPermissions(privacySettings.dataAccessPermissions);
+        export.setDataRetention(privacySettings.dataRetention);
+
+        boolean[] testPerms = getTestPermissions(username);
+        export.setTestPermissions(testPerms);
+        export.setReminderInterval(getReminderIntervalMonths(username));
+
+        export.setTreatmentPermissions(getTreatmentPermissions(username));
+
+        export.setStiTests(getStiTests(username));
+
+        export.setTreatments(getAllTreatments(username));
+
+        return export;
+    }
+
+    private static class PrivacySettingsSnapshot {
+        String termsAcceptedDate;
+        boolean[] dataAccessPermissions;
+        String dataRetention;
+
+        PrivacySettingsSnapshot(String termsAcceptedDate, boolean[] dataAccessPermissions, String dataRetention) {
+            this.termsAcceptedDate = termsAcceptedDate;
+            this.dataAccessPermissions = dataAccessPermissions;
+            this.dataRetention = dataRetention;
+        }
+    }
+
+    private static PrivacySettingsSnapshot getPrivacySettingsSnapshot(String username) {
+        String sql = "SELECT terms_accepted_date, data_retention, " +
+                     "allow_internal_staff, allow_analytics, allow_trusted_partners " +
+                     "FROM privacy_settings WHERE username = ?";
+        try (Connection conn = connect()) {
+            if (conn == null) {
+                return new PrivacySettingsSnapshot(null, new boolean[]{false, false, false}, "While account is active");
+            }
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, username);
+                ResultSet rs = p.executeQuery();
+                if (rs.next()) {
+                    String termsDate = rs.getString("terms_accepted_date");
+                    String retention = rs.getString("data_retention");
+                    if (retention == null) retention = "While account is active";
+                    boolean[] permissions = new boolean[]{
+                            rs.getInt("allow_internal_staff") == 1,
+                            rs.getInt("allow_analytics") == 1,
+                            rs.getInt("allow_trusted_partners") == 1
+                    };
+                    return new PrivacySettingsSnapshot(termsDate, permissions, retention);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("getPrivacySettingsSnapshot error: " + e.getMessage());
+        }
+        // Defaults if no row found
+        return new PrivacySettingsSnapshot(null, new boolean[]{false, false, false}, "While account is active");
+    }
+
+    public static List<TreatmentEntry> getAllTreatments(String username) {
+        String sql = "SELECT id, username, medication_name, dose, frequency, quantity_remaining, "
+                + "low_stock_threshold, start_date, notes, active, source, patient_note "
+                + "FROM treatment_plans WHERE username = ? ORDER BY id DESC";
+        List<TreatmentEntry> entries = new ArrayList<>();
+        try (Connection conn = connect()) {
+            if (conn == null) return entries;
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, username);
+                ResultSet rs = p.executeQuery();
+                while (rs.next()) {
+                    entries.add(mapTreatmentRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("getAllTreatments error: " + e.getMessage());
+        }
+        return entries;
     }
 
     // Checks if a user or clinic exists in the respective database table
