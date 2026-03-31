@@ -70,7 +70,7 @@
                             <padding>
                                 <Insets bottom="18" left="18" right="18" top="18" />
                             </padding>
-                            <HBox alignment="TOP_LEFT" spacing="12">
+                            <HBox spacing="12">
                                 <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
                                     <styleClass>
                                         <String fx:value="patient-icon-badge" />
@@ -78,7 +78,7 @@
                                     </styleClass>
                                     <SVGPath content="M12 2a1 1 0 011 1v1.07A7.002 7.002 0 0119 11v3.764l1.447 2.894A1 1 0 0119.553 19H4.447a1 1 0 01-.894-1.342L5 14.764V11a7.002 7.002 0 016-6.93V3a1 1 0 011-1zm0 20a3 3 0 01-2.995-2.824L9 19h6a3 3 0 01-3 3z" fill="#C2410C" scaleX="0.9" scaleY="0.9" />
                                 </StackPane>
-                                <VBox alignment="TOP_LEFT" spacing="6">
+                                <VBox spacing="6">
                                     <Label styleClass="patient-dashboard-card-title" text="Notify Partners" />
                                     <Label maxWidth="300" styleClass="patient-dashboard-card-copy" text="Send anonymous notifications to recent partners." wrapText="true" />
                                 </VBox>
@@ -91,7 +91,7 @@
                             <padding>
                                 <Insets bottom="18" left="18" right="18" top="18" />
                             </padding>
-                            <HBox alignment="TOP_LEFT" spacing="12">
+                            <HBox spacing="12">
                                 <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
                                     <styleClass>
                                         <String fx:value="patient-icon-badge" />
@@ -99,7 +99,7 @@
                                     </styleClass>
                                     <SVGPath content="M8 2a1 1 0 000 2h1v5.586l-4.707 4.707A1 1 0 004 15v3a4 4 0 004 4h8a4 4 0 004-4v-3a1 1 0 00-.293-.707L15 9.586V4h1a1 1 0 100-2H8zm3 2h2v6a1 1 0 00.293.707L18 15.414V18a2 2 0 01-2 2H8a2 2 0 01-2-2v-2.586l4.707-4.707A1 1 0 0011 10.999V4z" fill="#1D4ED8" scaleX="0.9" scaleY="0.9" />
                                 </StackPane>
-                                <VBox alignment="TOP_LEFT" spacing="6">
+                                <VBox spacing="6">
                                     <Label styleClass="patient-dashboard-card-title" text="Book an STI Test" />
                                     <Label maxWidth="300" styleClass="patient-dashboard-card-copy" text="Check your eligibility and order the right testing route." wrapText="true" />
                                 </VBox>
@@ -112,7 +112,7 @@
                             <padding>
                                 <Insets bottom="18" left="18" right="18" top="18" />
                             </padding>
-                            <HBox alignment="TOP_LEFT" spacing="12">
+                            <HBox spacing="12">
                                 <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
                                     <styleClass>
                                         <String fx:value="patient-icon-badge" />
@@ -120,7 +120,7 @@
                                     </styleClass>
                                     <SVGPath content="M7 2a1 1 0 012 0v1h6V2a1 1 0 112 0v1h1a2 2 0 012 2v11a4 4 0 01-4 4H8a4 4 0 01-4-4V5a2 2 0 012-2h1V2zm11 7H6v7a2 2 0 002 2h8a2 2 0 002-2V9z" fill="#7C3AED" scaleX="0.9" scaleY="0.9" />
                                 </StackPane>
-                                <VBox alignment="TOP_LEFT" spacing="6">
+                                <VBox spacing="6">
                                     <Label styleClass="patient-dashboard-card-title" text="Book Appointment" />
                                     <Label maxWidth="300" styleClass="patient-dashboard-card-copy" text="Reserve one of the clinic slots currently being offered." wrapText="true" />
                                 </VBox>
@@ -133,7 +133,7 @@
                             <padding>
                                 <Insets bottom="18" left="18" right="18" top="18" />
                             </padding>
-                            <HBox alignment="TOP_LEFT" spacing="12">
+                            <HBox spacing="12">
                                 <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
                                     <styleClass>
                                         <String fx:value="patient-icon-badge" />
@@ -141,7 +141,7 @@
                                     </styleClass>
                                     <SVGPath content="M7 3h10a2 2 0 012 2v14l-4-2-4 2-4-2-4 2V5a2 2 0 012-2h2zm1 4v2h8V7H8zm0 4v2h5v-2H8z" fill="#0F766E" scaleX="0.9" scaleY="0.9" />
                                 </StackPane>
-                                <VBox alignment="TOP_LEFT" spacing="6">
+                                <VBox spacing="6">
                                     <Label styleClass="patient-dashboard-card-title" text="Track Your Tests" />
                                     <Label maxWidth="300" styleClass="patient-dashboard-card-copy" text="Review your STI history and keep your records current." wrapText="true" />
                                 </VBox>
@@ -154,7 +154,7 @@
                             <padding>
                                 <Insets bottom="18" left="18" right="18" top="18" />
                             </padding>
-                            <HBox alignment="TOP_LEFT" spacing="12">
+                            <HBox spacing="12">
                                 <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
                                     <styleClass>
                                         <String fx:value="patient-icon-badge" />
@@ -162,7 +162,7 @@
                                     </styleClass>
                                     <SVGPath content="M9.586 2.586a2 2 0 012.828 0l6 6a2 2 0 010 2.828l-3.586 3.586a2 2 0 01-2.828 0l-6-6a2 2 0 010-2.828l3.586-3.586zM11 9l4 4" fill="#BE123C" scaleX="0.9" scaleY="0.9" />
                                 </StackPane>
-                                <VBox alignment="TOP_LEFT" spacing="6">
+                                <VBox spacing="6">
                                     <Label styleClass="patient-dashboard-card-title" text="My Treatment Plan" />
                                     <Label maxWidth="300" styleClass="patient-dashboard-card-copy" text="Manage medications, quantities, and refill awareness." wrapText="true" />
                                 </VBox>

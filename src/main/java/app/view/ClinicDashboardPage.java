@@ -56,4 +56,13 @@ public class ClinicDashboardPage {
     private void handleLegal() {
         AppController.updateView(State.LEGAL);
     }
+
+    @FXML
+    private void handleSettingsMenu(){
+        AppController.updateView(State.CLINIC_SETTING_MENU);
+    }
+
+
+
+
 }

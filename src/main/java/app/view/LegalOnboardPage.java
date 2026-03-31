@@ -19,7 +19,7 @@ public class LegalOnboardPage {
     private void handleSettingsMenu(){
         String userType = AppController.getCurrentLoginType();
         if ("CLINIC".equals(userType)) {
-            AppController.goToHomeDashboard();
+            AppController.updateView(State.CLINIC_SETTING_MENU);
         } else {
             AppController.updateView(State.SETTINGS_MENU);
         }
