@@ -45,6 +45,17 @@ public class SettingsPage {
     }
 
     @FXML
+    private void handleSettingsMenu(){
+        String userType = AppController.getCurrentLoginType();
+        if ("CLINIC".equals(userType)) {
+            AppController.goToHomeDashboard();
+        } else {
+            AppController.updateView(State.SETTINGS_MENU);
+        }
+
+    }
+
+    @FXML
     private void handleWhyUsed() {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
         a.setHeaderText("Why your data is used");

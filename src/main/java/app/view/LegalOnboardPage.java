@@ -1,6 +1,7 @@
 package app.view;
 
 import app.AppController;
+import app.model.State;
 import app.util.PdfOpener;
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
@@ -12,6 +13,17 @@ public class LegalOnboardPage {
     @FXML
     private void handleHome() {
         AppController.goToHomeDashboard();
+    }
+
+    @FXML
+    private void handleSettingsMenu(){
+        String userType = AppController.getCurrentLoginType();
+        if ("CLINIC".equals(userType)) {
+            AppController.updateView(State.CLINIC_SETTING_MENU);
+        } else {
+            AppController.updateView(State.SETTINGS_MENU);
+        }
+
     }
 
     @FXML

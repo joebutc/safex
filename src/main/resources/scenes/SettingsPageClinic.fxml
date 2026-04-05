@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<BorderPane minHeight="650" minWidth="900" styleClass="patient-dashboard-shell" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.SettingsPageController">
+   <top>
+      <BorderPane>
+         <styleClass>
+            <String fx:value="app-header" />
+            <String fx:value="patient-dashboard-header" />
+         </styleClass>
+         <center>
+            <VBox alignment="CENTER" spacing="2">
+               <children>
+                  <Label fx:id="welcomeLabel" styleClass="patient-welcome-label" />
+                  <Label styleClass="patient-subtitle-label" text="Settings" />
+               </children>
+            </VBox>
+         </center>
+         <left>
+            <VBox prefHeight="0.0" prefWidth="44.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Button fx:id="homeButton" onAction="#handleBackToDashboard" styleClass="icon-button">
+                     <graphic>
+                        <ImageView fitHeight="28" fitWidth="28" preserveRatio="true">
+                           <image>
+                              <Image url="@../images/Home.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+               </children>
+            </VBox>
+         </left>
+      </BorderPane>
+   </top>
+   <center>
+      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="dashboard-scroll-pane">
+         <content>
+            <VBox alignment="CENTER" spacing="18">
+               <padding>
+                  <Insets bottom="24" left="24" right="24" top="24" />
+               </padding>
+               <children>
+                  <VBox maxWidth="860" spacing="8" styleClass="clinic-hero-card" stylesheets="@../styles/app.css">
+                     <children>
+                        <Label styleClass="patient-hero-eyebrow" text="Privacy settings hub" />
+                        <Label styleClass="patient-hero-title" text="Manage how we collect your data and use it." wrapText="true" />
+                     </children>
+                  </VBox>
+                  <FlowPane fx:id="cardContainer" alignment="TOP_CENTER" hgap="18" prefWrapLength="1000" vgap="18">
+                     <children>
+                        <VBox prefHeight="150.0" prefWidth="500.0" spacing="12">
+                           <styleClass>
+                              <String fx:value="patient-dashboard-card" />
+                              <String fx:value="patient-dashboard-card-wide" />
+                           </styleClass>
+                           <padding>
+                              <Insets bottom="18" left="18" right="18" top="18" />
+                           </padding>
+                           <children>
+                              <HBox alignment="TOP_LEFT" spacing="12">
+                                 <children>
+                                    <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
+                                       <styleClass>
+                                          <String fx:value="patient-icon-badge" />
+                                          <String fx:value="patient-icon-badge-legal" />
+                                       </styleClass>
+                                       <children>
+                                          <SVGPath content="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zm8 1.5L19.5 9H14V3.5z" fill="#4338CA" scaleX="0.9" scaleY="0.9" />
+                                       </children>
+                                    </StackPane>
+                                    <VBox alignment="TOP_LEFT" spacing="6">
+                                       <children>
+                                          <Label styleClass="patient-dashboard-card-title" text="Terms &amp; Conditions" />
+                                          <Label maxWidth="640" styleClass="patient-dashboard-card-copy" text="Review SafeX terms, privacy policy, and platform responsibilities." wrapText="true" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                              <Region VBox.vgrow="ALWAYS" />
+                              <Button maxWidth="Infinity" minHeight="40" onAction="#handleLegal" styleClass="secondary-button" text="View Terms" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </FlowPane>
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </center>
+   <bottom>
+      <HBox alignment="CENTER_LEFT" spacing="10">
+         <padding>
+            <Insets bottom="18" left="24" right="24" top="12" />
+         </padding>
+         <children>
+            <Label styleClass="patient-footer-text" text="SafeX patient portal" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label styleClass="patient-footer-text" text="v0.0.1" />
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>

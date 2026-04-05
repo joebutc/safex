@@ -16,7 +16,9 @@ public enum State {
     CLINIC_SCHEDULE("/scenes/ClinicSchedule.fxml"),
     CALENDER("/scenes/Calender.fxml"),
     PATIENT_TREATMENT("/scenes/PatientTreatment.fxml"),
-    BOOK_APPOINTMENT("/scenes/BookAppointment.fxml");
+    BOOK_APPOINTMENT("/scenes/BookAppointment.fxml"),
+    SETTINGS_MENU("/scenes/SettingsPage.fxml"),
+    CLINIC_SETTING_MENU("/scenes/SettingsPageClinic.fxml");
 
     private final String fxmlPath;
 

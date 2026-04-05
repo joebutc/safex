@@ -13,131 +13,100 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
 
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="app.view.ClinicDashboardPage"
-            minWidth="900" minHeight="650" styleClass="clinic-dashboard-shell">
+<BorderPane minHeight="650" minWidth="900" styleClass="clinic-dashboard-shell" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.view.ClinicDashboardPage">
 
     <top>
         <BorderPane>
             <styleClass>
-                <String fx:value="app-header"/>
-                <String fx:value="clinic-dashboard-header"/>
+                <String fx:value="app-header" />
+                <String fx:value="clinic-dashboard-header" />
             </styleClass>
             <left>
-                <Label text="SafeX Clinic" styleClass="clinic-brand-label"/>
+                <Label styleClass="clinic-brand-label" text="SafeX Clinic" />
             </left>
             <center>
                 <VBox alignment="CENTER" spacing="2">
-                    <Label fx:id="welcomeLabel" styleClass="clinic-welcome-label"/>
-                    <Label text="Clinical operations dashboard" styleClass="clinic-subtitle-label"/>
+                    <Label fx:id="welcomeLabel" styleClass="clinic-welcome-label" />
+                    <Label styleClass="clinic-subtitle-label" text="Clinical operations dashboard" />
                 </VBox>
             </center>
             <right>
-                <Button text="Logout" onAction="#handleLogout">
-                    <styleClass>
-                        <String fx:value="secondary-button"/>
-                        <String fx:value="clinic-logout-button"/>
-                    </styleClass>
-                </Button>
+                <HBox>
+                    <Button mnemonicParsing="false" onAction="#handleSettingsMenu" styleClass="icon-button">
+                        <graphic>
+                            <SVGPath content="M19.14 12.94a7.43 7.43 0 000-1.88l2.03-1.58a.5.5 0 00.12-.64l-1.92-3.32a.5.5 0 00-.6-.22l-2.39.96a7.62 7.62 0 00-1.63-.95l-.36-2.54A.5.5 0 0013.9 2h-3.8a.5.5 0 00-.49.42l-.36 2.54c-.57.22-1.12.53-1.63.95l-2.39-.96a.5.5 0 00-.6.22L2.71 8.84a.5.5 0 00.12.64l2.03 1.58a7.43 7.43 0 000 1.88l-2.03 1.58a.5.5 0 00-.12.64l1.92 3.32a.5.5 0 00.6.22l2.39-.96c.51.42 1.06.73 1.63.95l.36 2.54a.5.5 0 00.49.42h3.8a.5.5 0 00.49-.42l.36-2.54c.57-.22 1.12-.53 1.63-.95l2.39.96a.5.5 0 00.6-.22l1.92-3.32a.5.5 0 00-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1112 8a3.5 3.5 0 010 7.5z" fill="#1E293B" />
+                        </graphic>
+                    </Button>
+                    <Button onAction="#handleLogout" text="Logout">
+                        <styleClass>
+                            <String fx:value="secondary-button" />
+                            <String fx:value="clinic-logout-button" />
+                        </styleClass>
+                    </Button>
+                </HBox>
             </right>
         </BorderPane>
     </top>
 
     <center>
-        <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
-                    style="-fx-background-color:transparent;-fx-background:transparent;">
-            <VBox spacing="18" alignment="CENTER">
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color:transparent;-fx-background:transparent;">
+            <VBox alignment="CENTER" spacing="18">
                 <padding>
-                    <Insets top="24" right="24" bottom="24" left="24"/>
+                    <Insets bottom="24" left="24" right="24" top="24" />
                 </padding>
 
-                <VBox spacing="8" maxWidth="860" styleClass="clinic-hero-card">
-                    <Label text="Clinic Command Center" styleClass="clinic-hero-eyebrow"/>
-                    <Label text="Manage scheduling, prescriptions, and patient follow-up from one place."
-                           styleClass="clinic-hero-title" wrapText="true"/>
-                    <Label text="This portal is intentionally separated from the patient experience so clinic-only workflows stay obvious, efficient, and easy to navigate."
-                           styleClass="clinic-hero-copy" wrapText="true"/>
+                <VBox maxWidth="860" spacing="8" styleClass="clinic-hero-card">
+                    <Label styleClass="clinic-hero-eyebrow" text="Clinic Command Center" />
+                    <Label styleClass="clinic-hero-title" text="Manage scheduling, prescriptions, and patient follow-up from one place." wrapText="true" />
+                    <Label styleClass="clinic-hero-copy" text="This portal is intentionally separated from the patient experience so clinic-only workflows stay obvious, efficient, and easy to navigate." wrapText="true" />
                 </VBox>
 
-                <FlowPane hgap="18" vgap="18" alignment="TOP_CENTER" prefWrapLength="1000">
+                <FlowPane alignment="TOP_CENTER" hgap="18" prefWrapLength="1000" vgap="18">
 
-                    <VBox spacing="12" prefWidth="400" minWidth="360" maxWidth="520">
+                    <VBox maxWidth="520" minWidth="360" prefWidth="400" spacing="12">
                         <styleClass>
-                            <String fx:value="clinic-dashboard-card"/>
-                            <String fx:value="clinic-dashboard-card-primary"/>
+                            <String fx:value="clinic-dashboard-card" />
+                            <String fx:value="clinic-dashboard-card-primary" />
                         </styleClass>
                         <padding>
-                            <Insets top="18" right="18" bottom="18" left="18"/>
+                            <Insets bottom="18" left="18" right="18" top="18" />
                         </padding>
-                        <HBox spacing="12" alignment="TOP_LEFT">
-                            <StackPane prefWidth="46" prefHeight="46" minWidth="46" minHeight="46"
-                                       maxWidth="46" maxHeight="46">
+                        <HBox spacing="12">
+                            <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
                                 <styleClass>
-                                    <String fx:value="clinic-icon-badge"/>
-                                    <String fx:value="clinic-icon-badge-primary"/>
+                                    <String fx:value="clinic-icon-badge" />
+                                    <String fx:value="clinic-icon-badge-primary" />
                                 </styleClass>
-                                <SVGPath fill="#1D4ED8" scaleX="0.9" scaleY="0.9"
-                                         content="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm0 16H5V8h14v11zm0-13H5V5h14v1z"/>
+                                <SVGPath content="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm0 16H5V8h14v11zm0-13H5V5h14v1z" fill="#1D4ED8" scaleX="0.9" scaleY="0.9" />
                             </StackPane>
-                            <VBox spacing="6" alignment="TOP_LEFT">
-                                <Label text="Clinic Schedule" styleClass="clinic-dashboard-card-title"/>
-                                <Label text="Open the clinic scheduling interface."
-                                       wrapText="true" maxWidth="300" styleClass="clinic-dashboard-card-copy"/>
+                            <VBox spacing="6">
+                                <Label styleClass="clinic-dashboard-card-title" text="Clinic Schedule" />
+                                <Label maxWidth="300" styleClass="clinic-dashboard-card-copy" text="Open the clinic scheduling interface." wrapText="true" />
                             </VBox>
                         </HBox>
-                        <Region VBox.vgrow="ALWAYS"/>
-                        <Button text="Open Schedule" styleClass="primary-button"
-                                maxWidth="Infinity" minHeight="40" onAction="#handleOpenSchedule"/>
+                        <Region VBox.vgrow="ALWAYS" />
+                        <Button maxWidth="Infinity" minHeight="40" onAction="#handleOpenSchedule" styleClass="primary-button" text="Open Schedule" />
                     </VBox>
 
-                    <VBox spacing="12" prefWidth="400" minWidth="360" maxWidth="520" styleClass="clinic-dashboard-card">
+                    <VBox maxWidth="520" minWidth="360" prefWidth="400" spacing="12" styleClass="clinic-dashboard-card">
                         <padding>
-                            <Insets top="18" right="18" bottom="18" left="18"/>
+                            <Insets bottom="18" left="18" right="18" top="18" />
                         </padding>
-                        <HBox spacing="12" alignment="TOP_LEFT">
-                            <StackPane prefWidth="46" prefHeight="46" minWidth="46" minHeight="46"
-                                       maxWidth="46" maxHeight="46">
+                        <HBox spacing="12">
+                            <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
                                 <styleClass>
-                                    <String fx:value="clinic-icon-badge"/>
-                                    <String fx:value="clinic-icon-badge-patient"/>
+                                    <String fx:value="clinic-icon-badge" />
+                                    <String fx:value="clinic-icon-badge-patient" />
                                 </styleClass>
-                                <SVGPath fill="#9D174D" scaleX="0.9" scaleY="0.9"
-                                         content="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                <SVGPath content="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" fill="#9D174D" scaleX="0.9" scaleY="0.9" />
                             </StackPane>
-                            <VBox spacing="6" alignment="TOP_LEFT">
-                                <Label text="Patient Treatments" styleClass="clinic-dashboard-card-title"/>
-                                <Label text="Look up a patient by username and manage their treatment plan and prescriptions."
-                                       wrapText="true" maxWidth="300" styleClass="clinic-dashboard-card-copy"/>
+                            <VBox spacing="6">
+                                <Label styleClass="clinic-dashboard-card-title" text="Patient Treatments" />
+                                <Label maxWidth="300" styleClass="clinic-dashboard-card-copy" text="Look up a patient by username and manage their treatment plan and prescriptions." wrapText="true" />
                             </VBox>
                         </HBox>
-                        <Region VBox.vgrow="ALWAYS"/>
-                        <Button text="Manage Treatments" styleClass="secondary-button"
-                                maxWidth="Infinity" minHeight="40" onAction="#handleManageTreatments"/>
-                    </VBox>
-
-                    <VBox spacing="12" prefWidth="400" minWidth="360" maxWidth="520" styleClass="clinic-dashboard-card">
-                        <padding>
-                            <Insets top="18" right="18" bottom="18" left="18"/>
-                        </padding>
-                        <HBox spacing="12" alignment="TOP_LEFT">
-                            <StackPane prefWidth="46" prefHeight="46" minWidth="46" minHeight="46"
-                                       maxWidth="46" maxHeight="46">
-                                <styleClass>
-                                    <String fx:value="clinic-icon-badge"/>
-                                    <String fx:value="clinic-icon-badge-legal"/>
-                                </styleClass>
-                                <SVGPath fill="#4338CA" scaleX="0.9" scaleY="0.9"
-                                         content="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zm8 1.5L19.5 9H14V3.5z"/>
-                            </StackPane>
-                            <VBox spacing="6" alignment="TOP_LEFT">
-                                <Label text="Terms &amp; Conditions" styleClass="clinic-dashboard-card-title"/>
-                                <Label text="Review privacy and terms documents."
-                                       wrapText="true" maxWidth="300" styleClass="clinic-dashboard-card-copy"/>
-                            </VBox>
-                        </HBox>
-                        <Region VBox.vgrow="ALWAYS"/>
-                        <Button text="View T&amp;C" styleClass="secondary-button"
-                                maxWidth="Infinity" minHeight="40" onAction="#handleLegal"/>
+                        <Region VBox.vgrow="ALWAYS" />
+                        <Button maxWidth="Infinity" minHeight="40" onAction="#handleManageTreatments" styleClass="secondary-button" text="Manage Treatments" />
                     </VBox>
 
                 </FlowPane>
@@ -148,9 +117,9 @@
     <bottom>
         <HBox alignment="CENTER_LEFT" spacing="10">
             <padding>
-                <Insets top="12" right="24" bottom="18" left="24"/>
+                <Insets bottom="18" left="24" right="24" top="12" />
             </padding>
-            <Label text="SafeX Clinic Portal" styleClass="clinic-footer-text"/>
+            <Label styleClass="clinic-footer-text" text="SafeX Clinic Portal" />
         </HBox>
     </bottom>
 

@@ -28,6 +28,7 @@ public class DashboardPage {
     @FXML private Label welcomeLabel;
     @FXML private FlowPane cardContainer;
     @FXML private Button bellButton;
+    @FXML private Button settingButton;
     @FXML private StackPane dashboardRoot;
 
     private VBox notificationContainer;
@@ -48,6 +49,11 @@ public class DashboardPage {
         }
 
         processSystemAlerts();
+    }
+
+    @FXML
+    private void handleSettingsMenu() {
+        AppController.updateView(State.SETTINGS_MENU);
     }
 
     private void processSystemAlerts() {
@@ -115,8 +121,6 @@ public class DashboardPage {
     @FXML private void handleBookAppointment() { AppController.updateView(State.BOOK_APPOINTMENT); }
     @FXML private void handleStiTracker() { AppController.updateView(State.STI_TRACKER); }
     @FXML private void handleTreatmentTracker() { AppController.updateView(State.TREATMENT_TRACKER); }
-    @FXML private void handleSettings() { AppController.updateView(State.SETTINGS); }
-    @FXML private void handleLegal() { AppController.updateView(State.LEGAL); }
 
     private void addBannerToScreen(String title, String message) {
         if (notificationContainer == null) {
