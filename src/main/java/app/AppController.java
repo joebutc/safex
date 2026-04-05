@@ -1,15 +1,19 @@
 package app;
 
+import app.model.DataAccessLogEntry;
 import app.model.DatabaseHandler;
 import app.model.State;
 import app.model.StiTestEntry;
 import app.model.TreatmentEntry;
+import app.model.UserDataExport;
 import app.view.AppStyles;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -374,6 +378,38 @@ public final class AppController {
         assertInitialised();
         return DatabaseHandler.updateTreatmentPlan(id, patientUsername, medicationName, dose,
                 frequency, quantity, lowStockThreshold, notes);
+    }
+
+    public static String getTermsAcceptedDate() {
+        assertInitialised();
+        return DatabaseHandler.getTermsAcceptedDate(currentUser);
+    }
+
+    public static void logClinicAccess(String patientUsername, String accessType, String details) {
+        assertInitialised();
+        DatabaseHandler.logDataAccess(patientUsername, currentUser, "CLINIC", accessType, details);
+    }
+
+    public static List<DataAccessLogEntry> getDataAccessLog() {
+        assertInitialised();
+        return DatabaseHandler.getDataAccessLog(currentUser);
+    }
+
+    public static UserDataExport getUserDataExport() {
+        assertInitialised();
+        return DatabaseHandler.getUserDataExport(currentUser);
+    }
+
+    public static boolean exportUserDataToCsv(File file) {
+        assertInitialised();
+        UserDataExport export = DatabaseHandler.getUserDataExport(currentUser);
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(export.toCsv());
+            return true;
+        } catch (IOException e) {
+            System.out.println("Error exporting user data: " + e.getMessage());
+            return false;
+        }
     }
 
     private static Parent loadRoot(State state) {

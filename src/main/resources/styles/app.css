@@ -643,3 +643,93 @@
     -fx-font-size: 18px;
     -fx-text-fill: #475569;
 }
+
+/* Settings Page - Section Headers */
+.settings-section-header {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #64748B;
+    -fx-padding: 8 0 0 0;
+}
+
+/* Settings Page - Actionable Setting Cards (blue accent) */
+.card-setting {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #DBEAFE;
+    -fx-border-width: 2;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.12), 12, 0.15, 0, 4);
+    -fx-cursor: hand;
+}
+
+.card-setting:hover {
+    -fx-background-color: #F0F9FF;
+    -fx-border-color: #93C5FD;
+    -fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.20), 16, 0.2, 0, 6);
+}
+
+.card-setting-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1E40AF;
+}
+
+.card-setting-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748B;
+}
+
+.card-chevron {
+    -fx-font-size: 24px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #3B82F6;
+}
+
+/* Settings Page - Informational Cards (neutral) */
+.card-info {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 1;
+    -fx-padding: 16;
+    -fx-cursor: hand;
+}
+
+.card-info:hover {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #CBD5E1;
+}
+
+.card-info-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #475569;
+}
+
+.card-info-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #94A3B8;
+}
+
+/* Edge-to-edge ScrollPane (no border/background) */
+.edge-to-edge {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+
+.edge-to-edge > .viewport {
+    -fx-background-color: transparent;
+}
+
+.terms-acceptance-block {
+    -fx-padding: 8 0 0 0;
+}
+
+.terms-acceptance-block .check-box {
+    -fx-text-fill: #334155;
+    -fx-font-size: 12px;
+}

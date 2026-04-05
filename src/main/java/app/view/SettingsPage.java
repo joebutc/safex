@@ -24,7 +24,9 @@ public class SettingsPage {
 
     @FXML
     private void initialize() {
-        acceptBtn.disableProperty().bind(agreeCheckBox.selectedProperty().not());
+        if (acceptBtn != null && agreeCheckBox != null) {
+            acceptBtn.disableProperty().bind(agreeCheckBox.selectedProperty().not());
+        }
     }
 
     @FXML
@@ -34,14 +36,7 @@ public class SettingsPage {
 
     @FXML
     private void handleDataCollected() {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setHeaderText("What data is collected");
-        a.setContentText("""
-            • Account details (email, username)
-            • Usage activity (features used, time spent)
-            • Device info (OS, app version, IP range)
-        """);
-        a.showAndWait();
+        showDialog("Your Personal Data", "/scenes/MyData.fxml");
     }
 
     @FXML
@@ -78,9 +73,10 @@ public class SettingsPage {
     private void handleRetention() {
         String current = AppController.getDataRetention();
         ChoiceDialog<String> dialog = new ChoiceDialog<>(current,
-                "While account is active", "1 year", "6 months", "Delete immediately");
+                "30 days", "90 days", "180 days", "While account is active");
         dialog.setTitle("Data Retention");
-        dialog.setHeaderText("How long should we keep your data?");
+        dialog.setHeaderText("How long should we keep your health data?");
+        dialog.setContentText("STI tests and treatments older than this will be deleted.");
         dialog.showAndWait().ifPresent(AppController::saveDataRetention);
     }
 
@@ -115,6 +111,13 @@ public class SettingsPage {
 
     @FXML
     private void handleAccept() {
+        if (agreeCheckBox != null && !agreeCheckBox.isSelected()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("Please confirm terms acceptance");
+            alert.setContentText("Tick the checkbox to confirm you have read and accepted the Terms & Conditions.");
+            alert.showAndWait();
+            return;
+        }
         AppController.acceptTerms();
         AppController.goToHomeDashboard();
     }
