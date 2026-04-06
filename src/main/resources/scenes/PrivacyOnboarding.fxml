@@ -14,20 +14,17 @@
                     <Insets top="32" right="32" bottom="32" left="32"/>
                 </padding>
 
-                <!-- Welcome header -->
                 <VBox spacing="8" alignment="CENTER">
                     <Label text="Welcome to SafeX" styleClass="onboarding-title"/>
-                    <Label text="Before you get started, please review our terms and your privacy preferences."
+                    <Label text="Before you get started, please review and accept our terms."
                            styleClass="onboarding-subtitle" wrapText="true"/>
                 </VBox>
 
-                <!-- ═══════════════ 1. TERMS & CONDITIONS SECTION ═══════════════ -->
                 <VBox spacing="12" styleClass="onboarding-section">
                     <Label text="1. Terms &amp; Conditions Summary" styleClass="legal-title"/>
                     <Label text="This summary provides key points from our Terms of Use. You can read the full Terms using the button below."
                            styleClass="muted-text" wrapText="true" maxWidth="520"/>
 
-                    <!-- Q&A pairs -->
                     <VBox maxWidth="520" spacing="4">
                         <Label styleClass="legal-question" text="What are these Terms and who do they apply to?" wrapText="true"/>
                         <Label styleClass="legal-answer" text="These Terms form a legally binding agreement between you and SafeX Ltd and apply to your access to and use of the SafeX mobile application and related services." wrapText="true"/>
@@ -61,7 +58,6 @@
                         <Label styleClass="legal-answer" text="These Terms are governed by the laws of England and Wales, and disputes are generally handled through informal resolution first, then courts in England and Wales." wrapText="true"/>
                     </VBox>
 
-                    <!-- Full terms PDF button -->
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <padding><Insets top="6" bottom="6"/></padding>
                         <Label text="Terms (full) (PDF)"/>
@@ -74,13 +70,11 @@
                     </HBox>
                 </VBox>
 
-                <!-- ═══════════════ 2. PRIVACY POLICY SECTION ═══════════════ -->
                 <VBox spacing="12" styleClass="onboarding-section">
                     <Label text="2. Privacy Policy Summary" styleClass="legal-title"/>
                     <Label text="This summary provides key points from our Privacy Notice. You can read the full Privacy Policy using the button below."
                            styleClass="muted-text" wrapText="true" maxWidth="520"/>
 
-                    <!-- Q&A pairs -->
                     <VBox maxWidth="520" spacing="4">
                         <Label styleClass="legal-question" text="What personal information do we process?" wrapText="true"/>
                         <Label styleClass="legal-answer" text="When you visit, use, or navigate our Services, we may process personal information depending on how you interact with us and the Services, the choices you make, and the products and features you use." wrapText="true"/>
@@ -114,7 +108,6 @@
                         <Label styleClass="legal-answer" text="The easiest way to exercise your rights is through the app's privacy and data controls, or by contacting us at support@safex.com. We will consider and act upon any request in accordance with applicable data protection laws." wrapText="true"/>
                     </VBox>
 
-                    <!-- Full privacy PDF button -->
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <padding><Insets top="6" bottom="6"/></padding>
                         <Label text="Privacy Notice (full) (PDF)"/>
@@ -127,65 +120,8 @@
                     </HBox>
                 </VBox>
 
-                <!-- ═══════════════ 3. PERSONAL PRIVACY PREFERENCES ═══════════════ -->
-                <VBox spacing="16" styleClass="onboarding-section">
-                    <Label text="3. Your Privacy Preferences" styleClass="settings-section-header"/>
-                    <Label text="Customise how your data is used. You can change these settings at any time."
-                           styleClass="muted-text" wrapText="true"/>
-
-                    <!-- Data Access -->
-                    <VBox spacing="8">
-                        <Label text="Who can access your data?" styleClass="onboarding-subsection"/>
-                        <HBox spacing="8" alignment="CENTER_LEFT">
-                            <CheckBox fx:id="staffCheckBox"/>
-                            <Label text="Internal Support Staff"/>
-                        </HBox>
-                        <HBox spacing="8" alignment="CENTER_LEFT">
-                            <CheckBox fx:id="analyticsCheckBox"/>
-                            <Label text="Analytics Team"/>
-                        </HBox>
-                        <HBox spacing="8" alignment="CENTER_LEFT">
-                            <CheckBox fx:id="partnersCheckBox"/>
-                            <Label text="Trusted Partners"/>
-                        </HBox>
-                    </VBox>
-
-                    <!-- Testing Preferences -->
-                    <VBox spacing="8">
-                        <Label text="STI Testing Preferences" styleClass="onboarding-subsection"/>
-                        <HBox spacing="8" alignment="CENTER_LEFT">
-                            <CheckBox fx:id="testRemindersCheckBox"/>
-                            <Label text="Send me reminders when it's time for my next STI test" wrapText="true"/>
-                        </HBox>
-                        <HBox alignment="CENTER_LEFT" spacing="12">
-                            <Label text="Remind me every:"/>
-                            <ComboBox fx:id="reminderIntervalCombo"/>
-                        </HBox>
-                        <HBox spacing="8" alignment="CENTER_LEFT">
-                            <CheckBox fx:id="shareWithDoctorCheckBox"/>
-                            <Label text="Allow sharing my test log with my healthcare provider" wrapText="true"/>
-                        </HBox>
-                    </VBox>
-
-                    <!-- Treatment Preferences -->
-                    <VBox spacing="8">
-                        <Label text="Treatment Plan Preferences" styleClass="onboarding-subsection"/>
-                        <HBox spacing="8" alignment="CENTER_LEFT">
-                            <CheckBox fx:id="treatmentRemindersCheckBox"/>
-                            <Label text="Notify me when any medication is running low on supply" wrapText="true"/>
-                        </HBox>
-                        <HBox spacing="8" alignment="CENTER_LEFT">
-                            <CheckBox fx:id="clinicAccessCheckBox"/>
-                            <Label text="Allow my healthcare provider to view and update my treatment plan" wrapText="true"/>
-                        </HBox>
-                        <Label text="Clinic access lets your doctor issue prescriptions directly through SafeX."
-                               styleClass="muted-text" wrapText="true"/>
-                    </VBox>
-                </VBox>
-
-                <!-- Continue Button -->
                 <VBox alignment="CENTER">
-                    <Button fx:id="continueBtn" text="Continue to SafeX" styleClass="primary-button"
+                    <Button fx:id="continueBtn" text="Continue" styleClass="primary-button"
                             onAction="#handleContinue" prefWidth="200"/>
                 </VBox>
 

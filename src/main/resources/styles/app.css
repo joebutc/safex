@@ -771,3 +771,66 @@
     -fx-font-weight: 600;
     -fx-text-fill: #475569;
 }
+
+.persona-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 2;
+    -fx-pref-width: 260;
+    -fx-min-height: 280;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);
+}
+
+.persona-card:hover {
+    -fx-border-color: #94A3B8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 12, 0, 0, 4);
+}
+
+.persona-card-selected {
+    -fx-border-color: #6366F1;
+    -fx-border-width: 3;
+    -fx-background-color: #F5F3FF;
+}
+
+.persona-icon-container {
+    -fx-pref-width: 64;
+    -fx-pref-height: 64;
+    -fx-min-width: 64;
+    -fx-min-height: 64;
+    -fx-background-radius: 32;
+}
+
+.persona-icon-anonymous {
+    -fx-background-color: #FEE2E2;
+}
+
+.persona-icon-balanced {
+    -fx-background-color: #FEF3C7;
+}
+
+.persona-icon-connected {
+    -fx-background-color: #DBEAFE;
+}
+
+.persona-icon {
+    -fx-fill: #334155;
+}
+
+.persona-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0F172A;
+}
+
+.persona-bullet {
+    -fx-text-fill: #6366F1;
+    -fx-font-weight: 700;
+}
+
+.persona-feature {
+    -fx-font-size: 13px;
+    -fx-text-fill: #475569;
+}
