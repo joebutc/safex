@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="app.view.PrivacyOnboardingController">
+
+    <center>
+        <ScrollPane fx:id="scrollPane" fitToWidth="true" styleClass="edge-to-edge">
+            <VBox spacing="24" alignment="TOP_CENTER">
+                <padding>
+                    <Insets top="32" right="32" bottom="32" left="32"/>
+                </padding>
+
+                <!-- Welcome header -->
+                <VBox spacing="8" alignment="CENTER">
+                    <Label text="Welcome to SafeX" styleClass="onboarding-title"/>
+                    <Label text="Before you get started, please review our terms and your privacy preferences."
+                           styleClass="onboarding-subtitle" wrapText="true"/>
+                </VBox>
+
+                <!-- ═══════════════ 1. TERMS & CONDITIONS SECTION ═══════════════ -->
+                <VBox spacing="12" styleClass="onboarding-section">
+                    <Label text="1. Terms &amp; Conditions Summary" styleClass="legal-title"/>
+                    <Label text="This summary provides key points from our Terms of Use. You can read the full Terms using the button below."
+                           styleClass="muted-text" wrapText="true" maxWidth="520"/>
+
+                    <!-- Q&A pairs -->
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What are these Terms and who do they apply to?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="These Terms form a legally binding agreement between you and SafeX Ltd and apply to your access to and use of the SafeX mobile application and related services." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What do the Services do (and not do)?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="The Services support test booking, delivery of test results, prescription management, secure notifications, and private communications with clinics/healthcare professionals. The Services do not provide public posting, public social feeds, or public comments." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Who can use the Services?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="You must be at least 18 years old, have legal capacity to enter into these Terms, and provide accurate information." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What are the main rules for using the Services?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="You must not misuse the Services (for example, unlawful activity, impersonation, interfering with systems or accounts, security circumvention, malware, spam, scraping/bots without permission, or reverse engineering)." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Who owns the Services and what rights do you get?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="SafeX (and its licensors) own the Services and associated content. You receive a limited, non-exclusive, non-transferable, revocable licence to access and use the Services for personal, non-commercial use, subject to these Terms." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Can SafeX suspend or terminate access?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="SafeX may monitor for compliance, restrict or terminate access, and take action if these Terms are violated. Termination ends your right to use the Services." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Is the Services' information medical advice?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="No. Information and features are for general informational purposes and are not a substitute for professional medical advice, diagnosis, or treatment. SafeX is not a healthcare provider." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What law applies and how are disputes handled?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="These Terms are governed by the laws of England and Wales, and disputes are generally handled through informal resolution first, then courts in England and Wales." wrapText="true"/>
+                    </VBox>
+
+                    <!-- Full terms PDF button -->
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <padding><Insets top="6" bottom="6"/></padding>
+                        <Label text="Terms (full) (PDF)"/>
+                        <Button onAction="#openTermsPdf" styleClass="secondary-button" text="Open PDF"/>
+                    </HBox>
+
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <CheckBox fx:id="agreeCheckBox"/>
+                        <Label text="I have read and accept the Terms &amp; Conditions"/>
+                    </HBox>
+                </VBox>
+
+                <!-- ═══════════════ 2. PRIVACY POLICY SECTION ═══════════════ -->
+                <VBox spacing="12" styleClass="onboarding-section">
+                    <Label text="2. Privacy Policy Summary" styleClass="legal-title"/>
+                    <Label text="This summary provides key points from our Privacy Notice. You can read the full Privacy Policy using the button below."
+                           styleClass="muted-text" wrapText="true" maxWidth="520"/>
+
+                    <!-- Q&A pairs -->
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What personal information do we process?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="When you visit, use, or navigate our Services, we may process personal information depending on how you interact with us and the Services, the choices you make, and the products and features you use." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Do we process any sensitive personal information?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="Some of the information we process may be considered special category data (for example health data). We process special category data only where we have a lawful basis and, for health data, only where we have your explicit consent or processing is otherwise permitted under applicable law." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Do we collect any information from third parties?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="We may receive limited personal and health-related information from healthcare providers, clinics, or laboratories when you use the Services to book tests, receive results, or manage treatment." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="How do we process your information?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="We process your information to provide, improve, and administer our Services, communicate with you, for safety and fraud prevention, and to comply with law. We may also process your information for other purposes with your consent." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="In what situations and with which parties do we share personal information?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="We may share information with healthcare providers, service partners, and in limited situations described in the full Privacy Policy." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="How do we keep your information safe?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="We use organisational and technical measures to protect your personal information, but cannot guarantee absolute security." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What are your rights?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="Depending where you live, you have rights to access, correct, delete, and restrict processing of your personal data; and to withdraw consent where processing is based on consent." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="How do you exercise your rights?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="The easiest way to exercise your rights is through the app's privacy and data controls, or by contacting us at support@safex.com. We will consider and act upon any request in accordance with applicable data protection laws." wrapText="true"/>
+                    </VBox>
+
+                    <!-- Full privacy PDF button -->
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <padding><Insets top="6" bottom="6"/></padding>
+                        <Label text="Privacy Notice (full) (PDF)"/>
+                        <Button onAction="#openPrivacyPdf" styleClass="secondary-button" text="Open PDF"/>
+                    </HBox>
+
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <CheckBox fx:id="privacyPolicyCheckBox"/>
+                        <Label text="I have read and accept the Privacy Policy"/>
+                    </HBox>
+                </VBox>
+
+                <!-- ═══════════════ 3. PERSONAL PRIVACY PREFERENCES ═══════════════ -->
+                <VBox spacing="16" styleClass="onboarding-section">
+                    <Label text="3. Your Privacy Preferences" styleClass="settings-section-header"/>
+                    <Label text="Customise how your data is used. You can change these settings at any time."
+                           styleClass="muted-text" wrapText="true"/>
+
+                    <!-- Data Access -->
+                    <VBox spacing="8">
+                        <Label text="Who can access your data?" styleClass="onboarding-subsection"/>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <CheckBox fx:id="staffCheckBox"/>
+                            <Label text="Internal Support Staff"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <CheckBox fx:id="analyticsCheckBox"/>
+                            <Label text="Analytics Team"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <CheckBox fx:id="partnersCheckBox"/>
+                            <Label text="Trusted Partners"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Testing Preferences -->
+                    <VBox spacing="8">
+                        <Label text="STI Testing Preferences" styleClass="onboarding-subsection"/>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <CheckBox fx:id="testRemindersCheckBox"/>
+                            <Label text="Send me reminders when it's time for my next STI test" wrapText="true"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label text="Remind me every:"/>
+                            <ComboBox fx:id="reminderIntervalCombo"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <CheckBox fx:id="shareWithDoctorCheckBox"/>
+                            <Label text="Allow sharing my test log with my healthcare provider" wrapText="true"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Treatment Preferences -->
+                    <VBox spacing="8">
+                        <Label text="Treatment Plan Preferences" styleClass="onboarding-subsection"/>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <CheckBox fx:id="treatmentRemindersCheckBox"/>
+                            <Label text="Notify me when any medication is running low on supply" wrapText="true"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <CheckBox fx:id="clinicAccessCheckBox"/>
+                            <Label text="Allow my healthcare provider to view and update my treatment plan" wrapText="true"/>
+                        </HBox>
+                        <Label text="Clinic access lets your doctor issue prescriptions directly through SafeX."
+                               styleClass="muted-text" wrapText="true"/>
+                    </VBox>
+                </VBox>
+
+                <!-- Continue Button -->
+                <VBox alignment="CENTER">
+                    <Button fx:id="continueBtn" text="Continue to SafeX" styleClass="primary-button"
+                            onAction="#handleContinue" prefWidth="200"/>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

@@ -8,7 +8,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.image.ImageView;
 import javafx.stage.Modality;
@@ -19,15 +18,6 @@ import java.io.IOException;
 public class SettingsPage {
     @FXML private Button homeButton;
     @FXML private ImageView homeIcon;
-    @FXML private CheckBox agreeCheckBox;
-    @FXML private Button acceptBtn;
-
-    @FXML
-    private void initialize() {
-        if (acceptBtn != null && agreeCheckBox != null) {
-            acceptBtn.disableProperty().bind(agreeCheckBox.selectedProperty().not());
-        }
-    }
 
     @FXML
     private void handleHome() {
@@ -41,13 +31,7 @@ public class SettingsPage {
 
     @FXML
     private void handleSettingsMenu(){
-        String userType = AppController.getCurrentLoginType();
-        if ("CLINIC".equals(userType)) {
-            AppController.goToHomeDashboard();
-        } else {
-            AppController.updateView(State.SETTINGS_MENU);
-        }
-
+        AppController.goToHomeDashboard();
     }
 
     @FXML
@@ -105,21 +89,13 @@ public class SettingsPage {
     }
 
     @FXML
-    private void handleReadFullTerms() {
-        AppController.updateView(State.LEGAL);
+    private void handlePrivacyPolicy() {
+        AppController.updateView(State.PRIVACY_POLICY);
     }
 
     @FXML
-    private void handleAccept() {
-        if (agreeCheckBox != null && !agreeCheckBox.isSelected()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("Please confirm terms acceptance");
-            alert.setContentText("Tick the checkbox to confirm you have read and accepted the Terms & Conditions.");
-            alert.showAndWait();
-            return;
-        }
-        AppController.acceptTerms();
-        AppController.goToHomeDashboard();
+    private void handleTermsConditions() {
+        AppController.updateView(State.TERMS_CONDITIONS);
     }
 
     private void showDialog(String title, String resourcePath) {

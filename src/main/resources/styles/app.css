@@ -733,3 +733,41 @@
     -fx-text-fill: #334155;
     -fx-font-size: 12px;
 }
+
+.onboarding-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0F172A;
+}
+
+.onboarding-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #64748B;
+    -fx-text-alignment: center;
+}
+
+.onboarding-section {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);
+    -fx-max-width: 500;
+}
+
+.onboarding-section .check-box {
+    -fx-text-fill: #334155;
+}
+
+.onboarding-section .check-box .text {
+    -fx-fill: #334155;
+}
+
+.onboarding-section .label {
+    -fx-text-fill: #334155;
+}
+
+.onboarding-subsection {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #475569;
+}

@@ -88,7 +88,11 @@ public final class AppController {
         if (DatabaseHandler.checkLogin(username, password, loginType)) {
             currentUser = username;
             currentLoginType = loginType;
-            updateView(homeDashboardStateFor(loginType));
+            if (!"CLINIC".equals(loginType) && DatabaseHandler.getTermsAcceptedDate(username) == null) {
+                updateView(State.PRIVACY_ONBOARDING);
+            } else {
+                updateView(homeDashboardStateFor(loginType));
+            }
             return true;
         }
         return false;
@@ -99,7 +103,11 @@ public final class AppController {
         if (DatabaseHandler.registerUser(username, password, loginType)) {
             currentUser = username;
             currentLoginType = loginType;
-            updateView(homeDashboardStateFor(loginType));
+            if (!"CLINIC".equals(loginType)) {
+                updateView(State.PRIVACY_ONBOARDING);
+            } else {
+                updateView(homeDashboardStateFor(loginType));
+            }
             return true;
         }
         return false;

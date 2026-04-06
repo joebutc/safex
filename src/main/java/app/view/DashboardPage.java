@@ -53,7 +53,7 @@ public class DashboardPage {
 
     @FXML
     private void handleSettingsMenu() {
-        AppController.updateView(State.SETTINGS_MENU);
+        AppController.updateView(State.SETTINGS);
     }
 
     private void processSystemAlerts() {

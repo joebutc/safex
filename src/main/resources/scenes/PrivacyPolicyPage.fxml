@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="650" prefWidth="900" style="-fx-background-color: #F8FAFC;"
+            xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="app.view.PrivacyPolicyPageController">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="app-header">
+            <padding><Insets bottom="20" left="20" right="20" top="20"/></padding>
+            <Button onAction="#handleBack" styleClass="secondary-button" text="← Back"/>
+            <Label styleClass="app-header-title" text="Privacy Policy"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" pannable="true" style="-fx-background-color: transparent;">
+            <StackPane alignment="TOP_CENTER">
+                <padding><Insets bottom="24" left="24" right="24" top="24"/></padding>
+
+                <VBox maxWidth="620" spacing="12" styleClass="card,card-padding,card-flat">
+
+                    <Label styleClass="legal-title" text="Privacy Policy Summary"/>
+                    <Label maxWidth="520" styleClass="muted-text,legal-intro"
+                           text="This summary provides key points from our Privacy Notice, but you can find out more details about any of these topics by using the table of contents in the full notice or reading the full sections."
+                           wrapText="true"/>
+
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What personal information do we process?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="When you visit, use, or navigate our Services, we may process personal information depending on how you interact with us and the Services, the choices you make, and the products and features you use. Learn more about personal information we collect in Section 1." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Do we process any sensitive personal information?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="Some of the information we process may be considered special category data (for example health data). We process special category data only where we have a lawful basis and, for health data, only where we have your explicit consent or processing is otherwise permitted under applicable law (for example, where necessary for the provision of health or social care). See Section 3 and Section 10." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Do we collect any information from third parties?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="We may receive limited personal and health-related information from healthcare providers, clinics, or laboratories when you use the Services to book tests, receive results, or manage treatment. See Section 1 and Section 4 for details." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="How do we process your information?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="We process your information to provide, improve, and administer our Services, communicate with you, for safety and fraud prevention, and to comply with law. We may also process your information for other purposes with your consent. See Section 2." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="In what situations and with which parties do we share personal information?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="We may share information with healthcare providers, service partners, and in limited situations described in Section 4." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="How do we keep your information safe?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="We use organisational and technical measures to protect your personal information, but cannot guarantee absolute security. See Section 6." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What are your rights?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="Depending where you live, you have rights to access, correct, delete, and restrict processing of your personal data; and to withdraw consent where processing is based on consent. See Section 8." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="How do you exercise your rights?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="The easiest way to exercise your rights is through the app's privacy and data controls, or by contacting us at support@safex.com. We will consider and act upon any request in accordance with applicable data protection laws. See Section 13." wrapText="true"/>
+                    </VBox>
+
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <padding><Insets bottom="6" top="6"/></padding>
+                        <Label text="Privacy Notice (full) (PDF)"/>
+                        <Button onAction="#openPrivacyPdf" styleClass="secondary-button" text="Open PDF"/>
+                    </HBox>
+
+                </VBox>
+            </StackPane>
+        </ScrollPane>
+    </center>
+</BorderPane>

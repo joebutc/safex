@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="650" prefWidth="900" style="-fx-background-color: #F8FAFC;"
+            xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="app.view.TermsConditionsPageController">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="app-header">
+            <padding><Insets bottom="20" left="20" right="20" top="20"/></padding>
+            <Button onAction="#handleBack" styleClass="secondary-button" text="← Back"/>
+            <Label styleClass="app-header-title" text="Terms &amp; Conditions"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" pannable="true" style="-fx-background-color: transparent;">
+            <StackPane alignment="TOP_CENTER">
+                <padding><Insets bottom="24" left="24" right="24" top="24"/></padding>
+
+                <VBox maxWidth="620" spacing="12" styleClass="card,card-padding,card-flat">
+
+                    <Label styleClass="legal-title" text="Terms &amp; Conditions Summary"/>
+                    <Label maxWidth="520" styleClass="legal-intro"
+                           text="This summary provides key points from our Terms of Use, but you can find out more details about any of these topics by using the table of contents in the full Terms or reading the full sections."
+                           wrapText="true"/>
+
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What are these Terms and who do they apply to?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="These Terms form a legally binding agreement between you and SafeX Ltd and apply to your access to and use of the SafeX mobile application and related services. See &quot;Agreement to Our Legal Terms&quot;." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What do the Services do (and not do)?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="The Services support test booking, delivery of test results, prescription management, secure notifications, and private communications with clinics/healthcare professionals. The Services do not provide public posting, public social feeds, or public comments. See Section 1." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Who can use the Services?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="You must be at least 18 years old, have legal capacity to enter into these Terms, and provide accurate information. See Section 3." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What are the main rules for using the Services?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="You must not misuse the Services (for example, unlawful activity, impersonation, interfering with systems or accounts, security circumvention, malware, spam, scraping/bots without permission, or reverse engineering). See Section 4." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Who owns the Services and what rights do you get?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="SafeX (and its licensors) own the Services and associated content. You receive a limited, non-exclusive, non-transferable, revocable licence to access and use the Services for personal, non-commercial use, subject to these Terms. See Section 2." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What about content you provide and feedback you submit?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="You keep your rights in the content you provide, but you grant the rights needed to operate the Services. If you submit feedback, you grant SafeX a broad licence to use it (including to improve the Services). See Section 5." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Can SafeX suspend or terminate access?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="SafeX may monitor for compliance, restrict or terminate access, and take action if these Terms are violated. Termination ends your right to use the Services, and certain sections continue to apply. See Sections 6 and 7." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Can the Services or Terms change?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="The Services may be modified, interrupted, or discontinued, and the Terms may be updated from time to time. Material changes are indicated by updating the &quot;Last updated&quot; date and providing notice where required. See &quot;Agreement to Our Legal Terms&quot; and Section 8." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What law applies and how are disputes handled?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="These Terms are governed by the laws of England and Wales, and disputes are generally handled through informal resolution first, then courts in England and Wales (without limiting urgent injunctive relief). See Sections 9 and 10." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Is the Services' information medical advice?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="No. Information and features are for general informational purposes and are not a substitute for professional medical advice, diagnosis, or treatment. SafeX is not a healthcare provider. See Section 12." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="What warranties and liabilities are disclaimed/limited?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="The Services are provided &quot;as is&quot; and &quot;as available&quot;, warranties are disclaimed to the maximum extent permitted by law, and liability is limited (including a cap on aggregate liability), subject to applicable law. See Sections 13 and 14." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="Do you have to indemnify SafeX?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="You agree to indemnify and hold SafeX harmless from certain claims and costs arising from your use of the Services and violations of these Terms. See Section 15." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="How is user data handled?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="SafeX maintains data you transmit for operating/providing/improving the Services and performs routine backups, with limits on liability for loss/corruption. Personal data use is governed by the Privacy Policy. See Section 16." wrapText="true"/>
+                    </VBox>
+                    <VBox maxWidth="520" spacing="4">
+                        <Label styleClass="legal-question" text="How can you contact SafeX?" wrapText="true"/>
+                        <Label styleClass="legal-answer" text="Email support@safex.com or write to SafeX Ltd, London, United Kingdom (for notices only). See Section 19." wrapText="true"/>
+                    </VBox>
+
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <padding><Insets bottom="6" top="6"/></padding>
+                        <Label text="Terms (full) (PDF)"/>
+                        <Button onAction="#openTermsPdf" styleClass="secondary-button" text="Open PDF"/>
+                    </HBox>
+
+                </VBox>
+            </StackPane>
+        </ScrollPane>
+    </center>
+</BorderPane>

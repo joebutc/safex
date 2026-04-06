@@ -10,12 +10,8 @@ public class SettingsPageController {
         AppController.goToHomeDashboard();
     }
 
-    @FXML private void handleSettings() {
+    @FXML
+    private void handleSettings() {
         AppController.updateView(State.SETTINGS);
     }
-
-    @FXML private void handleLegal() {
-        AppController.updateView(State.LEGAL);
-    }
-
 }
