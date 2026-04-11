@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="16" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.view.ClinicLocationDialogController"
+      minWidth="400" maxWidth="480">
+   <padding>
+      <Insets bottom="24" left="24" right="24" top="24" />
+   </padding>
+   <children>
+
+      <Label text="Manage Supported Postcode Areas"
+             style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #0F172A;" />
+
+      <Label text="Enter the outward code (first half) of postcodes your clinic covers, e.g. SO14, SW1A."
+             wrapText="true"
+             style="-fx-font-size: 13; -fx-text-fill: #475569;" />
+
+      <HBox spacing="10">
+         <children>
+            <TextField fx:id="newPostcodeField"
+                       promptText="e.g. SO14"
+                       HBox.hgrow="ALWAYS"
+                       style="-fx-font-size: 14;" />
+            <Button fx:id="addButton"
+                    text="Add"
+                    onAction="#handleAddPostcode"
+                    styleClass="secondary-button"
+                    minHeight="36" minWidth="70" />
+         </children>
+      </HBox>
+
+      <Label text="Currently covered areas:"
+             style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #1E293B;" />
+
+      <ListView fx:id="postcodeListView" prefHeight="180" />
+
+      <Button fx:id="removeButton"
+              text="Remove Selected"
+              onAction="#handleRemovePostcode"
+              styleClass="secondary-button"
+              maxWidth="Infinity"
+              minHeight="36" />
+
+      <Region VBox.vgrow="ALWAYS" />
+
+      <Button fx:id="closeButton"
+              text="Done"
+              onAction="#handleClose"
+              styleClass="primary-button"
+              maxWidth="Infinity"
+              minHeight="40" />
+
+   </children>
+</VBox>

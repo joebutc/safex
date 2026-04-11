@@ -56,30 +56,37 @@ public final class DatabaseHandler {
                 + "allow_share_with_doctor INTEGER NOT NULL DEFAULT 0"
                 + ");";
 
+        // New table for storing multiple postcodes per clinic
+        String clinicPostcodesSql = "CREATE TABLE IF NOT EXISTS clinic_postcodes ("
+                + "clinic_username TEXT NOT NULL,"
+                + "postcode_prefix TEXT NOT NULL,"
+                + "PRIMARY KEY (clinic_username, postcode_prefix)"
+                + ");";
+
         try (Connection conn = connect()) {
             if (conn == null) {
                 System.out.println("Error initialising database: connection unavailable.");
                 return;
             }
 
-        String treatmentPlansSql = "CREATE TABLE IF NOT EXISTS treatment_plans ("
-                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + "username TEXT NOT NULL,"
-                + "medication_name TEXT NOT NULL,"
-                + "dose TEXT NOT NULL,"
-                + "frequency TEXT NOT NULL,"
-                + "quantity_remaining REAL NOT NULL DEFAULT 0,"
-                + "low_stock_threshold INTEGER NOT NULL DEFAULT 7,"
-                + "start_date TEXT NOT NULL,"
-                + "notes TEXT,"
-                + "active INTEGER NOT NULL DEFAULT 1"
-                + ");";
+            String treatmentPlansSql = "CREATE TABLE IF NOT EXISTS treatment_plans ("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "username TEXT NOT NULL,"
+                    + "medication_name TEXT NOT NULL,"
+                    + "dose TEXT NOT NULL,"
+                    + "frequency TEXT NOT NULL,"
+                    + "quantity_remaining REAL NOT NULL DEFAULT 0,"
+                    + "low_stock_threshold INTEGER NOT NULL DEFAULT 7,"
+                    + "start_date TEXT NOT NULL,"
+                    + "notes TEXT,"
+                    + "active INTEGER NOT NULL DEFAULT 1"
+                    + ");";
 
-        String treatmentPermissionsSql = "CREATE TABLE IF NOT EXISTS treatment_permissions ("
-                + "username TEXT PRIMARY KEY,"
-                + "allow_treatment_reminders INTEGER NOT NULL DEFAULT 0,"
-                + "allow_clinic_access INTEGER NOT NULL DEFAULT 0"
-                + ");";
+            String treatmentPermissionsSql = "CREATE TABLE IF NOT EXISTS treatment_permissions ("
+                    + "username TEXT PRIMARY KEY,"
+                    + "allow_treatment_reminders INTEGER NOT NULL DEFAULT 0,"
+                    + "allow_clinic_access INTEGER NOT NULL DEFAULT 0"
+                    + ");";
 
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(usersSql);
@@ -88,12 +95,14 @@ public final class DatabaseHandler {
                 stmt.execute(testPermissionsSql);
                 stmt.execute(treatmentPlansSql);
                 stmt.execute(treatmentPermissionsSql);
+                stmt.execute(clinicPostcodesSql);
                 System.out.println("All tables are ready.");
             }
 
             // Migration: add reminder_interval_months to existing test_permissions rows
             try (Statement stmt = conn.createStatement()) {
-                stmt.execute("ALTER TABLE test_permissions ADD COLUMN reminder_interval_months INTEGER NOT NULL DEFAULT 3");
+                stmt.execute(
+                        "ALTER TABLE test_permissions ADD COLUMN reminder_interval_months INTEGER NOT NULL DEFAULT 3");
             } catch (SQLException ignored) {
                 // Column already exists — safe to ignore
             }
@@ -101,12 +110,14 @@ public final class DatabaseHandler {
             // Migration: add source column to treatment_plans (patient vs clinic)
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute("ALTER TABLE treatment_plans ADD COLUMN source TEXT NOT NULL DEFAULT 'patient'");
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
 
             // Migration: add patient_note column to treatment_plans
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute("ALTER TABLE treatment_plans ADD COLUMN patient_note TEXT");
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
 
             // Privacy settings table
             String privacySettingsSql = "CREATE TABLE IF NOT EXISTS privacy_settings ("
@@ -119,7 +130,8 @@ public final class DatabaseHandler {
                     + ");";
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(privacySettingsSql);
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
 
             // Appointments table
             String appointmentsSql = "CREATE TABLE IF NOT EXISTS appointments ("
@@ -133,7 +145,8 @@ public final class DatabaseHandler {
                     + ");";
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(appointmentsSql);
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
 
             String clinicAvailabilitySql = "CREATE TABLE IF NOT EXISTS clinic_availability ("
                     + "clinic_username TEXT NOT NULL DEFAULT '" + DEFAULT_CLINIC_USERNAME + "',"
@@ -143,28 +156,33 @@ public final class DatabaseHandler {
                     + ");";
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(clinicAvailabilitySql);
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
 
             // Migration: keep the appointments schema compatible with older DBs.
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute("ALTER TABLE appointments ADD COLUMN clinic_username TEXT NOT NULL DEFAULT '"
                         + DEFAULT_CLINIC_USERNAME + "'");
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
 
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute("ALTER TABLE appointments ADD COLUMN is_booked INTEGER NOT NULL DEFAULT 1");
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
 
             // Migration: add status column to legacy appointments tables.
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute("ALTER TABLE appointments ADD COLUMN status TEXT NOT NULL DEFAULT 'booked'");
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
 
             // Migration: keep clinic availability scoped to a clinic account.
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute("ALTER TABLE clinic_availability ADD COLUMN clinic_username TEXT NOT NULL DEFAULT '"
                         + DEFAULT_CLINIC_USERNAME + "'");
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
 
             migrateClinicAvailabilitySchema(conn);
 
@@ -175,17 +193,21 @@ public final class DatabaseHandler {
 
     // ── Privacy Settings ─────────────────────────────────────────────────────
 
-    /** Returns [allowInternalStaff, allowAnalytics, allowTrustedPartners]. Defaults all false. */
+    /**
+     * Returns [allowInternalStaff, allowAnalytics, allowTrustedPartners]. Defaults
+     * all false.
+     */
     public static boolean[] getDataAccessPermissions(String username) {
         String sql = "SELECT allow_internal_staff, allow_analytics, allow_trusted_partners "
                 + "FROM privacy_settings WHERE username = ?";
         try (Connection conn = connect()) {
-            if (conn == null) return new boolean[]{false, false, false};
+            if (conn == null)
+                return new boolean[] { false, false, false };
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, username);
                 ResultSet rs = p.executeQuery();
                 if (rs.next()) {
-                    return new boolean[]{
+                    return new boolean[] {
                             rs.getInt("allow_internal_staff") == 1,
                             rs.getInt("allow_analytics") == 1,
                             rs.getInt("allow_trusted_partners") == 1
@@ -195,7 +217,7 @@ public final class DatabaseHandler {
         } catch (SQLException e) {
             System.out.println("getDataAccessPermissions error: " + e.getMessage());
         }
-        return new boolean[]{false, false, false};
+        return new boolean[] { false, false, false };
     }
 
     public static void saveDataAccessPermissions(String username,
@@ -221,11 +243,13 @@ public final class DatabaseHandler {
     public static String getDataRetention(String username) {
         String sql = "SELECT data_retention FROM privacy_settings WHERE username = ?";
         try (Connection conn = connect()) {
-            if (conn == null) return "While account is active";
+            if (conn == null)
+                return "While account is active";
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, username);
                 ResultSet rs = p.executeQuery();
-                if (rs.next()) return rs.getString("data_retention");
+                if (rs.next())
+                    return rs.getString("data_retention");
             }
         } catch (SQLException e) {
             System.out.println("getDataRetention error: " + e.getMessage());
@@ -260,15 +284,18 @@ public final class DatabaseHandler {
         }
     }
 
-    // Returns the test_date string of the most recently logged test, or null if none
+    // Returns the test_date string of the most recently logged test, or null if
+    // none
     public static String getLatestTestDate(String username) {
         String sql = "SELECT test_date FROM sti_tests WHERE username = ? ORDER BY id DESC LIMIT 1";
         try (Connection conn = connect()) {
-            if (conn == null) return null;
+            if (conn == null)
+                return null;
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, username);
                 ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) return rs.getString("test_date");
+                if (rs.next())
+                    return rs.getString("test_date");
             }
         } catch (SQLException e) {
             System.out.println("getLatestTestDate error: " + e.getMessage());
@@ -280,11 +307,13 @@ public final class DatabaseHandler {
     public static int getReminderIntervalMonths(String username) {
         String sql = "SELECT reminder_interval_months FROM test_permissions WHERE username = ?";
         try (Connection conn = connect()) {
-            if (conn == null) return 3;
+            if (conn == null)
+                return 3;
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, username);
                 ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) return rs.getInt("reminder_interval_months");
+                if (rs.next())
+                    return rs.getInt("reminder_interval_months");
             }
         } catch (SQLException e) {
             System.out.println("getReminderIntervalMonths error: " + e.getMessage());
@@ -296,7 +325,8 @@ public final class DatabaseHandler {
     public static boolean addStiTest(String username, String testDate, String stiType, String result, String notes) {
         String sql = "INSERT INTO sti_tests (username, test_date, sti_type, result, notes) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, username);
                 pstmt.setString(2, testDate);
@@ -317,7 +347,8 @@ public final class DatabaseHandler {
         String sql = "SELECT id, username, test_date, sti_type, result, notes FROM sti_tests WHERE username = ? ORDER BY id DESC";
         List<StiTestEntry> entries = new ArrayList<>();
         try (Connection conn = connect()) {
-            if (conn == null) return entries;
+            if (conn == null)
+                return entries;
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, username);
                 ResultSet rs = pstmt.executeQuery();
@@ -328,8 +359,7 @@ public final class DatabaseHandler {
                             rs.getString("test_date"),
                             rs.getString("sti_type"),
                             rs.getString("result"),
-                            rs.getString("notes")
-                    ));
+                            rs.getString("notes")));
                 }
             }
         } catch (SQLException e) {
@@ -338,11 +368,13 @@ public final class DatabaseHandler {
         return entries;
     }
 
-    // Deletes a specific STI test entry; username check prevents cross-user deletion
+    // Deletes a specific STI test entry; username check prevents cross-user
+    // deletion
     public static boolean deleteStiTest(int id, String username) {
         String sql = "DELETE FROM sti_tests WHERE id = ? AND username = ?";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setInt(1, id);
                 pstmt.setString(2, username);
@@ -354,32 +386,37 @@ public final class DatabaseHandler {
         }
     }
 
-    // Returns [allowReminders, allowShareWithDoctor] for a user; defaults to false if no row exists
+    // Returns [allowReminders, allowShareWithDoctor] for a user; defaults to false
+    // if no row exists
     public static boolean[] getTestPermissions(String username) {
         String sql = "SELECT allow_reminders, allow_share_with_doctor FROM test_permissions WHERE username = ?";
         try (Connection conn = connect()) {
-            if (conn == null) return new boolean[]{false, false};
+            if (conn == null)
+                return new boolean[] { false, false };
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, username);
                 ResultSet rs = pstmt.executeQuery();
                 if (rs.next()) {
-                    return new boolean[]{rs.getInt("allow_reminders") == 1, rs.getInt("allow_share_with_doctor") == 1};
+                    return new boolean[] { rs.getInt("allow_reminders") == 1,
+                            rs.getInt("allow_share_with_doctor") == 1 };
                 }
             }
         } catch (SQLException e) {
             System.out.println("getTestPermissions error: " + e.getMessage());
         }
-        return new boolean[]{false, false};
+        return new boolean[] { false, false };
     }
 
     // Upserts test permissions for a user including reminder interval
-    public static boolean saveTestPermissions(String username, boolean allowReminders, boolean allowShareWithDoctor, int reminderIntervalMonths) {
+    public static boolean saveTestPermissions(String username, boolean allowReminders, boolean allowShareWithDoctor,
+            int reminderIntervalMonths) {
         String sql = "INSERT INTO test_permissions (username, allow_reminders, allow_share_with_doctor, reminder_interval_months) VALUES (?, ?, ?, ?)"
                 + " ON CONFLICT(username) DO UPDATE SET allow_reminders = excluded.allow_reminders,"
                 + " allow_share_with_doctor = excluded.allow_share_with_doctor,"
                 + " reminder_interval_months = excluded.reminder_interval_months";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, username);
                 pstmt.setInt(2, allowReminders ? 1 : 0);
@@ -407,7 +444,8 @@ public final class DatabaseHandler {
         String sql = "SELECT username FROM clinics ORDER BY username COLLATE NOCASE ASC";
         List<String> clinics = new ArrayList<>();
         try (Connection conn = connect()) {
-            if (conn == null) return clinics;
+            if (conn == null)
+                return clinics;
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 ResultSet rs = pstmt.executeQuery();
                 while (rs.next()) {
@@ -448,22 +486,23 @@ public final class DatabaseHandler {
 
     // Convenience overload used by tests — defaults source to "patient"
     public static boolean addTreatment(String username, String medicationName, String dose,
-                                       String frequency, double quantityRemaining,
-                                       int lowStockThreshold, String startDate, String notes) {
+            String frequency, double quantityRemaining,
+            int lowStockThreshold, String startDate, String notes) {
         return addTreatment(username, medicationName, dose, frequency, quantityRemaining,
                 lowStockThreshold, startDate, notes, "patient");
     }
 
     // Inserts a new treatment plan entry; source is "patient" or "clinic"
     public static boolean addTreatment(String username, String medicationName, String dose,
-                                       String frequency, double quantityRemaining,
-                                       int lowStockThreshold, String startDate, String notes,
-                                       String source) {
+            String frequency, double quantityRemaining,
+            int lowStockThreshold, String startDate, String notes,
+            String source) {
         String sql = "INSERT INTO treatment_plans (username, medication_name, dose, frequency, "
                 + "quantity_remaining, low_stock_threshold, start_date, notes, active, source) "
                 + "VALUES (?,?,?,?,?,?,?,?,1,?)";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, username);
                 p.setString(2, medicationName);
@@ -490,7 +529,8 @@ public final class DatabaseHandler {
                 + "FROM treatment_plans WHERE username = ? AND active = 1 ORDER BY id DESC";
         List<TreatmentEntry> entries = new ArrayList<>();
         try (Connection conn = connect()) {
-            if (conn == null) return entries;
+            if (conn == null)
+                return entries;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, username);
                 ResultSet rs = p.executeQuery();
@@ -504,11 +544,13 @@ public final class DatabaseHandler {
         return entries;
     }
 
-    // Updates the quantity_remaining for a treatment; usernameGuard prevents cross-user edits
+    // Updates the quantity_remaining for a treatment; usernameGuard prevents
+    // cross-user edits
     public static boolean updateTreatmentQuantity(int id, String usernameGuard, double newQuantity) {
         String sql = "UPDATE treatment_plans SET quantity_remaining = ? WHERE id = ? AND username = ?";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setDouble(1, newQuantity);
                 p.setInt(2, id);
@@ -525,7 +567,8 @@ public final class DatabaseHandler {
     public static boolean deleteTreatment(int id, String usernameGuard) {
         String sql = "UPDATE treatment_plans SET active = 0 WHERE id = ? AND username = ?";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setInt(1, id);
                 p.setString(2, usernameGuard);
@@ -537,18 +580,21 @@ public final class DatabaseHandler {
         }
     }
 
-    // Clinic: fetches active treatment plans for any patient (no username guard — caller must check permission)
+    // Clinic: fetches active treatment plans for any patient (no username guard —
+    // caller must check permission)
     public static List<TreatmentEntry> getPatientTreatmentsForClinic(String patientUsername) {
         String sql = "SELECT id, username, medication_name, dose, frequency, quantity_remaining, "
                 + "low_stock_threshold, start_date, notes, active, source, patient_note "
                 + "FROM treatment_plans WHERE username = ? AND active = 1 ORDER BY id DESC";
         List<TreatmentEntry> entries = new ArrayList<>();
         try (Connection conn = connect()) {
-            if (conn == null) return entries;
+            if (conn == null)
+                return entries;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, patientUsername);
                 ResultSet rs = p.executeQuery();
-                while (rs.next()) entries.add(mapTreatmentRow(rs));
+                while (rs.next())
+                    entries.add(mapTreatmentRow(rs));
             }
         } catch (SQLException e) {
             System.out.println("getPatientTreatmentsForClinic error: " + e.getMessage());
@@ -558,12 +604,13 @@ public final class DatabaseHandler {
 
     // Clinic: updates full treatment plan details
     public static boolean updateTreatmentPlan(int id, String patientUsername, String medicationName,
-                                              String dose, String frequency,
-                                              double quantityRemaining, int lowStockThreshold, String notes) {
+            String dose, String frequency,
+            double quantityRemaining, int lowStockThreshold, String notes) {
         String sql = "UPDATE treatment_plans SET medication_name=?, dose=?, frequency=?, "
                 + "quantity_remaining=?, low_stock_threshold=?, notes=? WHERE id=? AND username=?";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, medicationName);
                 p.setString(2, dose);
@@ -585,19 +632,20 @@ public final class DatabaseHandler {
     public static boolean[] getTreatmentPermissions(String username) {
         String sql = "SELECT allow_treatment_reminders, allow_clinic_access FROM treatment_permissions WHERE username = ?";
         try (Connection conn = connect()) {
-            if (conn == null) return new boolean[]{false, false};
+            if (conn == null)
+                return new boolean[] { false, false };
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, username);
                 ResultSet rs = p.executeQuery();
                 if (rs.next()) {
-                    return new boolean[]{rs.getInt("allow_treatment_reminders") == 1,
-                            rs.getInt("allow_clinic_access") == 1};
+                    return new boolean[] { rs.getInt("allow_treatment_reminders") == 1,
+                            rs.getInt("allow_clinic_access") == 1 };
                 }
             }
         } catch (SQLException e) {
             System.out.println("getTreatmentPermissions error: " + e.getMessage());
         }
-        return new boolean[]{false, false};
+        return new boolean[] { false, false };
     }
 
     // Upserts treatment permissions for a user
@@ -606,7 +654,8 @@ public final class DatabaseHandler {
                 + " ON CONFLICT(username) DO UPDATE SET allow_treatment_reminders = excluded.allow_treatment_reminders,"
                 + " allow_clinic_access = excluded.allow_clinic_access";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, username);
                 p.setInt(2, allowReminders ? 1 : 0);
@@ -624,7 +673,8 @@ public final class DatabaseHandler {
     public static boolean updatePatientNote(int id, String usernameGuard, String note) {
         String sql = "UPDATE treatment_plans SET patient_note = ? WHERE id = ? AND username = ?";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, note);
                 p.setInt(2, id);
@@ -650,23 +700,27 @@ public final class DatabaseHandler {
                 rs.getString("notes"),
                 rs.getInt("active") == 1,
                 rs.getString("source"),
-                rs.getString("patient_note")
-        );
+                rs.getString("patient_note"));
     }
 
     // ── Appointments ──────────────────────────────────────────────────────────
 
-    /** Returns the offered appointment times (HH:mm) for a given date across all clinics. */
+    /**
+     * Returns the offered appointment times (HH:mm) for a given date across all
+     * clinics.
+     */
     public static List<String> getAvailableTimesForDate(String date) {
         String sql = "SELECT DISTINCT appointment_time FROM clinic_availability "
                 + "WHERE appointment_date = ? ORDER BY appointment_time";
         List<String> times = new ArrayList<>();
         try (Connection conn = connect()) {
-            if (conn == null) return times;
+            if (conn == null)
+                return times;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, date);
                 ResultSet rs = p.executeQuery();
-                while (rs.next()) times.add(rs.getString("appointment_time"));
+                while (rs.next())
+                    times.add(rs.getString("appointment_time"));
             }
         } catch (SQLException e) {
             System.out.println("getAvailableTimesForDate error: " + e.getMessage());
@@ -674,18 +728,23 @@ public final class DatabaseHandler {
         return times;
     }
 
-    /** Returns the offered appointment times (HH:mm) for a specific clinic on a given date. */
+    /**
+     * Returns the offered appointment times (HH:mm) for a specific clinic on a
+     * given date.
+     */
     public static List<String> getAvailableTimesForDate(String date, String clinicUsername) {
         String sql = "SELECT appointment_time FROM clinic_availability "
                 + "WHERE appointment_date = ? AND clinic_username = ? ORDER BY appointment_time";
         List<String> times = new ArrayList<>();
         try (Connection conn = connect()) {
-            if (conn == null) return times;
+            if (conn == null)
+                return times;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, date);
                 p.setString(2, normalizeClinicUsername(clinicUsername));
                 ResultSet rs = p.executeQuery();
-                while (rs.next()) times.add(rs.getString("appointment_time"));
+                while (rs.next())
+                    times.add(rs.getString("appointment_time"));
             }
         } catch (SQLException e) {
             System.out.println("getAvailableTimesForDate error: " + e.getMessage());
@@ -698,13 +757,17 @@ public final class DatabaseHandler {
         return saveAvailableTimesForDate(DEFAULT_CLINIC_USERNAME, date, times);
     }
 
-    /** Replaces the offered appointment times for a clinic on a date with the provided set. */
+    /**
+     * Replaces the offered appointment times for a clinic on a date with the
+     * provided set.
+     */
     public static boolean saveAvailableTimesForDate(String clinicUsername, String date, List<String> times) {
         String deleteSql = "DELETE FROM clinic_availability WHERE clinic_username = ? AND appointment_date = ?";
         String insertSql = "INSERT INTO clinic_availability (clinic_username, appointment_date, appointment_time) "
                 + "VALUES (?, ?, ?)";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             conn.setAutoCommit(false);
             try {
                 try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
@@ -733,19 +796,24 @@ public final class DatabaseHandler {
         }
     }
 
-    /** Books a time slot for a patient. Returns false if already booked or not offered. */
+    /**
+     * Books a time slot for a patient. Returns false if already booked or not
+     * offered.
+     */
     public static boolean bookAppointment(String username, String date, String time) {
         String availabilitySql = "SELECT clinic_username FROM clinic_availability "
                 + "WHERE appointment_date = ? AND appointment_time = ? "
                 + "ORDER BY clinic_username LIMIT 1";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             String clinicUsername;
             try (PreparedStatement p = conn.prepareStatement(availabilitySql)) {
                 p.setString(1, date);
                 p.setString(2, time);
                 ResultSet rs = p.executeQuery();
-                if (!rs.next()) return false;
+                if (!rs.next())
+                    return false;
                 clinicUsername = rs.getString("clinic_username");
             }
             return bookAppointment(username, clinicUsername, date, time);
@@ -767,20 +835,23 @@ public final class DatabaseHandler {
                 + "(clinic_username, appointment_date, appointment_time, is_booked, patient_username, status) "
                 + "VALUES (?, ?, ?, 1, ?, 'booked')";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             try (PreparedStatement p = conn.prepareStatement(availabilitySql)) {
                 p.setString(1, normalizedClinic);
                 p.setString(2, date);
                 p.setString(3, time);
                 ResultSet rs = p.executeQuery();
-                if (!rs.next()) return false;
+                if (!rs.next())
+                    return false;
             }
             try (PreparedStatement p = conn.prepareStatement(checkSql)) {
                 p.setString(1, normalizedClinic);
                 p.setString(2, date);
                 p.setString(3, time);
                 ResultSet rs = p.executeQuery();
-                if (rs.next()) return false;
+                if (rs.next())
+                    return false;
             }
             try (PreparedStatement p = conn.prepareStatement(insertSql)) {
                 p.setString(1, normalizedClinic);
@@ -802,11 +873,13 @@ public final class DatabaseHandler {
                 + "WHERE appointment_date = ? AND status = 'booked' AND is_booked = 1";
         List<String> times = new ArrayList<>();
         try (Connection conn = connect()) {
-            if (conn == null) return times;
+            if (conn == null)
+                return times;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, date);
                 ResultSet rs = p.executeQuery();
-                while (rs.next()) times.add(rs.getString("appointment_time"));
+                while (rs.next())
+                    times.add(rs.getString("appointment_time"));
             }
         } catch (SQLException e) {
             System.out.println("getBookedTimesForDate error: " + e.getMessage());
@@ -814,18 +887,23 @@ public final class DatabaseHandler {
         return times;
     }
 
-    /** Returns the list of booked times (HH:mm) for a specific clinic on a given date. */
+    /**
+     * Returns the list of booked times (HH:mm) for a specific clinic on a given
+     * date.
+     */
     public static List<String> getBookedTimesForDate(String date, String clinicUsername) {
         String sql = "SELECT appointment_time FROM appointments "
                 + "WHERE clinic_username = ? AND appointment_date = ? AND status = 'booked' AND is_booked = 1";
         List<String> times = new ArrayList<>();
         try (Connection conn = connect()) {
-            if (conn == null) return times;
+            if (conn == null)
+                return times;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, normalizeClinicUsername(clinicUsername));
                 p.setString(2, date);
                 ResultSet rs = p.executeQuery();
-                while (rs.next()) times.add(rs.getString("appointment_time"));
+                while (rs.next())
+                    times.add(rs.getString("appointment_time"));
             }
         } catch (SQLException e) {
             System.out.println("getBookedTimesForDate error: " + e.getMessage());
@@ -833,17 +911,21 @@ public final class DatabaseHandler {
         return times;
     }
 
-    /** Returns appointments for a patient as [id, date, time, status] arrays, newest first. */
+    /**
+     * Returns appointments for a patient as [id, date, time, status] arrays, newest
+     * first.
+     */
     public static List<String[]> getAppointmentsForPatient(String username) {
         String sql = "SELECT id, appointment_date, appointment_time, status FROM appointments WHERE patient_username = ? ORDER BY id DESC";
         List<String[]> results = new ArrayList<>();
         try (Connection conn = connect()) {
-            if (conn == null) return results;
+            if (conn == null)
+                return results;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, username);
                 ResultSet rs = p.executeQuery();
                 while (rs.next()) {
-                    results.add(new String[]{
+                    results.add(new String[] {
                             String.valueOf(rs.getInt("id")),
                             rs.getString("appointment_date"),
                             rs.getString("appointment_time"),
@@ -862,7 +944,8 @@ public final class DatabaseHandler {
         String sql = "UPDATE appointments SET status = 'cancelled', is_booked = 0 "
                 + "WHERE id = ? AND patient_username = ?";
         try (Connection conn = connect()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setInt(1, id);
                 p.setString(2, username);
@@ -884,7 +967,7 @@ public final class DatabaseHandler {
     private static void migrateClinicAvailabilitySchema(Connection conn) throws SQLException {
         List<String> primaryKeyColumns = new ArrayList<>();
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("PRAGMA table_info('clinic_availability')")) {
+                ResultSet rs = stmt.executeQuery("PRAGMA table_info('clinic_availability')")) {
             while (rs.next()) {
                 int pkOrder = rs.getInt("pk");
                 if (pkOrder > 0) {
@@ -911,9 +994,11 @@ public final class DatabaseHandler {
                     + "appointment_time TEXT NOT NULL,"
                     + "PRIMARY KEY (clinic_username, appointment_date, appointment_time)"
                     + ")");
-            stmt.execute("INSERT OR IGNORE INTO clinic_availability (clinic_username, appointment_date, appointment_time) "
-                    + "SELECT COALESCE(clinic_username, '" + DEFAULT_CLINIC_USERNAME + "'), appointment_date, appointment_time "
-                    + "FROM clinic_availability_legacy");
+            stmt.execute(
+                    "INSERT OR IGNORE INTO clinic_availability (clinic_username, appointment_date, appointment_time) "
+                            + "SELECT COALESCE(clinic_username, '" + DEFAULT_CLINIC_USERNAME
+                            + "'), appointment_date, appointment_time "
+                            + "FROM clinic_availability_legacy");
             stmt.execute("DROP TABLE clinic_availability_legacy");
             conn.commit();
         } catch (SQLException e) {
@@ -948,6 +1033,82 @@ public final class DatabaseHandler {
         } catch (SQLException e) {
             System.out.println("Database Login Check Error: " + e.getMessage());
             return false;
+        }
+    }
+
+    // ── Clinic Settings & Postcodes ──────────────────────────────────────────
+
+    /**
+     * Retrieves a ClinicAccount and populates its supported postcode prefixes.
+     */
+    public static app.model.ClinicAccount getClinicAccount(String username) {
+        // Note: Because your current 'clinics' table only stores username and password,
+        // we are passing placeholder strings for email and clinicName for now.
+        // If you add those columns to your DB later, you can fetch them here.
+        app.model.ClinicAccount account = new app.model.ClinicAccount(username, "", "", username);
+
+        String sql = "SELECT postcode_prefix FROM clinic_postcodes WHERE clinic_username = ?";
+        try (Connection conn = connect()) {
+            if (conn == null)
+                return account;
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, username);
+                ResultSet rs = p.executeQuery();
+                while (rs.next()) {
+                    account.addCoveredPostcodePrefix(rs.getString("postcode_prefix"));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("getClinicAccount error: " + e.getMessage());
+        }
+        return account;
+    }
+
+    /**
+     * Overwrites a clinic's supported postcodes in the database.
+     */
+    public static void updateClinicAccount(app.model.ClinicAccount clinic) {
+        String deleteSql = "DELETE FROM clinic_postcodes WHERE clinic_username = ?";
+        String insertSql = "INSERT INTO clinic_postcodes (clinic_username, postcode_prefix) VALUES (?, ?)";
+
+        try (Connection conn = connect()) {
+            if (conn == null)
+                return;
+
+            // Turn off auto-commit so we can safely delete old data and insert new data in
+            // one transaction
+            conn.setAutoCommit(false);
+
+            try {
+                // 1. Wipe the old postcodes for this clinic
+                try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+                    deleteStmt.setString(1, clinic.getUsername());
+                    deleteStmt.executeUpdate();
+                }
+
+                // 2. Insert the fresh list of postcodes
+                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    for (String prefix : clinic.getCoveredPostcodePrefixes()) {
+                        insertStmt.setString(1, clinic.getUsername());
+                        insertStmt.setString(2, prefix);
+                        insertStmt.addBatch();
+                    }
+                    insertStmt.executeBatch();
+                }
+
+                // 3. Commit the transaction
+                conn.commit();
+            } catch (SQLException e) {
+                // If anything fails, roll back to the original state to prevent data loss
+                conn.rollback();
+                throw e;
+            } finally {
+                // Restore default behaviour
+                conn.setAutoCommit(true);
+            }
+
+        } catch (SQLException e) {
+            System.out.println("updateClinicAccount error: " + e.getMessage());
         }
     }
 }

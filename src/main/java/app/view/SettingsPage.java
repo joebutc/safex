@@ -2,6 +2,7 @@ package app.view;
 
 import app.AppController;
 import app.model.State;
+import app.view.AppStyles;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -17,14 +18,28 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class SettingsPage {
-    @FXML private Button homeButton;
-    @FXML private ImageView homeIcon;
-    @FXML private CheckBox agreeCheckBox;
-    @FXML private Button acceptBtn;
+    @FXML
+    private Button homeButton;
+    @FXML
+    private ImageView homeIcon;
+    @FXML
+    private CheckBox agreeCheckBox;
+    @FXML
+    private Button acceptBtn;
+    @FXML
+    private Button manageLocationsBtn;
 
     @FXML
     private void initialize() {
-        acceptBtn.disableProperty().bind(agreeCheckBox.selectedProperty().not());
+        if (acceptBtn != null && agreeCheckBox != null) {
+            acceptBtn.disableProperty().bind(agreeCheckBox.selectedProperty().not());
+        }
+
+        if (manageLocationsBtn != null) {
+            boolean isClinic = "CLINIC".equals(AppController.getCurrentLoginType());
+            manageLocationsBtn.setVisible(isClinic);
+            manageLocationsBtn.setManaged(isClinic);
+        }
     }
 
     @FXML
@@ -37,22 +52,16 @@ public class SettingsPage {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
         a.setHeaderText("What data is collected");
         a.setContentText("""
-            • Account details (email, username)
-            • Usage activity (features used, time spent)
-            • Device info (OS, app version, IP range)
-        """);
+                • Account details (email, username)
+                • Usage activity (features used, time spent)
+                • Device info (OS, app version, IP range)
+                """);
         a.showAndWait();
     }
 
     @FXML
-    private void handleSettingsMenu(){
-        String userType = AppController.getCurrentLoginType();
-        if ("CLINIC".equals(userType)) {
-            AppController.goToHomeDashboard();
-        } else {
-            AppController.updateView(State.SETTINGS_MENU);
-        }
-
+    private void handleSettingsMenu() {
+        AppController.updateView(State.SETTINGS_MENU);
     }
 
     @FXML
@@ -60,12 +69,12 @@ public class SettingsPage {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
         a.setHeaderText("Why your data is used");
         a.setContentText("""
-            We use your data to:
-            • Improve app performance
-            • Personalize your experience
-            • Ensure platform security
-            • Provide customer support
-        """);
+                We use your data to:
+                • Improve app performance
+                • Personalize your experience
+                • Ensure platform security
+                • Provide customer support
+                """);
         a.showAndWait();
     }
 
@@ -89,13 +98,12 @@ public class SettingsPage {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
         a.setHeaderText("Your Rights");
         a.setContentText("""
-            You can:
-            • Request a copy of your data
-            • Correct inaccurate info
-            • Delete your account anytime
-        """);
+                You can:
+                • Request a copy of your data
+                • Correct inaccurate info
+                • Delete your account anytime
+                """);
         a.showAndWait();
-
     }
 
     @FXML
@@ -106,6 +114,11 @@ public class SettingsPage {
     @FXML
     private void handleTreatmentPermissions() {
         showDialog("Treatment Data Permissions", "/scenes/TreatmentPermissionsDialog.fxml");
+    }
+
+    @FXML
+    private void handleManageLocations() {
+        showDialog("Manage Supported Areas", "/scenes/ClinicLocationDialog.fxml");
     }
 
     @FXML

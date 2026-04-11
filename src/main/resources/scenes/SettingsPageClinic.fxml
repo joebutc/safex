@@ -63,6 +63,8 @@
                   </VBox>
                   <FlowPane fx:id="cardContainer" alignment="TOP_CENTER" hgap="18" prefWrapLength="1000" vgap="18">
                      <children>
+
+                        <!-- Terms & Conditions card -->
                         <VBox prefHeight="150.0" prefWidth="500.0" spacing="12">
                            <styleClass>
                               <String fx:value="patient-dashboard-card" />
@@ -95,6 +97,41 @@
                               <Button maxWidth="Infinity" minHeight="40" onAction="#handleLegal" styleClass="secondary-button" text="View Terms" />
                            </children>
                         </VBox>
+
+                        <!-- Manage Supported Areas card -->
+                        <VBox fx:id="manageLocationsCard" prefHeight="150.0" prefWidth="500.0" spacing="12">
+                           <styleClass>
+                              <String fx:value="patient-dashboard-card" />
+                              <String fx:value="patient-dashboard-card-wide" />
+                           </styleClass>
+                           <padding>
+                              <Insets bottom="18" left="18" right="18" top="18" />
+                           </padding>
+                           <children>
+                              <HBox alignment="TOP_LEFT" spacing="12">
+                                 <children>
+                                    <StackPane maxHeight="46" maxWidth="46" minHeight="46" minWidth="46" prefHeight="46" prefWidth="46">
+                                       <styleClass>
+                                          <String fx:value="patient-icon-badge" />
+                                          <String fx:value="patient-icon-badge-settings" />
+                                       </styleClass>
+                                       <children>
+                                          <SVGPath content="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#1E293B" scaleX="0.9" scaleY="0.9" />
+                                       </children>
+                                    </StackPane>
+                                    <VBox alignment="TOP_LEFT" spacing="6">
+                                       <children>
+                                          <Label styleClass="patient-dashboard-card-title" text="Manage Supported Areas" />
+                                          <Label maxWidth="300" styleClass="patient-dashboard-card-copy" text="Add or remove the postcode areas your clinic covers." wrapText="true" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                              <Region VBox.vgrow="ALWAYS" />
+                              <Button maxWidth="Infinity" minHeight="40" onAction="#handleManageLocations" styleClass="secondary-button" text="Manage Areas" />
+                           </children>
+                        </VBox>
+
                      </children>
                   </FlowPane>
                </children>

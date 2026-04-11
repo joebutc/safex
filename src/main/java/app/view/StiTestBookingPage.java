@@ -2,9 +2,12 @@ package app.view;
 
 import app.AppController;
 import app.model.Action;
+import app.model.ClinicAccount;
 import app.model.Context;
 import app.model.Result;
+import app.service.ClinicService;
 import app.service.GateService;
+import app.util.PostcodeValidator;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -22,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import app.util.PostcodeValidator;
+import java.util.List;
 
 /**
  * Step-by-step eligibility wizard that routes the patient through the
@@ -33,57 +36,63 @@ import app.util.PostcodeValidator;
  */
 public class StiTestBookingPage {
 
-    private static final String NHS_BASE =
-            "https://www.nhs.uk/service-search/sexual-health-services/" +
+    private static final String NHS_BASE = "https://www.nhs.uk/service-search/sexual-health-services/" +
             "find-sti-testing-and-treatment/results?location=";
 
     // ── Step IDs ──────────────────────────────────────────────────────────────
-    private static final int S_AGE          =  1;
-    private static final int S_FRASER        =  2;
-    private static final int S_LOCATION      =  3;
-    private static final int S_SYMPTOMS      =  4;
-    private static final int S_ASSAULT       =  5;
-    private static final int S_PEP           =  6;
-    private static final int S_PREGNANCY     =  7;
-    private static final int S_IMMUNO        =  8;
-    private static final int S_SAFEGUARDING  =  9;
-    private static final int S_WINDOW        = 10;
-    private static final int S_RECENT_KIT    = 11;
-    private static final int S_WEEKS         = 12;
-    private static final int S_CONSENT       = 13;
-    private static final int S_RESULT        = 14;
-    private static final int TOTAL_STEPS     = 11; // main-path steps for progress bar
+    private static final int S_AGE = 1;
+    private static final int S_FRASER = 2;
+    private static final int S_LOCATION = 3;
+    private static final int S_SYMPTOMS = 4;
+    private static final int S_ASSAULT = 5;
+    private static final int S_PEP = 6;
+    private static final int S_PREGNANCY = 7;
+    private static final int S_IMMUNO = 8;
+    private static final int S_SAFEGUARDING = 9;
+    private static final int S_WINDOW = 10;
+    private static final int S_RECENT_KIT = 11;
+    private static final int S_WEEKS = 12;
+    private static final int S_CONSENT = 13;
+    private static final int S_RESULT = 14;
+    private static final int TOTAL_STEPS = 11; // main-path steps for progress bar
 
     // ── Collected answers ─────────────────────────────────────────────────────
-    private int     age          = 18;
-    private boolean fraser       = false;
-    private String  location     = "";
-    private boolean symptomatic  = false;
-    private boolean assault      = false;
-    private boolean pep          = false;
-    private boolean preg         = false;
-    private boolean immuno       = false;
+    private int age = 18;
+    private boolean fraser = false;
+    private String location = "";
+    private boolean symptomatic = false;
+    private boolean assault = false;
+    private boolean pep = false;
+    private boolean preg = false;
+    private boolean immuno = false;
     private boolean safeguarding = false;
-    private boolean windowElap   = false;
-    private boolean recentKit    = false;
-    private int     kitWeeks     = 6;
+    private boolean windowElap = false;
+    private boolean recentKit = false;
+    private int kitWeeks = 6;
 
-    private Result  finalResult  = null;
+    private Result finalResult = null;
+
+    // ── Services ──────────────────────────────────────────────────────────────
+    private final ClinicService clinicService = new ClinicService();
 
     // ── Navigation history for Back button ────────────────────────────────────
     private final Deque<Integer> history = new ArrayDeque<>();
     private int currentStep = S_AGE;
 
     // ── Mutable header UI ─────────────────────────────────────────────────────
-    @FXML private VBox contentArea;
-    @FXML private ProgressBar progressBar;
-    @FXML private Label stepLabel;
-    @FXML private Button headerBackBtn;
+    @FXML
+    private VBox contentArea;
+    @FXML
+    private ProgressBar progressBar;
+    @FXML
+    private Label stepLabel;
+    @FXML
+    private Button headerBackBtn;
 
     @FXML
-    public void initialize(){
+    public void initialize() {
         headerBackBtn.setOnAction(e -> {
-            if(history.isEmpty()){
+            if (history.isEmpty()) {
                 AppController.goToHomeDashboard();
             } else {
                 goBack();
@@ -110,32 +119,33 @@ public class StiTestBookingPage {
         contentArea.getChildren().setAll(buildStep(step));
     }
 
-    private void updateProgress(int step){
-        if(step == S_RESULT){
+    private void updateProgress(int step) {
+        if (step == S_RESULT) {
             progressBar.setProgress(1);
             stepLabel.setText("Complete");
             return;
         }
         int num = displayNumber(step);
-        progressBar.setProgress((double)num / TOTAL_STEPS);
+        progressBar.setProgress((double) num / TOTAL_STEPS);
         stepLabel.setText("Step " + num + " of " + TOTAL_STEPS);
     }
 
     private int displayNumber(int step) {
         return switch (step) {
-            case S_AGE, S_FRASER  ->  1;
-            case S_LOCATION       ->  2;
-            case S_SYMPTOMS       ->  3;
-            case S_ASSAULT        ->  4;
-            case S_PEP            ->  5;
-            case S_PREGNANCY      ->  6;
-            case S_IMMUNO         ->  7;
-            case S_SAFEGUARDING   ->  8;
-            case S_WINDOW         ->  9;
+            case S_AGE, S_FRASER -> 1;
+            case S_LOCATION -> 2;
+            case S_SYMPTOMS -> 3;
+            case S_ASSAULT -> 4;
+            case S_PEP -> 5;
+            case S_PREGNANCY -> 6;
+            case S_IMMUNO -> 7;
+            case S_SAFEGUARDING -> 8;
+            case S_WINDOW -> 9;
             case S_RECENT_KIT,
-                 S_WEEKS          -> 10;
-            case S_CONSENT        -> 11;
-            default               -> -1;
+                    S_WEEKS ->
+                10;
+            case S_CONSENT -> 11;
+            default -> -1;
         };
     }
 
@@ -143,53 +153,103 @@ public class StiTestBookingPage {
 
     private VBox buildStep(int step) {
         return switch (step) {
-            case S_AGE         -> stepAge();
-            case S_FRASER      -> stepFraser();
-            case S_LOCATION    -> stepLocation();
-            case S_SYMPTOMS    -> booleanCard("3", "\uD83E\uDE7A", "Any current symptoms?",
+            case S_AGE -> stepAge();
+            case S_FRASER -> stepFraser();
+            case S_LOCATION -> stepLocation();
+            case S_SYMPTOMS -> booleanCard("3", "\uD83E\uDE7A", "Any current symptoms?",
                     "Are you experiencing any symptoms right now — such as unusual discharge, sores, itching, or pain?",
                     "Symptoms require a physical examination at a clinic for an accurate diagnosis.",
-                    () -> { symptomatic = true;  earlyFail("G2", "Symptomatic — a sexual health clinic can examine and test you accurately."); },
-                    () -> { symptomatic = false; advance(S_ASSAULT); });
-            case S_ASSAULT     -> booleanCard("4", "\uD83D\uDEE1\uFE0F", "Recent sexual assault?",
+                    () -> {
+                        symptomatic = true;
+                        earlyFail("G2", "Symptomatic — a sexual health clinic can examine and test you accurately.");
+                    },
+                    () -> {
+                        symptomatic = false;
+                        advance(S_ASSAULT);
+                    });
+            case S_ASSAULT -> booleanCard("4", "\uD83D\uDEE1\uFE0F", "Recent sexual assault?",
                     "Have you experienced a sexual assault recently?",
                     "If you have, urgent specialist care is available. Your safety comes first.",
-                    () -> { assault = true;  earlyFail("G3", "Assault reported — immediate SARC or A&E referral for forensic care, PEP and EC."); },
-                    () -> { assault = false; advance(S_PEP); });
-            case S_PEP         -> booleanCard("5", "\uD83D\uDC8A", "Do you need PEP?",
+                    () -> {
+                        assault = true;
+                        earlyFail("G3",
+                                "Assault reported — immediate SARC or A&E referral for forensic care, PEP and EC.");
+                    },
+                    () -> {
+                        assault = false;
+                        advance(S_PEP);
+                    });
+            case S_PEP -> booleanCard("5", "\uD83D\uDC8A", "Do you need PEP?",
                     "Do you think you may need PEP — emergency HIV prevention medication?",
                     "PEP must be started within 72 hours. It is available at sexual health clinics and A&E.",
-                    () -> { pep = true;  earlyFail("G4", "PEP needed — go urgently to a sexual health clinic or A&E."); },
-                    () -> { pep = false; advance(S_PREGNANCY); });
-            case S_PREGNANCY   -> booleanCard("6", "\uD83E\uDEB7", "Pregnant or possibly?",
+                    () -> {
+                        pep = true;
+                        earlyFail("G4", "PEP needed — go urgently to a sexual health clinic or A&E.");
+                    },
+                    () -> {
+                        pep = false;
+                        advance(S_PREGNANCY);
+                    });
+            case S_PREGNANCY -> booleanCard("6", "\uD83E\uDEB7", "Pregnant or possibly?",
                     "Are you pregnant, or do you think you might be?",
                     "Pregnant individuals need coordinated care from sexual health and obstetric teams.",
-                    () -> { preg = true;  earlyFail("G5", "Pregnant — please visit a sexual health clinic and your obstetric team."); },
-                    () -> { preg = false; advance(S_IMMUNO); });
-            case S_IMMUNO      -> booleanCard("7", "\uD83C\uDFE5", "Immunocompromised?",
+                    () -> {
+                        preg = true;
+                        earlyFail("G5", "Pregnant — please visit a sexual health clinic and your obstetric team.");
+                    },
+                    () -> {
+                        preg = false;
+                        advance(S_IMMUNO);
+                    });
+            case S_IMMUNO -> booleanCard("7", "\uD83C\uDFE5", "Immunocompromised?",
                     "Are you immunocompromised — for example, on immunosuppressants or HIV positive with a low CD4 count?",
                     "A specialist HIV or sexual health clinic can provide the most appropriate care.",
-                    () -> { immuno = true;  earlyFail("G6", "Immunocompromised — specialist sexual health or HIV clinic recommended."); },
-                    () -> { immuno = false; advance(S_SAFEGUARDING); });
+                    () -> {
+                        immuno = true;
+                        earlyFail("G6", "Immunocompromised — specialist sexual health or HIV clinic recommended.");
+                    },
+                    () -> {
+                        immuno = false;
+                        advance(S_SAFEGUARDING);
+                    });
             case S_SAFEGUARDING -> booleanCard("8", "\u26A0\uFE0F", "Any safeguarding concerns?",
                     "Are there safeguarding concerns in your situation — such as coercion, exploitation, or vulnerability?",
                     "These situations are best handled by a clinical team with safeguarding experience.",
-                    () -> { safeguarding = true;  earlyFail("G7", "Safeguarding concern — clinical triage with a safeguarding lead is required."); },
-                    () -> { safeguarding = false; advance(S_WINDOW); });
-            case S_WINDOW      -> booleanCard("9", "\u23F1\uFE0F", "At least 2 weeks since exposure?",
+                    () -> {
+                        safeguarding = true;
+                        earlyFail("G7", "Safeguarding concern — clinical triage with a safeguarding lead is required.");
+                    },
+                    () -> {
+                        safeguarding = false;
+                        advance(S_WINDOW);
+                    });
+            case S_WINDOW -> booleanCard("9", "\u23F1\uFE0F", "At least 2 weeks since exposure?",
                     "Has it been at least 2 weeks since the potential exposure you want to test for?",
                     "Many STI tests need a window period of at least 2 weeks for accurate results.",
-                    () -> { windowElap = true;  advance(S_RECENT_KIT); },
-                    () -> { windowElap = false; earlyFail("G8", "Too early to test — please wait until the window period has passed, then reorder. Use safer sex in the meantime."); });
-            case S_RECENT_KIT  -> booleanCard("10", "\uD83D\uDCE6", "Home kit in last 12 weeks?",
+                    () -> {
+                        windowElap = true;
+                        advance(S_RECENT_KIT);
+                    },
+                    () -> {
+                        windowElap = false;
+                        earlyFail("G8",
+                                "Too early to test — please wait until the window period has passed, then reorder. Use safer sex in the meantime.");
+                    });
+            case S_RECENT_KIT -> booleanCard("10", "\uD83D\uDCE6", "Home kit in last 12 weeks?",
                     "Have you received a home STI testing kit in the last 12 weeks?",
                     "Frequent orders may indicate ongoing risk — a clinic can provide extra support.",
-                    () -> { recentKit = true;  advance(S_WEEKS); },
-                    () -> { recentKit = false; advance(S_CONSENT); });
-            case S_WEEKS       -> stepWeeks();
-            case S_CONSENT     -> stepConsent();
-            case S_RESULT      -> stepResult();
-            default            -> new VBox();
+                    () -> {
+                        recentKit = true;
+                        advance(S_WEEKS);
+                    },
+                    () -> {
+                        recentKit = false;
+                        advance(S_CONSENT);
+                    });
+            case S_WEEKS -> stepWeeks();
+            case S_CONSENT -> stepConsent();
+            case S_RESULT -> stepResult();
+            default -> new VBox();
         };
     }
 
@@ -221,8 +281,15 @@ public class StiTestBookingPage {
         return booleanCard("1", "\uD83D\uDCCB", "Fraser competency",
                 "Has a healthcare professional confirmed you have Fraser competency — meaning you can independently understand and consent to your care?",
                 "Fraser competency is required for individuals aged 13–15 to use home testing kits.",
-                () -> { fraser = true;  advance(S_LOCATION); },
-                () -> { fraser = false; earlyFail("G1", "13–15 without Fraser competency — please visit a sexual health clinic for a triage and support."); });
+                () -> {
+                    fraser = true;
+                    advance(S_LOCATION);
+                },
+                () -> {
+                    fraser = false;
+                    earlyFail("G1",
+                            "13–15 without Fraser competency — please visit a sexual health clinic for a triage and support.");
+                });
     }
 
     private VBox stepLocation() {
@@ -271,8 +338,8 @@ public class StiTestBookingPage {
         });
 
         return stepCard("2", "\uD83D\uDCCD", "Where are you located?",
-            "Your postcode is used to find NHS sexual health services near you.",
-            centred(vbox(14, centred(tf), centred(errorLabel), centred(next))));
+                "Your postcode is used to find NHS sexual health services near you.",
+                centred(vbox(14, centred(tf), centred(errorLabel), centred(next))));
     }
 
     private VBox stepWeeks() {
@@ -285,7 +352,8 @@ public class StiTestBookingPage {
         next.setOnAction(e -> {
             kitWeeks = spinner.getValue();
             if (kitWeeks < 12) {
-                earlyFail("G9", "Kit received less than 12 weeks ago — please contact your clinic for ongoing support and assessment.");
+                earlyFail("G9",
+                        "Kit received less than 12 weeks ago — please contact your clinic for ongoing support and assessment.");
             } else {
                 advance(S_CONSENT);
             }
@@ -329,10 +397,45 @@ public class StiTestBookingPage {
     }
 
     private VBox stepResult() {
-        if (finalResult == null) finalResult = passResult();
+        if (finalResult == null)
+            finalResult = passResult();
 
         String encoded = URLEncoder.encode(location, StandardCharsets.UTF_8);
-        String nhsUrl  = NHS_BASE + encoded;
+        String nhsUrl = NHS_BASE + encoded;
+
+        // Container for dynamic action buttons
+        VBox actionButtons = new VBox(12);
+        actionButtons.setAlignment(Pos.CENTER);
+
+        // Retrieve local partner clinics matching the user's postcode
+        List<ClinicAccount> localClinics = clinicService.findClinicsNear(location);
+
+        if (!finalResult.isPassed() && !localClinics.isEmpty()) {
+            Label clinicLbl = new Label("Partner clinics available in your area:");
+            clinicLbl.setFont(Font.font("System", FontWeight.SEMI_BOLD, 14));
+            clinicLbl.setTextFill(Color.web("#78350F"));
+            actionButtons.getChildren().add(clinicLbl);
+
+            for (ClinicAccount clinic : localClinics) {
+                Button clinicBtn = new Button("Book with " + clinic.getClinicName() + "  \u2192");
+                clinicBtn.getStyleClass().add("primary-button");
+                clinicBtn.setMinHeight(44);
+                clinicBtn.setPrefWidth(310);
+                // In a full implementation, this would navigate to a specific booking view
+                clinicBtn.setOnAction(e -> AppController.goToBookAppointment(clinic.getUsername()));
+                actionButtons.getChildren().add(clinicBtn);
+            }
+        }
+
+        // Always provide the NHS fallback
+        Button nhsBtn = new Button(
+                finalResult.isPassed() ? "Find Testing Services Near Me  \u2192" : "View NHS Services Instead  \u2192");
+        nhsBtn.getStyleClass()
+                .add(finalResult.isPassed() || localClinics.isEmpty() ? "primary-button" : "secondary-button");
+        nhsBtn.setMinHeight(44);
+        nhsBtn.setPrefWidth(310);
+        nhsBtn.setOnAction(e -> openUrl(nhsUrl));
+        actionButtons.getChildren().add(nhsBtn);
 
         VBox card;
         if (finalResult.isPassed()) {
@@ -340,14 +443,14 @@ public class StiTestBookingPage {
                     "\u2713", "#065F46", "#064E3B", "#D1FAE5", "#6EE7B7",
                     "You appear eligible for a home STI test",
                     "Based on your answers you can order a home testing kit or find a nearby sexual health service using the button below.",
-                    null, "Find Testing Services Near Me  \u2192", nhsUrl, true);
+                    null, actionButtons);
         } else {
             card = resultCard(
                     "\u26A0", "#92400E", "#78350F", "#FEF3C7", "#FCD34D",
                     "We recommend visiting a sexual health clinic",
                     finalResult.getReason(),
                     "Reference: " + finalResult.getGateName(),
-                    "Find Your Nearest Clinic  \u2192", nhsUrl, false);
+                    actionButtons);
         }
 
         Button restart = new Button("Start Again");
@@ -409,16 +512,16 @@ public class StiTestBookingPage {
 
     /** Yes / No card — clicking either button auto-advances. */
     private VBox booleanCard(String stepNum, String icon, String title,
-                              String question, String context,
-                              Runnable onYes, Runnable onNo) {
+            String question, String context,
+            Runnable onYes, Runnable onNo) {
         String base = "-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-width: 1.5;"
                 + " -fx-font-size: 15; -fx-font-weight: bold;"
                 + " -fx-min-width: 150; -fx-min-height: 52;";
 
         Button yes = new Button("\u2713  Yes");
-        Button no  = new Button("\u2717  No");
+        Button no = new Button("\u2717  No");
         yes.setStyle(base + "-fx-background-color: #DCFCE7; -fx-border-color: #4ADE80; -fx-text-fill: #166534;");
-        no.setStyle( base + "-fx-background-color: #F1F5F9; -fx-border-color: #CBD5E1; -fx-text-fill: #475569;");
+        no.setStyle(base + "-fx-background-color: #F1F5F9; -fx-border-color: #CBD5E1; -fx-text-fill: #475569;");
 
         yes.setOnAction(e -> {
             yes.setStyle(base + "-fx-background-color: #BBF7D0; -fx-border-color: #22C55E; -fx-text-fill: #14532D;");
@@ -447,9 +550,9 @@ public class StiTestBookingPage {
 
     /** Result card for PASS or CLINIC_REFER outcome. */
     private VBox resultCard(String icon, String iconColor, String bodyColor,
-                             String bg, String border,
-                             String heading, String body, String reference,
-                             String btnText, String nhsUrl, boolean primary) {
+            String bg, String border,
+            String heading, String body, String reference,
+            VBox actionButtons) {
         Label iconLbl = new Label(icon);
         iconLbl.setFont(Font.font("System", FontWeight.BOLD, 38));
         iconLbl.setTextFill(Color.web(iconColor));
@@ -478,12 +581,8 @@ public class StiTestBookingPage {
             inner.getChildren().add(refLbl);
         }
 
-        Button nhsBtn = new Button(btnText);
-        nhsBtn.getStyleClass().add(primary ? "primary-button" : "secondary-button");
-        nhsBtn.setMinHeight(44);
-        nhsBtn.setPrefWidth(310);
-        nhsBtn.setOnAction(e -> openUrl(nhsUrl));
-        inner.getChildren().add(nhsBtn);
+        // Append dynamically generated buttons
+        inner.getChildren().add(actionButtons);
 
         VBox card = new VBox(inner);
         card.setAlignment(Pos.CENTER);
@@ -522,10 +621,20 @@ public class StiTestBookingPage {
     }
 
     private void resetWizard() {
-        age = 18; fraser = false; location = ""; symptomatic = false;
-        assault = false; pep = false; preg = false; immuno = false;
-        safeguarding = false; windowElap = false; recentKit = false;
-        kitWeeks = 6; finalResult = null; history.clear();
+        age = 18;
+        fraser = false;
+        location = "";
+        symptomatic = false;
+        assault = false;
+        pep = false;
+        preg = false;
+        immuno = false;
+        safeguarding = false;
+        windowElap = false;
+        recentKit = false;
+        kitWeeks = 6;
+        finalResult = null;
+        history.clear();
         showStep(S_AGE);
     }
 
@@ -552,7 +661,8 @@ public class StiTestBookingPage {
 
     private void openUrl(String url) {
         try {
-            if (Desktop.isDesktopSupported()) Desktop.getDesktop().browse(URI.create(url));
+            if (Desktop.isDesktopSupported())
+                Desktop.getDesktop().browse(URI.create(url));
         } catch (Exception ex) {
             alert(Alert.AlertType.ERROR, "Unable to open browser", "Please visit manually:\n" + url);
         }
