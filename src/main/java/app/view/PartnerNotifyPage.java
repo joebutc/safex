@@ -81,13 +81,23 @@ public class PartnerNotifyPage {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/scenes/PartnerNotifyConfirm.fxml"));
             Parent confirmCard = loader.load();
             PartnerNotifyConfirmController controller = loader.getController();
-            controller.configure(() -> sendNotificationsAsync(
-                    recipients,
-                    controller.getProgressIndicator(),
-                    controller.getNotifyButton()
-            ));
 
             BorderPane root = (BorderPane) contactsContainer.getScene().getRoot();
+            javafx.scene.Node previousCenter = root.getCenter();
+
+            controller.configure(
+                    () -> sendNotificationsAsync(
+                            recipients,
+                            controller.getProgressIndicator(),
+                            controller.getNotifyButton()
+                    ),
+                    () -> root.setCenter(previousCenter) // Restores the previous view
+            );
+
+
+
+
+
             StackPane wrapper = new StackPane(confirmCard);
             wrapper.getStyleClass().add("card-padding");
             root.setCenter(wrapper);
