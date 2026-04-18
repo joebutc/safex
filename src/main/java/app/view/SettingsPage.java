@@ -16,8 +16,10 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class SettingsPage {
-    @FXML private Button homeButton;
-    @FXML private ImageView homeIcon;
+    @FXML
+    private Button homeButton;
+    @FXML
+    private ImageView homeIcon;
 
     @FXML
     private void handleHome() {
@@ -30,7 +32,7 @@ public class SettingsPage {
     }
 
     @FXML
-    private void handleSettingsMenu(){
+    private void handleSettingsMenu() {
         AppController.goToHomeDashboard();
     }
 
@@ -75,7 +77,6 @@ public class SettingsPage {
             • Delete your account anytime
         """);
         a.showAndWait();
-
     }
 
     @FXML

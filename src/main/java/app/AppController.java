@@ -1,5 +1,7 @@
 package app;
 
+import app.model.Account;
+import app.model.ClinicAccount;
 import app.model.DataAccessLogEntry;
 import app.model.DatabaseHandler;
 import app.model.State;
@@ -7,6 +9,8 @@ import app.model.StiTestEntry;
 import app.model.TreatmentEntry;
 import app.model.UserDataExport;
 import app.view.AppStyles;
+import app.view.BookAppointmentPage;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -191,6 +195,51 @@ public final class AppController {
         }
     }
 
+    public static Account getCurrentAccount() {
+        assertInitialised();
+        if ("CLINIC".equals(currentLoginType)) {
+            return DatabaseHandler.getClinicAccount(currentUser);
+        }
+        return null;
+    }
+
+    public static void updateClinicAccount(ClinicAccount clinic) {
+        assertInitialised();
+        DatabaseHandler.updateClinicAccount(clinic);
+    }
+
+    public static void goToClinicDashboard() {
+        updateView(State.CLINIC_DASHBOARD);
+    }
+
+    public static void goToBookAppointment(String preselectedClinicUsername) {
+        assertInitialised();
+        try {
+            FXMLLoader loader = new FXMLLoader(AppController.class.getResource(State.BOOK_APPOINTMENT.getFxmlPath()));
+            Parent root = loader.load();
+
+            BookAppointmentPage controller = loader.getController();
+            if (preselectedClinicUsername != null && !preselectedClinicUsername.isBlank()) {
+                controller.setPreselectedClinic(preselectedClinicUsername);
+            } else {
+                Platform.runLater(controller::promptForLocationAndSort);
+            }
+
+            Scene scene = primaryStage.getScene();
+            if (scene != null) {
+                AppStyles.apply(scene);
+                scene.setRoot(root);
+            } else {
+                scene = new Scene(root);
+                AppStyles.apply(scene);
+                primaryStage.setScene(scene);
+            }
+            primaryStage.show();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not load FXML for Book Appointment", e);
+        }
+    }
+
     public static void getPatientTreatment(String patientUsername) {
         assertInitialised();
         patientUser = patientUsername;
@@ -238,7 +287,8 @@ public final class AppController {
         return DatabaseHandler.getReminderIntervalMonths(currentUser);
     }
 
-    public static boolean saveTestPermissions(boolean allowReminders, boolean allowShareWithDoctor, int intervalMonths) {
+    public static boolean saveTestPermissions(boolean allowReminders, boolean allowShareWithDoctor,
+            int intervalMonths) {
         assertInitialised();
         return DatabaseHandler.saveTestPermissions(currentUser, allowReminders, allowShareWithDoctor, intervalMonths);
     }
@@ -338,15 +388,15 @@ public final class AppController {
     }
 
     public static boolean addTreatment(String medicationName, String dose, String frequency,
-                                       double quantity, int lowStockThreshold, String startDate, String notes) {
+            double quantity, int lowStockThreshold, String startDate, String notes) {
         assertInitialised();
         return DatabaseHandler.addTreatment(currentUser, medicationName, dose,
                 frequency, quantity, lowStockThreshold, startDate, notes, "patient");
     }
 
     public static boolean addTreatmentForPatient(String patientUsername, String medicationName, String dose,
-                                                 String frequency, double quantity, int lowStockThreshold,
-                                                 String startDate, String notes) {
+            String frequency, double quantity, int lowStockThreshold,
+            String startDate, String notes) {
         assertInitialised();
         return DatabaseHandler.addTreatment(patientUsername, medicationName, dose,
                 frequency, quantity, lowStockThreshold, startDate, notes, "clinic");
@@ -383,8 +433,8 @@ public final class AppController {
     }
 
     public static boolean updateTreatmentPlanForPatient(int id, String patientUsername, String medicationName,
-                                                        String dose, String frequency,
-                                                        double quantity, int lowStockThreshold, String notes) {
+            String dose, String frequency,
+            double quantity, int lowStockThreshold, String notes) {
         assertInitialised();
         return DatabaseHandler.updateTreatmentPlan(id, patientUsername, medicationName, dose,
                 frequency, quantity, lowStockThreshold, notes);
@@ -421,6 +471,10 @@ public final class AppController {
             return false;
         }
     }
+    // ──────────────────────────────────────────────────────────────────────────
+    // ── NEW: Methods for Clinic Location and Booking Integrations ─────────────
+    // ──────────────────────────────────────────────────────────────────────────
+
 
     private static Parent loadRoot(State state) {
         try {
