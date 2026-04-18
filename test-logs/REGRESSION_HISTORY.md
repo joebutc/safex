@@ -11,3 +11,4 @@ Auto-generated log of every regression run. Each entry links to its full log.
 | 2026-04-05 12:57:44 | dashboard-cog-settings-post-merge | `491d68e` | main | Merge branch 'Dashboard-cog-and-settings' into main | 157 | 0 | **PASS** |
 | 2026-04-05 12:59:33 | pre-push | `f2e2ddf` | main | Record regression run for Dashboard-cog-and-settings merge | 157 | 0 | **PASS** |
 | 2026-04-05 12:59:58 | pre-push | `9a82f2c` | main | Record pre-push regression run | 157 | 0 | **PASS** |
+| 2026-04-18 11:32:38 | pre-push | `c807e24` | main | Implement account recovery and registration verification flows | 196 | 0 | **PASS** |
