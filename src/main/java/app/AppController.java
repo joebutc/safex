@@ -88,6 +88,7 @@ public final class AppController {
         if (DatabaseHandler.checkLogin(username, password, loginType)) {
             currentUser = username;
             currentLoginType = loginType;
+            enforceRetentionIfNeeded();
             if (!"CLINIC".equals(loginType) && DatabaseHandler.getTermsAcceptedDate(username) == null) {
                 updateView(State.PRIVACY_ONBOARDING);
             } else {
@@ -224,6 +225,7 @@ public final class AppController {
     public static void saveDataRetention(String option) {
         assertInitialised();
         DatabaseHandler.saveDataRetention(currentUser, option);
+        enforceRetentionIfNeeded();
     }
 
     public static void acceptTerms() {
@@ -431,6 +433,12 @@ public final class AppController {
 
     private static State homeDashboardStateFor(String loginType) {
         return "CLINIC".equals(loginType) ? State.CLINIC_DASHBOARD : State.DASHBOARD;
+    }
+
+    private static void enforceRetentionIfNeeded() {
+        if (!"CLINIC".equals(currentLoginType) && currentUser != null && !currentUser.isBlank()) {
+            DatabaseHandler.enforceDataRetention(currentUser);
+        }
     }
 
     private static void assertInitialised() {
