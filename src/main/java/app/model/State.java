@@ -13,6 +13,7 @@ public enum State {
     TERMS_CONDITIONS("/scenes/TermsConditionsPage.fxml"),
     SETTINGS("/scenes/Settings.fxml"),
     PRIVACY_ONBOARDING("/scenes/PrivacyOnboarding.fxml"),
+    PERSONA_SELECTION("/scenes/PersonaSelection.fxml"),
     TREATMENT_TRACKER("/scenes/TreatmentTracker.fxml"),
     STI_BOOKING("/scenes/StiBooking.fxml"),
     STI_TRACKER("/scenes/StiTracker.fxml"),
