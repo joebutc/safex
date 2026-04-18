@@ -20,12 +20,26 @@ public final class EmailService {
     private static final String EMAIL_ADDRESS_KEY = "email.address";
     private static final String EMAIL_PASSWORD_KEY = "email.password";
     private static final String SUBJECT = "[SafeX] Important Sexual Health Notification - Do Not Reply";
+    private static final String RECOVERY_SUBJECT = "[SafeX] Password Recovery Code";
+    private static final String VERIFICATION_SUBJECT = "[SafeX] Verify Your Email Address";
     private static final String BLOCKED_RECIPIENT_EMAIL = "cp5g23@soton.ac.uk";
 
     private EmailService() {
     }
 
     public static boolean sendNotification(String recipientName, String recipientEmail, String senderName) {
+        return sendHtmlEmail(recipientEmail, SUBJECT, buildHtmlBody(recipientName, senderName));
+    }
+
+    public static boolean sendRecoveryCode(String recipientEmail, String recoveryCode) {
+        return sendHtmlEmail(recipientEmail, RECOVERY_SUBJECT, buildRecoveryHtmlBody(recoveryCode));
+    }
+
+    public static boolean sendVerificationCode(String recipientEmail, String verificationCode) {
+        return sendHtmlEmail(recipientEmail, VERIFICATION_SUBJECT, buildVerificationHtmlBody(verificationCode));
+    }
+
+    private static boolean sendHtmlEmail(String recipientEmail, String subject, String htmlBody) {
         if (recipientEmail == null || recipientEmail.isBlank()) {
             return false;
         }
@@ -53,12 +67,12 @@ public final class EmailService {
             InternetAddress fromAddress = new InternetAddress(credentials.emailAddress());
             message.setFrom(fromAddress);
             message.setReplyTo(new Address[]{fromAddress});
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail, false));
-            message.setSubject(SUBJECT);
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail.trim(), true));
+            message.setSubject(subject);
             message.setHeader("X-Auto-Response-Suppress", "All");
             message.setHeader("Auto-Submitted", "auto-generated");
             message.setSentDate(new Date());
-            message.setContent(buildHtmlBody(recipientName, senderName), "text/html; charset=UTF-8");
+            message.setContent(htmlBody, "text/html; charset=UTF-8");
 
             Transport.send(message);
             return true;
@@ -125,6 +139,41 @@ public final class EmailService {
                   </body>
                 </html>
                 """.formatted(safeRecipientName, safeSenderName);
+    }
+
+    protected static String buildRecoveryHtmlBody(String recoveryCode) {
+        String safeRecoveryCode = escapeHtml(recoveryCode == null ? "" : recoveryCode.trim());
+
+        return """
+                <html>
+                  <body style="font-family: Arial, sans-serif; color: #1f2933; line-height: 1.6;">
+                    <p>This is your SafeX password recovery code:</p>
+                    <p style="font-size: 28px; font-weight: 700; letter-spacing: 6px;">%s</p>
+                    <p>The code will expire in 15 minutes.</p>
+                    <p>If you did not request a password reset, you can ignore this email.</p>
+                    <p>Please do not reply to this email. This inbox is not monitored.</p>
+                    <p>Kind regards,<br/>SafeX Support</p>
+                  </body>
+                </html>
+                """.formatted(safeRecoveryCode);
+    }
+
+    protected static String buildVerificationHtmlBody(String verificationCode) {
+        String safeVerificationCode = escapeHtml(verificationCode == null ? "" : verificationCode.trim());
+
+        return """
+                <html>
+                  <body style="font-family: Arial, sans-serif; color: #1f2933; line-height: 1.6;">
+                    <p>Welcome to SafeX.</p>
+                    <p>Use this 6-digit code to verify your email address and finish creating your account:</p>
+                    <p style="font-size: 28px; font-weight: 700; letter-spacing: 6px;">%s</p>
+                    <p>The code will expire in 15 minutes.</p>
+                    <p>If you did not try to create a SafeX account, you can ignore this email.</p>
+                    <p>Please do not reply to this email. This inbox is not monitored.</p>
+                    <p>Kind regards,<br/>SafeX Support</p>
+                  </body>
+                </html>
+                """.formatted(safeVerificationCode);
     }
 
     protected static String formatDisplayName(String value, String fallback) {

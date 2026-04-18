@@ -3,8 +3,11 @@ package app.model;
 public enum State {
     LOGIN("/scenes/StandardLogin.fxml"),
     REGISTER("/scenes/StandardRegister.fxml"),
+    REGISTER_VERIFICATION("/scenes/RegisterVerification.fxml"),
     CLINIC_LOGIN("/scenes/ClinicLogin.fxml"),
     CLINIC_REGISTER("/scenes/ClinicRegister.fxml"),
+    ACCOUNT_RECOVERY("/scenes/AccountRecovery.fxml"),
+    RESET_PASSWORD("/scenes/ResetPassword.fxml"),
     DASHBOARD("/scenes/Dashboard.fxml"),
     CLINIC_DASHBOARD("/scenes/ClinicDashboard.fxml"),
     NOTIFY("/scenes/PartnerNotify.fxml"),

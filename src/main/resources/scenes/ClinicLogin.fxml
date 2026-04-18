@@ -73,6 +73,9 @@
                         onAction="#handleLogin"
                         styleClass="primary-button"/>
 
+                <Button fx:id="forgotPasswordLink"
+                        styleClass="link-button"/>
+
                 <Button fx:id="registerLink"
                         styleClass="link-button"/>
 

@@ -6,15 +6,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public final class DatabaseHandler {
     private static final String DB_URL = "jdbc:sqlite:useraccounts.db";
     private static final String DEFAULT_CLINIC_USERNAME = "__default_clinic__";
+    private static final int RECOVERY_CODE_EXPIRY_MINUTES = 15;
 
     private DatabaseHandler() {
     }
@@ -33,14 +37,26 @@ public final class DatabaseHandler {
         String usersSql = "CREATE TABLE IF NOT EXISTS users ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "username TEXT NOT NULL UNIQUE,"
-                + "password TEXT NOT NULL"
+                + "password TEXT NOT NULL,"
+                + "email TEXT,"
+                + "address TEXT,"
+                + "email_verified INTEGER NOT NULL DEFAULT 1"
                 + ");";
 
         // Separate table allows for clinic-specific columns to be added later
         String clinicsSql = "CREATE TABLE IF NOT EXISTS clinics ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "username TEXT NOT NULL UNIQUE,"
-                + "password TEXT NOT NULL"
+                + "password TEXT NOT NULL,"
+                + "email TEXT,"
+                + "address TEXT,"
+                + "email_verified INTEGER NOT NULL DEFAULT 1"
+                + ");";
+
+        String recoveryCodesSql = "CREATE TABLE IF NOT EXISTS password_recovery_codes ("
+                + "email TEXT PRIMARY KEY,"
+                + "code TEXT NOT NULL,"
+                + "expires_at TEXT NOT NULL"
                 + ");";
 
         String stiTestsSql = "CREATE TABLE IF NOT EXISTS sti_tests ("
@@ -93,6 +109,7 @@ public final class DatabaseHandler {
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(usersSql);
                 stmt.execute(clinicsSql);
+                stmt.execute(recoveryCodesSql);
                 stmt.execute(stiTestsSql);
                 stmt.execute(testPermissionsSql);
                 stmt.execute(treatmentPlansSql);
@@ -107,6 +124,46 @@ public final class DatabaseHandler {
                         "ALTER TABLE test_permissions ADD COLUMN reminder_interval_months INTEGER NOT NULL DEFAULT 3");
             } catch (SQLException ignored) {
                 // Column already exists — safe to ignore
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE users ADD COLUMN email TEXT");
+            } catch (SQLException ignored) {
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE users ADD COLUMN address TEXT");
+            } catch (SQLException ignored) {
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 1");
+            } catch (SQLException ignored) {
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE clinics ADD COLUMN email TEXT");
+            } catch (SQLException ignored) {
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE clinics ADD COLUMN address TEXT");
+            } catch (SQLException ignored) {
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE clinics ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 1");
+            } catch (SQLException ignored) {
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_unique "
+                                + "ON users(email COLLATE NOCASE) WHERE email IS NOT NULL");
+                stmt.execute(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS idx_clinics_email_unique "
+                                + "ON clinics(email COLLATE NOCASE) WHERE email IS NOT NULL");
+            } catch (SQLException ignored) {
             }
 
             // Migration: add source column to treatment_plans (patient vs clinic)
@@ -458,6 +515,64 @@ public final class DatabaseHandler {
         return "CLINIC".equals(accountType) ? "clinics" : "users";
     }
 
+    private static String normalizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+
+        String normalized = email.trim().toLowerCase(Locale.ROOT);
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private static String normalizeAddress(String address) {
+        if (address == null) {
+            return null;
+        }
+
+        String normalized = address.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private static boolean usernameExists(Connection conn, String tableName, String username) throws SQLException {
+        String sql = "SELECT 1 FROM " + tableName + " WHERE LOWER(username) = ? LIMIT 1";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username == null ? "" : username.trim().toLowerCase(Locale.ROOT));
+            ResultSet rs = pstmt.executeQuery();
+            return rs.next();
+        }
+    }
+
+    private static boolean accountExistsByEmail(Connection conn, String tableName, String email) throws SQLException {
+        String sql = "SELECT 1 FROM " + tableName + " WHERE LOWER(email) = ? LIMIT 1";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, email);
+            ResultSet rs = pstmt.executeQuery();
+            return rs.next();
+        }
+    }
+
+    private static boolean emailExistsInAnyAccount(Connection conn, String email) throws SQLException {
+        return accountExistsByEmail(conn, "users", email) || accountExistsByEmail(conn, "clinics", email);
+    }
+
+    public static boolean isRegistrationAvailable(String username, String email, String accountType) {
+        String tableName = getTableName(accountType);
+        String normalizedEmail = normalizeEmail(email);
+        if (username == null || username.isBlank() || normalizedEmail == null) {
+            return false;
+        }
+
+        try (Connection conn = connect()) {
+            if (conn == null) {
+                return false;
+            }
+            return !usernameExists(conn, tableName, username) && !emailExistsInAnyAccount(conn, normalizedEmail);
+        } catch (SQLException e) {
+            System.out.println("isRegistrationAvailable error: " + e.getMessage());
+            return false;
+        }
+    }
+
     // Returns all clinic usernames to support patient appointment booking.
     public static List<String> getClinicUsernames() {
         String sql = "SELECT username FROM clinics ORDER BY username COLLATE NOCASE ASC";
@@ -479,10 +594,21 @@ public final class DatabaseHandler {
 
     // Registers a new user or clinic into the respective database table
     public static boolean registerUser(String username, String password, String accountType) {
+        return registerUser(username, password, null, null, accountType);
+    }
+
+    public static boolean registerUser(String username, String password, String email, String accountType) {
+        return registerUser(username, password, email, null, accountType);
+    }
+
+    public static boolean registerUser(String username, String password, String email, String address,
+            String accountType) {
         String tableName = getTableName(accountType);
+        String normalizedEmail = normalizeEmail(email);
+        String normalizedAddress = normalizeAddress(address);
 
         // Dynamic table name insertion
-        String sql = "INSERT INTO " + tableName + "(username, password) VALUES(?, ?)";
+        String sql = "INSERT INTO " + tableName + "(username, password, email, address, email_verified) VALUES(?, ?, ?, ?, ?)";
 
         try (Connection conn = connect()) {
             if (conn == null) {
@@ -490,9 +616,30 @@ public final class DatabaseHandler {
                 return false;
             }
 
+            if (usernameExists(conn, tableName, username)) {
+                System.out.println("Database Insert Error: username already exists.");
+                return false;
+            }
+
+            if (normalizedEmail != null && emailExistsInAnyAccount(conn, normalizedEmail)) {
+                System.out.println("Database Insert Error: email already exists.");
+                return false;
+            }
+
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, username);
                 pstmt.setString(2, password);
+                if (normalizedEmail == null) {
+                    pstmt.setNull(3, Types.VARCHAR);
+                } else {
+                    pstmt.setString(3, normalizedEmail);
+                }
+                if (normalizedAddress == null) {
+                    pstmt.setNull(4, Types.VARCHAR);
+                } else {
+                    pstmt.setString(4, normalizedAddress);
+                }
+                pstmt.setInt(5, 1);
                 pstmt.executeUpdate();
                 return true;
             }
@@ -1023,6 +1170,7 @@ public final class DatabaseHandler {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd MMM yyyy");
     private static final DateTimeFormatter TIMESTAMP_FMT = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss");
+    private static final DateTimeFormatter RECOVERY_TIMESTAMP_FMT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     public static String getTermsAcceptedDate(String username) {
         String sql = "SELECT terms_accepted_date FROM privacy_settings WHERE username = ?";
@@ -1286,16 +1434,179 @@ public final class DatabaseHandler {
         }
     }
 
+    public static String getAccountTypeByEmail(String email) {
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null) {
+            return null;
+        }
+
+        try (Connection conn = connect()) {
+            if (conn == null) {
+                return null;
+            }
+
+            boolean userExists = accountExistsByEmail(conn, "users", normalizedEmail);
+            boolean clinicExists = accountExistsByEmail(conn, "clinics", normalizedEmail);
+
+            if (userExists == clinicExists) {
+                return null;
+            }
+
+            return clinicExists ? "CLINIC" : "STANDARD";
+        } catch (SQLException e) {
+            System.out.println("getAccountTypeByEmail error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public static boolean storeRecoveryCode(String email, String code) {
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null || code == null || code.isBlank()) {
+            return false;
+        }
+
+        String sql = "INSERT INTO password_recovery_codes (email, code, expires_at) VALUES (?, ?, ?) "
+                + "ON CONFLICT(email) DO UPDATE SET code = excluded.code, expires_at = excluded.expires_at";
+        String expiry = LocalDateTime.now()
+                .plusMinutes(RECOVERY_CODE_EXPIRY_MINUTES)
+                .format(RECOVERY_TIMESTAMP_FMT);
+
+        try (Connection conn = connect()) {
+            if (conn == null) {
+                return false;
+            }
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, normalizedEmail);
+                pstmt.setString(2, code.trim());
+                pstmt.setString(3, expiry);
+                return pstmt.executeUpdate() > 0;
+            }
+        } catch (SQLException e) {
+            System.out.println("storeRecoveryCode error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean verifyRecoveryCode(String email, String code) {
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null || code == null || code.isBlank()) {
+            return false;
+        }
+
+        String sql = "SELECT code, expires_at FROM password_recovery_codes WHERE email = ?";
+        try (Connection conn = connect()) {
+            if (conn == null) {
+                return false;
+            }
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, normalizedEmail);
+                ResultSet rs = pstmt.executeQuery();
+                if (!rs.next()) {
+                    return false;
+                }
+
+                String storedCode = rs.getString("code");
+                LocalDateTime expiresAt = LocalDateTime.parse(rs.getString("expires_at"), RECOVERY_TIMESTAMP_FMT);
+                LocalDateTime now = LocalDateTime.now();
+                boolean expired = expiresAt.isBefore(now);
+                boolean matches = code.trim().equals(storedCode);
+
+                if (!matches || expired) {
+                    if (expired) {
+                        clearRecoveryCode(conn, normalizedEmail);
+                    }
+                    return false;
+                }
+                return true;
+            }
+        } catch (SQLException | RuntimeException e) {
+            System.out.println("verifyRecoveryCode error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static void clearRecoveryCode(String email) {
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null) {
+            return;
+        }
+
+        String sql = "DELETE FROM password_recovery_codes WHERE email = ?";
+        try (Connection conn = connect()) {
+            if (conn == null) {
+                return;
+            }
+            clearRecoveryCode(conn, normalizedEmail);
+        } catch (SQLException e) {
+            System.out.println("clearRecoveryCode error: " + e.getMessage());
+        }
+    }
+
+    private static void clearRecoveryCode(Connection conn, String normalizedEmail) throws SQLException {
+        String sql = "DELETE FROM password_recovery_codes WHERE email = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, normalizedEmail);
+            pstmt.executeUpdate();
+        }
+    }
+
+    public static boolean updatePasswordByEmail(String email, String newPassword) {
+        String normalizedEmail = normalizeEmail(email);
+        String accountType = getAccountTypeByEmail(normalizedEmail);
+        if (normalizedEmail == null || accountType == null || newPassword == null || newPassword.isBlank()) {
+            return false;
+        }
+
+        String sql = "UPDATE " + getTableName(accountType) + " SET password = ? WHERE LOWER(email) = ?";
+        try (Connection conn = connect()) {
+            if (conn == null) {
+                return false;
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, newPassword);
+                pstmt.setString(2, normalizedEmail);
+                boolean updated = pstmt.executeUpdate() > 0;
+                if (updated) {
+                    clearRecoveryCode(conn, normalizedEmail);
+                }
+                return updated;
+            }
+        } catch (SQLException e) {
+            System.out.println("updatePasswordByEmail error: " + e.getMessage());
+            return false;
+        }
+    }
+
     // ── Clinic Settings & Postcodes ──────────────────────────────────────────
 
     /**
      * Retrieves a ClinicAccount and populates its supported postcode prefixes.
      */
     public static app.model.ClinicAccount getClinicAccount(String username) {
-        // Note: Because your current 'clinics' table only stores username and password,
-        // we are passing placeholder strings for email and clinicName for now.
-        // If you add those columns to your DB later, you can fetch them here.
-        app.model.ClinicAccount account = new app.model.ClinicAccount(username, "", "", username);
+        String clinicEmail = "";
+        String clinicAddress = "";
+        String emailSql = "SELECT email, address FROM clinics WHERE username = ?";
+        try (Connection conn = connect()) {
+            if (conn != null) {
+                try (PreparedStatement p = conn.prepareStatement(emailSql)) {
+                    p.setString(1, username);
+                    ResultSet rs = p.executeQuery();
+                    if (rs.next()) {
+                        if (rs.getString("email") != null) {
+                            clinicEmail = rs.getString("email");
+                        }
+                        if (rs.getString("address") != null) {
+                            clinicAddress = rs.getString("address");
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("getClinicAccount email lookup error: " + e.getMessage());
+        }
+
+        app.model.ClinicAccount account = new app.model.ClinicAccount(username, "", clinicEmail, clinicAddress, username);
 
         String sql = "SELECT postcode_prefix FROM clinic_postcodes WHERE clinic_username = ?";
         try (Connection conn = connect()) {

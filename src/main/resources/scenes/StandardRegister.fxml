@@ -65,6 +65,20 @@
                                maxWidth="Infinity"/>
                 </VBox>
 
+                <VBox spacing="4">
+                    <Label text="Email"/>
+                    <TextField fx:id="emailField"
+                               promptText="Enter your email address"
+                               maxWidth="Infinity"/>
+                </VBox>
+
+                <VBox spacing="4">
+                    <Label text="Home address"/>
+                    <TextField fx:id="addressField"
+                               promptText="Enter your home address"
+                               maxWidth="Infinity"/>
+                </VBox>
+
                 <!-- Password -->
                 <VBox spacing="4">
                     <Label text="Password"/>

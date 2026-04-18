@@ -8,6 +8,8 @@ import app.model.State;
 import app.model.StiTestEntry;
 import app.model.TreatmentEntry;
 import app.model.UserDataExport;
+import app.service.EmailService;
+import app.service.RecoveryService;
 import app.view.AppStyles;
 import app.view.BookAppointmentPage;
 import javafx.application.Platform;
@@ -31,6 +33,12 @@ public final class AppController {
     private static String patientUser;
     private static String currentLoginType;
     private static String selectedDate;
+    private static String recoveryEmail;
+    private static String recoveryAccountType;
+    private static State recoveryReturnState = State.LOGIN;
+    private static State registrationReturnState = State.REGISTER;
+    private static PendingRegistration pendingRegistration;
+    private static String registrationErrorMessage;
 
     private AppController() {
     }
@@ -40,6 +48,12 @@ public final class AppController {
         patientUser = null;
         currentLoginType = "USER";
         selectedDate = null;
+        recoveryEmail = null;
+        recoveryAccountType = null;
+        recoveryReturnState = State.LOGIN;
+        registrationReturnState = State.REGISTER;
+        pendingRegistration = null;
+        registrationErrorMessage = null;
         initialised = true;
     }
 
@@ -48,6 +62,12 @@ public final class AppController {
         patientUser = null;
         currentLoginType = null;
         selectedDate = null;
+        recoveryEmail = null;
+        recoveryAccountType = null;
+        recoveryReturnState = State.LOGIN;
+        registrationReturnState = State.REGISTER;
+        pendingRegistration = null;
+        registrationErrorMessage = null;
         primaryStage = null;
         initialised = false;
     }
@@ -68,11 +88,18 @@ public final class AppController {
 
     public static void updateView(State state) {
         assertInitialised();
+        if (state == State.REGISTER || state == State.CLINIC_REGISTER) {
+            registrationReturnState = state;
+        }
         if (state == State.LOGIN || state == State.CLINIC_LOGIN) {
             currentUser = null;
             patientUser = null;
             currentLoginType = null;
             selectedDate = null;
+            recoveryEmail = null;
+            recoveryAccountType = null;
+            pendingRegistration = null;
+            registrationErrorMessage = null;
         }
         Parent root = loadRoot(state);
         Scene scene = primaryStage.getScene();
@@ -104,23 +131,180 @@ public final class AppController {
     }
 
     public static boolean attemptRegister(String username, String password, String loginType) {
+        return attemptRegister(username, password, null, null, loginType);
+    }
+
+    public static boolean attemptRegister(String username, String password, String email, String loginType) {
+        return attemptRegister(username, password, email, null, loginType);
+    }
+
+    public static boolean attemptRegister(String username, String password, String email, String address,
+            String loginType) {
         assertInitialised();
-        if (DatabaseHandler.registerUser(username, password, loginType)) {
-            currentUser = username;
-            currentLoginType = loginType;
-            if (!"CLINIC".equals(loginType)) {
-                updateView(State.PRIVACY_ONBOARDING);
-            } else {
-                updateView(homeDashboardStateFor(loginType));
-            }
-            return true;
+        registrationErrorMessage = null;
+
+        if (!DatabaseHandler.isRegistrationAvailable(username, email, loginType)) {
+            registrationErrorMessage = "Username or email already exists.";
+            return false;
         }
-        return false;
+
+        String verificationCode = RecoveryService.generateRecoveryCode();
+        if (!DatabaseHandler.storeRecoveryCode(email, verificationCode)) {
+            registrationErrorMessage = "We couldn't generate a verification code. Please try again.";
+            return false;
+        }
+
+        if (!EmailService.sendVerificationCode(email, verificationCode)) {
+            DatabaseHandler.clearRecoveryCode(email);
+            registrationErrorMessage = "We couldn't send the verification email right now. Please try again.";
+            return false;
+        }
+
+        registrationReturnState = "CLINIC".equals(loginType) ? State.CLINIC_REGISTER : State.REGISTER;
+        pendingRegistration = new PendingRegistration(username, password, email, address, loginType);
+        updateView(State.REGISTER_VERIFICATION);
+        return true;
     }
 
     public static String getCurrentUser() {
         assertInitialised();
         return currentUser;
+    }
+
+    public static String getRegistrationErrorMessage() {
+        assertInitialised();
+        return registrationErrorMessage;
+    }
+
+    public static boolean hasPendingRegistration() {
+        assertInitialised();
+        return pendingRegistration != null;
+    }
+
+    public static String getPendingRegistrationEmail() {
+        assertInitialised();
+        return pendingRegistration == null ? null : pendingRegistration.email();
+    }
+
+    public static String getPendingRegistrationAddress() {
+        assertInitialised();
+        return pendingRegistration == null ? null : pendingRegistration.address();
+    }
+
+    public static State getPendingRegistrationReturnState() {
+        assertInitialised();
+        if (pendingRegistration == null) {
+            return registrationReturnState == null ? State.REGISTER : registrationReturnState;
+        }
+        return "CLINIC".equals(pendingRegistration.loginType()) ? State.CLINIC_REGISTER : State.REGISTER;
+    }
+
+    public static boolean resendPendingRegistrationCode() {
+        assertInitialised();
+        if (pendingRegistration == null) {
+            return false;
+        }
+
+        String verificationCode = RecoveryService.generateRecoveryCode();
+        if (!DatabaseHandler.storeRecoveryCode(pendingRegistration.email(), verificationCode)) {
+            return false;
+        }
+
+        if (!EmailService.sendVerificationCode(pendingRegistration.email(), verificationCode)) {
+            DatabaseHandler.clearRecoveryCode(pendingRegistration.email());
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean completePendingRegistration(String verificationCode) {
+        assertInitialised();
+        if (pendingRegistration == null) {
+            return false;
+        }
+
+        if (!DatabaseHandler.verifyRecoveryCode(pendingRegistration.email(), verificationCode)) {
+            return false;
+        }
+
+        if (!DatabaseHandler.registerUser(
+                pendingRegistration.username(),
+                pendingRegistration.password(),
+                pendingRegistration.email(),
+                pendingRegistration.address(),
+                pendingRegistration.loginType())) {
+            return false;
+        }
+
+        currentUser = pendingRegistration.username();
+        currentLoginType = pendingRegistration.loginType();
+        DatabaseHandler.clearRecoveryCode(pendingRegistration.email());
+        pendingRegistration = null;
+        registrationReturnState = State.REGISTER;
+        registrationErrorMessage = null;
+
+        if (!"CLINIC".equals(currentLoginType)) {
+            updateView(State.PRIVACY_ONBOARDING);
+        } else {
+            updateView(homeDashboardStateFor(currentLoginType));
+        }
+        return true;
+    }
+
+    public static void cancelPendingRegistration() {
+        assertInitialised();
+        if (pendingRegistration != null) {
+            DatabaseHandler.clearRecoveryCode(pendingRegistration.email());
+        }
+        pendingRegistration = null;
+        registrationReturnState = State.REGISTER;
+        registrationErrorMessage = null;
+    }
+
+    public static void startRecoveryFlow(State returnState) {
+        assertInitialised();
+        recoveryEmail = null;
+        recoveryAccountType = null;
+        recoveryReturnState = returnState == null ? State.LOGIN : returnState;
+        updateView(State.ACCOUNT_RECOVERY);
+    }
+
+    public static void setRecoveryContext(String email, String accountType) {
+        assertInitialised();
+        recoveryEmail = email;
+        recoveryAccountType = accountType;
+    }
+
+    public static String getRecoveryEmail() {
+        assertInitialised();
+        return recoveryEmail;
+    }
+
+    public static String getRecoveryAccountType() {
+        assertInitialised();
+        return recoveryAccountType;
+    }
+
+    public static State getRecoveryReturnState() {
+        assertInitialised();
+        if ("CLINIC".equals(recoveryAccountType)) {
+            return State.CLINIC_LOGIN;
+        }
+        if ("STANDARD".equals(recoveryAccountType)) {
+            return State.LOGIN;
+        }
+        return recoveryReturnState == null ? State.LOGIN : recoveryReturnState;
+    }
+
+    public static void goToResetPassword() {
+        assertInitialised();
+        updateView(State.RESET_PASSWORD);
+    }
+
+    public static void clearRecoveryContext() {
+        recoveryEmail = null;
+        recoveryAccountType = null;
+        recoveryReturnState = State.LOGIN;
     }
 
     public static String getCurrentLoginType() {
@@ -475,6 +659,9 @@ public final class AppController {
     // ── NEW: Methods for Clinic Location and Booking Integrations ─────────────
     // ──────────────────────────────────────────────────────────────────────────
 
+
+    private record PendingRegistration(String username, String password, String email, String address, String loginType) {
+    }
 
     private static Parent loadRoot(State state) {
         try {

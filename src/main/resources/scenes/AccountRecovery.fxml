@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import java.lang.String?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="app.view.AccountRecoveryController">
+    <left>
+        <VBox alignment="CENTER"
+              prefWidth="310"
+              minWidth="310"
+              maxWidth="310"
+              spacing="20"
+              style="-fx-background-color: #0A0A0A;">
+            <padding>
+                <Insets top="48" right="28" bottom="48" left="28"/>
+            </padding>
+            <ImageView fitWidth="254" fitHeight="200" preserveRatio="true">
+                <Image url="@../images/safex_logo.png"/>
+            </ImageView>
+            <Label text="Recover access,&#10;protect your account."
+                   wrapText="true"
+                   maxWidth="240"
+                   style="-fx-font-size:13px;-fx-text-fill:#94A3B8;"/>
+        </VBox>
+    </left>
+
+    <center>
+        <StackPane style="-fx-background-color: #F8FAFC;">
+            <padding>
+                <Insets top="32" right="32" bottom="32" left="32"/>
+            </padding>
+
+            <VBox alignment="CENTER_LEFT"
+                  spacing="14"
+                  maxWidth="420">
+                <styleClass>
+                    <String fx:value="card"/>
+                    <String fx:value="card-padding"/>
+                </styleClass>
+
+                <Label text="Recover your account"/>
+                <Label text="Enter the email linked to your SafeX account. We will send a 6-digit one-time code."
+                       wrapText="true"
+                       styleClass="muted-text"/>
+
+                <VBox spacing="4">
+                    <Label text="Email"/>
+                    <TextField fx:id="emailField"
+                               promptText="Enter your account email"
+                               maxWidth="Infinity"/>
+                </VBox>
+
+                <Button text="Send recovery code"
+                        minHeight="42"
+                        maxWidth="Infinity"
+                        onAction="#handleSendCode"
+                        styleClass="primary-button"/>
+
+                <VBox fx:id="otpStepBox"
+                      spacing="12"
+                      visible="false"
+                      managed="false">
+                    <Separator/>
+                    <Label text="Enter the 6-digit code from your email."
+                           wrapText="true"
+                           styleClass="muted-text"/>
+                    <TextField fx:id="otpField"
+                               promptText="123456"
+                               maxWidth="Infinity"/>
+                    <Button text="Verify code"
+                            minHeight="42"
+                            maxWidth="Infinity"
+                            onAction="#handleVerifyCode"
+                            styleClass="secondary-button"/>
+                </VBox>
+
+                <Label fx:id="recoveryStatusLabel"
+                       visible="false"
+                       managed="false"
+                       wrapText="true"/>
+
+                <Button text="Back to login"
+                        onAction="#handleBackToLogin"
+                        styleClass="link-button"/>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>

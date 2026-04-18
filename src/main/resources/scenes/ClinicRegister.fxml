@@ -66,6 +66,20 @@
                                maxWidth="Infinity"/>
                 </VBox>
 
+                <VBox spacing="4">
+                    <Label text="Email"/>
+                    <TextField fx:id="emailField"
+                               promptText="Enter your clinic email address"
+                               maxWidth="Infinity"/>
+                </VBox>
+
+                <VBox spacing="4">
+                    <Label text="Clinic address"/>
+                    <TextField fx:id="addressField"
+                               promptText="Enter your clinic address"
+                               maxWidth="Infinity"/>
+                </VBox>
+
                 <!-- Password -->
                 <VBox spacing="4">
                     <Label text="Password"/>

@@ -63,6 +63,31 @@ class EmailServiceTest {
     }
 
     @Test
+    void buildRecoveryHtmlBodyIncludesOtpAndExpiry() {
+        String body = EmailService.buildRecoveryHtmlBody("123456");
+        assertTrue(body.contains("123456"));
+        assertTrue(body.contains("expire in 15 minutes"));
+    }
+
+    @Test
+    void buildVerificationHtmlBodyIncludesOtpAndWelcomeCopy() {
+        String body = EmailService.buildVerificationHtmlBody("654321");
+        assertTrue(body.contains("654321"));
+        assertTrue(body.contains("Welcome to SafeX."));
+        assertTrue(body.contains("finish creating your account"));
+    }
+
+    @Test
+    void sendRecoveryCodeRejectsBlockedRecipient() {
+        assertFalse(EmailService.sendRecoveryCode(BLOCKED_NOTIFICATION_EMAIL, "123456"));
+    }
+
+    @Test
+    void sendVerificationCodeRejectsBlankRecipient() {
+        assertFalse(EmailService.sendVerificationCode("   ", "123456"));
+    }
+
+    @Test
     void escapeHtmlTests() {
         String result = EmailService.escapeHtml("& , < , > , \" , '");
         assertEquals("&amp; , &lt; , &gt; , &quot; , &#39;", result);

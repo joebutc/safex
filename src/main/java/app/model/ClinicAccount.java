@@ -10,16 +10,21 @@ public class ClinicAccount extends Account {
     private Set<String> coveredPostcodePrefixes;
 
     public ClinicAccount(String username, String password, String email, String clinicName) {
-        this(username, password, email, clinicName, "");
+        this(username, password, email, "", clinicName, "");
+    }
+
+    public ClinicAccount(String username, String password, String email, String address, String clinicName) {
+        this(username, password, email, address, clinicName, "");
     }
 
     public ClinicAccount(
             String username,
             String password,
             String email,
+            String address,
             String clinicName,
             String registrationNumber) {
-        super(username, password, email);
+        super(username, password, email, address);
         this.clinicName = clinicName;
         this.registrationNumber = registrationNumber;
         this.coveredPostcodePrefixes = new HashSet<>();

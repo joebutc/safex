@@ -6,6 +6,7 @@ public abstract class Account {
     private String username;
     private String password;
     private String email;
+    private String address;
     private int[] settings;
 
     public String getUsername() {
@@ -28,6 +29,14 @@ public abstract class Account {
         this.email = email;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public int[] getSettings() {
         return settings;
     }
@@ -37,8 +46,13 @@ public abstract class Account {
     }
 
     public Account(String username, String password, String email) {
+        this(username, password, email, "");
+    }
+
+    public Account(String username, String password, String email, String address) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.address = address;
     }
 }
