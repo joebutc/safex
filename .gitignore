@@ -10,3 +10,4 @@ target/
 src/main/resources/config.properties
 useraccounts.db
 M2_REPO/
+.DS_Store
