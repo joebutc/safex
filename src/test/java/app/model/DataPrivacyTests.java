@@ -124,22 +124,6 @@ class DataPrivacyTests {
     }
 
     @Test
-    void enforceDataRetention_deletesOldStiTests_30days() {
-        String oldDate = LocalDate.now().minusDays(40).format(DATE_FMT);
-        DatabaseHandler.addStiTest(TEST_USER, oldDate, "HIV", "Negative", "Old test");
-
-        String recentDate = LocalDate.now().minusDays(10).format(DATE_FMT);
-        DatabaseHandler.addStiTest(TEST_USER, recentDate, "Chlamydia", "Negative", "Recent test");
-
-        DatabaseHandler.saveDataRetention(TEST_USER, "30 days");
-        DatabaseHandler.enforceDataRetention(TEST_USER);
-
-        List<StiTestEntry> remaining = DatabaseHandler.getStiTests(TEST_USER);
-        assertEquals(1, remaining.size());
-        assertEquals("Chlamydia", remaining.get(0).getStiType());
-    }
-
-    @Test
     void enforceDataRetention_deletesOldStiTests_90days() {
         String oldDate = LocalDate.now().minusDays(100).format(DATE_FMT);
         DatabaseHandler.addStiTest(TEST_USER, oldDate, "HIV", "Negative", "Old");
@@ -169,6 +153,42 @@ class DataPrivacyTests {
         List<StiTestEntry> remaining = DatabaseHandler.getStiTests(TEST_USER);
         assertEquals(1, remaining.size());
         assertEquals("Syphilis", remaining.get(0).getStiType());
+    }
+
+    @Test
+    void enforceDataRetention_boundary_exactlyAtCutoff_isKept() {
+        String exactBoundary = LocalDate.now().minusDays(30).format(DATE_FMT);
+        DatabaseHandler.addStiTest(TEST_USER, exactBoundary, "HIV", "Negative", "Exactly at cutoff");
+
+        DatabaseHandler.saveDataRetention(TEST_USER, "30 days");
+        DatabaseHandler.enforceDataRetention(TEST_USER);
+
+        assertEquals(1, DatabaseHandler.getStiTests(TEST_USER).size(),
+                "Record dated exactly at the cutoff should be retained (not strictly before)");
+    }
+
+    @Test
+    void enforceDataRetention_boundary_oneDayInsideCutoff_isKept() {
+        String oneDayInside = LocalDate.now().minusDays(29).format(DATE_FMT);
+        DatabaseHandler.addStiTest(TEST_USER, oneDayInside, "Chlamydia", "Negative", "One day inside window");
+
+        DatabaseHandler.saveDataRetention(TEST_USER, "30 days");
+        DatabaseHandler.enforceDataRetention(TEST_USER);
+
+        assertEquals(1, DatabaseHandler.getStiTests(TEST_USER).size(),
+                "Record one day inside the window should be retained");
+    }
+
+    @Test
+    void enforceDataRetention_boundary_oneDayBeyondCutoff_isDeleted() {
+        String oneDayBeyond = LocalDate.now().minusDays(31).format(DATE_FMT);
+        DatabaseHandler.addStiTest(TEST_USER, oneDayBeyond, "Chlamydia", "Negative", "One day beyond cutoff");
+
+        DatabaseHandler.saveDataRetention(TEST_USER, "30 days");
+        DatabaseHandler.enforceDataRetention(TEST_USER);
+
+        assertEquals(0, DatabaseHandler.getStiTests(TEST_USER).size(),
+                "Record one day beyond the cutoff should be deleted");
     }
 
     @Test
