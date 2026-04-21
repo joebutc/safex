@@ -15,3 +15,4 @@ Auto-generated log of every regression run. Each entry links to its full log.
 | 2026-04-20 13:40:29 | post-merge | `61e5616` | main | Merge remote-tracking branch 'origin/boundarytesting' | 198 | 0 | **PASS** |
 | 2026-04-21 07:26:23 | post-merge | `74be0e3` | main | Fix postcode clinic service test fixture | 205 | 0 | **PASS** |
 | 2026-04-21 07:47:21 | post-merge | `a35aff4` | main | Merge origin/main into main before workinghours integration | 198 | 0 | **PASS** |
+| 2026-04-21 07:47:57 | post-merge | `72c3775` | main | Merge branch 'workinghours' into main | 198 | 0 | **PASS** |
