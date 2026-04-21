@@ -15,10 +15,24 @@ cat > "$HOOKS_DIR/post-merge" << 'HOOK'
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 echo ""
 echo "[SafeX Hook] Running post-merge regression tests..."
-bash "$REPO_ROOT/scripts/run-regression.sh" "post-merge"
+REGRESSION_STAGE_LOGS=1 bash "$REPO_ROOT/scripts/run-regression.sh" "post-merge"
 HOOK
 chmod +x "$HOOKS_DIR/post-merge"
 echo "  [OK] post-merge hook installed"
+
+# --- pre-commit hook ---
+cat > "$HOOKS_DIR/pre-commit" << 'HOOK'
+#!/usr/bin/env bash
+# Auto-stage saved regression logs so they are included in commits
+set -euo pipefail
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+shopt -s nullglob
+LOG_FILES=(test-logs/regression-*.log)
+git add -- test-logs/REGRESSION_HISTORY.md "${LOG_FILES[@]}"
+HOOK
+chmod +x "$HOOKS_DIR/pre-commit"
+echo "  [OK] pre-commit hook installed"
 
 # --- pre-push hook ---
 cat > "$HOOKS_DIR/pre-push" << 'HOOK'
@@ -27,7 +41,7 @@ cat > "$HOOKS_DIR/pre-push" << 'HOOK'
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 echo ""
 echo "[SafeX Hook] Running pre-push regression tests..."
-bash "$REPO_ROOT/scripts/run-regression.sh" "pre-push"
+REGRESSION_PERSIST_LOGS=0 bash "$REPO_ROOT/scripts/run-regression.sh" "pre-push"
 EXIT=$?
 if [ $EXIT -ne 0 ]; then
   echo ""
@@ -41,5 +55,6 @@ echo "  [OK] pre-push hook installed"
 
 echo ""
 echo "Done. Hooks active:"
-echo "  post-merge -> runs regression after every merge (logs + updates REGRESSION_HISTORY.md)"
-echo "  pre-push   -> blocks push if any test fails"
+echo "  post-merge -> runs regression after every merge and stages the saved log files"
+echo "  pre-commit -> auto-stages saved regression logs so they are included in commits"
+echo "  pre-push   -> blocks push if regression tests fail without modifying tracked log files"

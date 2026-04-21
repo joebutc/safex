@@ -1,0 +1,239 @@
+========================================
+SafeX Regression Test Run
+========================================
+Timestamp : 2026-04-18 11:32:29 UTC
+Label     : pre-push
+Commit    : c807e24
+Branch    : main
+Message   : Implement account recovery and registration verification flows
+========================================
+
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------------< COMP2300:SafeX >---------------------------
+[INFO] Building app 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ SafeX ---
+[INFO] Copying 56 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ SafeX ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ SafeX ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ SafeX ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ SafeX ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running app.DataRetentionIntegrationTest
+All tables are ready.
+Data retention: deleted 1 old STI tests for __test_retention_controller__
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.350 s -- in app.DataRetentionIntegrationTest
+[INFO] Running app.LoginPageTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in app.LoginPageTest
+[INFO] Running app.model.AppointmentSchedulingTests
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.221 s -- in app.model.AppointmentSchedulingTests
+[INFO] Running app.model.DataPrivacyTests
+All tables are ready.
+Data retention: deleted 2 old STI tests for __test_privacy_user__
+Data retention: deleted 2 old inactive treatments for __test_privacy_user__
+All tables are ready.
+All tables are ready.
+Data retention: deleted 1 old STI tests for __test_privacy_user__
+All tables are ready.
+Data retention: deleted 1 old STI tests for __test_privacy_user__
+All tables are ready.
+All tables are ready.
+All tables are ready.
+Data retention: deleted 1 old STI tests for __test_privacy_user__
+All tables are ready.
+All tables are ready.
+All tables are ready.
+Data retention: deleted 1 old STI tests for __test_privacy_user__
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+Data retention: deleted 1 old inactive treatments for __test_privacy_user__
+All tables are ready.
+All tables are ready.
+All tables are ready.
+Data retention: deleted 5 old STI tests for __test_privacy_user__
+All tables are ready.
+All tables are ready.
+All tables are ready.
+[INFO] Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.841 s -- in app.model.DataPrivacyTests
+[INFO] Running app.model.PasswordRecoveryDatabaseTests
+All tables are ready.
+All tables are ready.
+All tables are ready.
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.074 s -- in app.model.PasswordRecoveryDatabaseTests
+[INFO] Running app.model.RegistrationVerificationDatabaseTests
+All tables are ready.
+All tables are ready.
+All tables are ready.
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.060 s -- in app.model.RegistrationVerificationDatabaseTests
+[INFO] Running app.model.StiTestTrackerTests
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+[INFO] Tests run: 21, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.379 s -- in app.model.StiTestTrackerTests
+[INFO] Running app.model.TreatmentTrackerTests
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+[INFO] Tests run: 41, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.557 s -- in app.model.TreatmentTrackerTests
+[INFO] Running app.NotificationAndPermissionsTests
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+[INFO] Tests run: 39, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.798 s -- in app.NotificationAndPermissionsTests
+[INFO] Running app.RegisterPageTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in app.RegisterPageTest
+[INFO] Running app.service.EmailServiceErrorTests
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in app.service.EmailServiceErrorTests
+[INFO] Running app.service.EmailServiceTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.756 s -- in app.service.EmailServiceTest
+[INFO] Running app.service.GateServiceTest
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.061 s -- in app.service.GateServiceTest
+[INFO] Running app.service.RecoveryServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in app.service.RecoveryServiceTest
+[INFO] Running app.StateFxmlResourceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in app.StateFxmlResourceTest
+[INFO] Running app.util.PostcodeValidatorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in app.util.PostcodeValidatorTest
+[INFO] Running app.view.PartnerNotifyPageTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in app.view.PartnerNotifyPageTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 196, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.543 s
+[INFO] Finished at: 2026-04-18T12:32:38+01:00
+[INFO] ------------------------------------------------------------------------
+
+========================================
+SUMMARY
+========================================
+Status   : PASS
+Total    : 196
+Failures : 0
+Errors   : 0
+========================================

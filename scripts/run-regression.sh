@@ -4,6 +4,9 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="$REPO_ROOT/test-logs"
 HISTORY_FILE="$LOG_DIR/REGRESSION_HISTORY.md"
+PERSIST_LOGS="${REGRESSION_PERSIST_LOGS:-1}"
+STAGE_LOGS="${REGRESSION_STAGE_LOGS:-0}"
+TMP_LOG_DIR=""
 
 mkdir -p "$LOG_DIR"
 
@@ -19,7 +22,20 @@ if [ -n "$(git -C "$REPO_ROOT" status --porcelain 2>/dev/null)" ]; then
 fi
 
 COMMIT_LABEL="${COMMIT}${DIRTY_SUFFIX}"
-LOG_FILE="$LOG_DIR/regression-${TIMESTAMP}-${COMMIT_LABEL}-${LABEL}.log"
+if [ "$PERSIST_LOGS" = "1" ]; then
+  LOG_FILE="$LOG_DIR/regression-${TIMESTAMP}-${COMMIT_LABEL}-${LABEL}.log"
+else
+  TMP_LOG_DIR="$(mktemp -d "${TMPDIR:-/tmp}/safex-regression-XXXXXX")"
+  LOG_FILE="$TMP_LOG_DIR/regression-${TIMESTAMP}-${COMMIT_LABEL}-${LABEL}.log"
+fi
+
+cleanup_temp_logs() {
+  if [ "$PERSIST_LOGS" != "1" ] && [ -n "$TMP_LOG_DIR" ] && [ -d "$TMP_LOG_DIR" ]; then
+    rm -rf "$TMP_LOG_DIR"
+  fi
+}
+
+trap cleanup_temp_logs EXIT
 
 echo "========================================"
 echo "  SafeX Regression Test Suite"
@@ -27,7 +43,11 @@ echo "========================================"
 echo "  Label   : $LABEL"
 echo "  Commit  : $COMMIT_LABEL  ($BRANCH)"
 echo "  Message : $COMMIT_MSG"
-echo "  Log     : test-logs/$(basename "$LOG_FILE")"
+if [ "$PERSIST_LOGS" = "1" ]; then
+  echo "  Log     : test-logs/$(basename "$LOG_FILE")"
+else
+  echo "  Log     : temporary (not persisted to the repository)"
+fi
 echo "========================================"
 
 {
@@ -78,21 +98,32 @@ fi
   echo "========================================"
 } >> "$LOG_FILE"
 
-if [ ! -f "$HISTORY_FILE" ]; then
-  {
-    echo "# SafeX Regression Test History"
-    echo ""
-    echo "Auto-generated log of every regression run. Each entry links to its full log."
-    echo ""
-    echo "| Timestamp (UTC) | Label | Commit | Branch | Message | Tests | Failures | Status |"
-    echo "|---|---|---|---|---|---|---|---|"
-  } > "$HISTORY_FILE"
-fi
+if [ "$PERSIST_LOGS" = "1" ]; then
+  if [ ! -f "$HISTORY_FILE" ]; then
+    {
+      echo "# SafeX Regression Test History"
+      echo ""
+      echo "Auto-generated log of every regression run. Each entry links to its full log."
+      echo ""
+      echo "| Timestamp (UTC) | Label | Commit | Branch | Message | Tests | Failures | Status |"
+      echo "|---|---|---|---|---|---|---|---|"
+    } > "$HISTORY_FILE"
+  fi
 
-echo "| $(date -u +"%Y-%m-%d %H:%M:%S") | $LABEL | \`$COMMIT_LABEL\` | $BRANCH | $COMMIT_MSG | $TOTAL | $FAILURES | **$STATUS** |" >> "$HISTORY_FILE"
+  echo "| $(date -u +"%Y-%m-%d %H:%M:%S") | $LABEL | \`$COMMIT_LABEL\` | $BRANCH | $COMMIT_MSG | $TOTAL | $FAILURES | **$STATUS** |" >> "$HISTORY_FILE"
+
+  if [ "$STAGE_LOGS" = "1" ]; then
+    git -C "$REPO_ROOT" add -- "$HISTORY_FILE" "$LOG_FILE"
+    echo "Staged: test-logs/REGRESSION_HISTORY.md and test-logs/$(basename "$LOG_FILE")"
+  fi
+fi
 
 echo ""
 echo "Result: $STATUS  ($TOTAL tests, $FAILURES failures, $ERRORS errors)"
-echo "Full log saved: test-logs/$(basename "$LOG_FILE")"
+if [ "$PERSIST_LOGS" = "1" ]; then
+  echo "Full log saved: test-logs/$(basename "$LOG_FILE")"
+else
+  echo "Full log captured in a temporary file for this run only."
+fi
 
 exit "$EXIT_CODE"

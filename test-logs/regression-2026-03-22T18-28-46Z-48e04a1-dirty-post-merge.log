@@ -1,0 +1,186 @@
+========================================
+SafeX Regression Test Run
+========================================
+Timestamp : 2026-03-22 18:28:46 UTC
+Label     : post-merge
+Commit    : 48e04a1-dirty
+Branch    : main
+Message   : Merge branch 'jb-framework-tweaks-main-compliant(sade)' into main
+========================================
+
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------------< COMP2300:SafeX >---------------------------
+[INFO] Building app 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ SafeX ---
+[INFO] Copying 43 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ SafeX ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ SafeX ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ SafeX ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ SafeX ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running app.LoginPageTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.070 s -- in app.LoginPageTest
+[INFO] Running app.model.AppointmentSchedulingTests
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.465 s -- in app.model.AppointmentSchedulingTests
+[INFO] Running app.model.StiTestTrackerTests
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+[INFO] Tests run: 21, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.344 s -- in app.model.StiTestTrackerTests
+[INFO] Running app.model.TreatmentTrackerTests
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+[INFO] Tests run: 41, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.593 s -- in app.model.TreatmentTrackerTests
+[INFO] Running app.NotificationAndPermissionsTests
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+All tables are ready.
+[INFO] Tests run: 39, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.009 s -- in app.NotificationAndPermissionsTests
+[INFO] Running app.RegisterPageTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in app.RegisterPageTest
+[INFO] Running app.service.EmailServiceErrorTests
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in app.service.EmailServiceErrorTests
+[INFO] Running app.service.EmailServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.732 s -- in app.service.EmailServiceTest
+[INFO] Running app.service.GateServiceTest
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.057 s -- in app.service.GateServiceTest
+[INFO] Running app.util.PostcodeValidatorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in app.util.PostcodeValidatorTest
+[INFO] Running app.view.PartnerNotifyPageTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in app.view.PartnerNotifyPageTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 155, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.777 s
+[INFO] Finished at: 2026-03-22T18:28:54Z
+[INFO] ------------------------------------------------------------------------
+
+========================================
+SUMMARY
+========================================
+Status   : PASS
+Total    : 155
+Failures : 0
+Errors   : 0
+========================================

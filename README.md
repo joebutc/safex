@@ -5,8 +5,12 @@
 Merge requests targeting `main` now trigger the GitLab CI regression job `fxml-main-regression`.
 
 - Automated command: `bash scripts/run-regression.sh`
+- Local hooks installer: `bash scripts/install-hooks.sh`
 - CI target: merge requests into `main`, plus direct pushes to `main`
 - Manual migration checklist: `docs/FXML_MIGRATION_CHECKLIST.md`
+
+Saved regression artifacts under `test-logs/` are now tracked on purpose so the whole team can inspect the raw logs.
+The local hook setup stages post-merge regression logs automatically, auto-stages saved logs during commit, and keeps `pre-push` verification read-only so it does not create uncommitted log changes at push time.
 
 This is specifically intended to protect the FXML migration so functionality from `main` is preserved while Java-built screens are replaced.
 
