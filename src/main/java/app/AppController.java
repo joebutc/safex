@@ -19,12 +19,15 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public final class AppController {
     private static boolean initialised = false;
@@ -39,6 +42,8 @@ public final class AppController {
     private static State registrationReturnState = State.REGISTER;
     private static PendingRegistration pendingRegistration;
     private static String registrationErrorMessage;
+
+    private static final String CONFIG_FILE = "clinic_hours.txt";
 
     private AppController() {
     }
@@ -655,12 +660,57 @@ public final class AppController {
             return false;
         }
     }
+
     // ──────────────────────────────────────────────────────────────────────────
     // ── NEW: Methods for Clinic Location and Booking Integrations ─────────────
     // ──────────────────────────────────────────────────────────────────────────
 
+    public static String getClinicDefaultStartTime() {
+        assertInitialised();
+        Properties props = loadProperties();
+        String clinicUsername = getCurrentUser();
+        return props.getProperty(clinicUsername + "_start", "09:00");
+    }
 
-    private record PendingRegistration(String username, String password, String email, String address, String loginType) {
+    public static String getClinicDefaultEndTime() {
+        assertInitialised();
+        Properties props = loadProperties();
+        String clinicUsername = getCurrentUser();
+        return props.getProperty(clinicUsername + "_end", "17:00");
+    }
+
+    public static void saveClinicDefaultWorkingHours(String startTime, String endTime) {
+        assertInitialised();
+        Properties props = loadProperties();
+        String clinicUsername = getCurrentUser();
+
+        props.setProperty(clinicUsername + "_start", startTime);
+        props.setProperty(clinicUsername + "_end", endTime);
+
+        try (FileOutputStream out = new FileOutputStream(CONFIG_FILE)) {
+            props.store(out, "Clinic Working Hours Configuration");
+            System.out.println("Working hours saved to text file successfully.");
+        } catch (IOException e) {
+            System.out.println("Error saving working hours to file: " + e.getMessage());
+        }
+    }
+
+    private static Properties loadProperties() {
+        Properties props = new Properties();
+        File file = new File(CONFIG_FILE);
+
+        if (file.exists()) {
+            try (FileInputStream in = new FileInputStream(file)) {
+                props.load(in);
+            } catch (IOException e) {
+                System.out.println("Error reading working hours file: " + e.getMessage());
+            }
+        }
+        return props;
+    }
+
+    private record PendingRegistration(String username, String password, String email, String address,
+            String loginType) {
     }
 
     private static Parent loadRoot(State state) {
@@ -686,5 +736,17 @@ public final class AppController {
         if (!initialised) {
             throw new RuntimeException("AppController not initialised");
         }
+    }
+
+    public static String getClinicWorkingStartTime(String clinicUsername) {
+        assertInitialised();
+        Properties props = loadProperties();
+        return props.getProperty(clinicUsername + "_start", "09:00");
+    }
+
+    public static String getClinicWorkingEndTime(String clinicUsername) {
+        assertInitialised();
+        Properties props = loadProperties();
+        return props.getProperty(clinicUsername + "_end", "17:00");
     }
 }

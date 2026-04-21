@@ -25,8 +25,6 @@ public class BookAppointmentPage {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd MMM yyyy");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
-    private static final LocalTime START = LocalTime.of(9, 0);
-    private static final LocalTime END = LocalTime.of(17, 0);
 
     @FXML
     private ComboBox<String> clinicSelector;
@@ -50,21 +48,12 @@ public class BookAppointmentPage {
         datePicker.valueProperty().addListener((obs, old, newVal) -> loadSlots());
     }
 
-    /**
-     * Pre-selects a specific clinic and locks the combo box to show it immediately.
-     * Use this when navigating from the STI Decision Tree.
-     */
     public void setPreselectedClinic(String clinicUsername) {
         if (clinicSelector.getItems().contains(clinicUsername)) {
             clinicSelector.setValue(clinicUsername);
         }
     }
 
-    /**
-     * Triggers a postcode popup. Sorts the combo box so local clinics appear
-     * at the top and auto-selects the nearest one.
-     * Use this when navigating normally from the home dashboard.
-     */
     public void promptForLocationAndSort() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Find Local Clinics");
@@ -76,21 +65,18 @@ public class BookAppointmentPage {
             List<ClinicAccount> localClinics = clinicService.findClinicsNear(postcode);
 
             if (!localClinics.isEmpty()) {
-                // Extract just the usernames of the local clinics
                 List<String> localUsernames = localClinics.stream()
                         .map(ClinicAccount::getUsername)
                         .collect(Collectors.toList());
 
-                // Get all clinics and remove the local ones so we don't have duplicates
                 List<String> allUsernames = new ArrayList<>(AppController.getClinicUsernames());
                 allUsernames.removeAll(localUsernames);
 
-                // Build a new sorted list: Local clinics at the top, followed by the rest
                 List<String> sortedUsernames = new ArrayList<>(localUsernames);
                 sortedUsernames.addAll(allUsernames);
 
                 clinicSelector.getItems().setAll(sortedUsernames);
-                clinicSelector.setValue(localUsernames.get(0)); // Auto-select the first local match
+                clinicSelector.setValue(localUsernames.get(0));
             } else {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("No Local Clinics");
@@ -112,11 +98,30 @@ public class BookAppointmentPage {
         }
 
         String dateStr = date.format(DATE_FMT);
+
+        // 1. Ask the database what is explicitly booked or offered
         List<String> booked = AppController.getBookedTimesForDate(dateStr, clinicUsername);
         List<String> offered = AppController.getAvailableTimesForDate(dateStr, clinicUsername);
 
-        LocalTime current = START;
-        while (!current.isAfter(END)) {
+        // 2. Fetch the specific clinic's custom working hours
+        String startTimeStr = AppController.getClinicWorkingStartTime(clinicUsername);
+        String endTimeStr = AppController.getClinicWorkingEndTime(clinicUsername);
+        LocalTime dynamicStart = LocalTime.parse(startTimeStr, TIME_FMT);
+        LocalTime dynamicEnd = LocalTime.parse(endTimeStr, TIME_FMT);
+
+        // 3. NEW FEATURE: Auto-fill default hours if the clinic hasn't touched this
+        // date yet
+        if (offered.isEmpty() && booked.isEmpty()) {
+            LocalTime autoFillTemp = dynamicStart;
+            while (!autoFillTemp.isAfter(dynamicEnd)) {
+                offered.add(autoFillTemp.format(TIME_FMT));
+                autoFillTemp = autoFillTemp.plusMinutes(30);
+            }
+        }
+
+        // 4. Generate the UI rows
+        LocalTime current = dynamicStart;
+        while (!current.isAfter(dynamicEnd)) {
             String timeStr = current.format(TIME_FMT);
             boolean isBooked = booked.contains(timeStr);
             boolean isPast = date.isEqual(LocalDate.now()) && current.isBefore(LocalTime.now());
