@@ -1,101 +1,107 @@
 package app.service;
 
 import app.model.ClinicAccount;
+import app.model.DatabaseHandler;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.parallel.ResourceAccessMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Execution(ExecutionMode.SAME_THREAD)
+@ResourceLock(value = "useraccounts.db", mode = ResourceAccessMode.READ_WRITE)
 class ClinicServiceTest {
+    private static final String DB_URL = "jdbc:sqlite:useraccounts.db";
 
     private ClinicService clinicService;
+    private String londonClinicUsername;
+    private String portsmouthClinicUsername;
+    private String southamptonClinicUsername;
+    private String manchesterClinicUsername;
 
     @BeforeEach
     void setUp() {
-        // 1. Ensure the database tables exist
-        app.model.DatabaseHandler.initialiseDatabase();
+        DatabaseHandler.initialiseDatabase();
 
-        // 2. Register the dummy clinics into the database
-        app.model.DatabaseHandler.registerUser("london_central", "testpass", "CLINIC");
-        app.model.DatabaseHandler.registerUser("pompey_clinic", "testpass", "CLINIC");
+        long suffix = System.nanoTime();
+        londonClinicUsername = "__postcode_london_" + suffix + "__";
+        portsmouthClinicUsername = "__postcode_portsmouth_" + suffix + "__";
+        southamptonClinicUsername = "__postcode_southampton_" + suffix + "__";
+        manchesterClinicUsername = "__postcode_manchester_" + suffix + "__";
 
-        // 3. Give them their postcodes using the method we wrote earlier
-        ClinicAccount london = new ClinicAccount("london_central", "testpass", "", "London Clinic");
-        london.addCoveredPostcodePrefix("SW1A");
-        london.addCoveredPostcodePrefix("SW1");
-        app.model.DatabaseHandler.updateClinicAccount(london);
+        cleanup();
 
-        ClinicAccount pompey = new ClinicAccount("pompey_clinic", "testpass", "", "Portsmouth Clinic");
-        pompey.addCoveredPostcodePrefix("PO");
-        app.model.DatabaseHandler.updateClinicAccount(pompey);
+        registerClinic(londonClinicUsername, "London Clinic", "QA1A", "QA1");
+        registerClinic(portsmouthClinicUsername, "Portsmouth Clinic", "QB");
+        registerClinic(southamptonClinicUsername, "Southampton Clinic", "QC14");
+        registerClinic(manchesterClinicUsername, "Manchester Clinic", "QD1");
 
-        // 4. Initialize the service now that the DB is prepped
         clinicService = new ClinicService();
     }
 
-    // ─── 1. Successful Matches (Partner Clinics Found) ───────────────────────
+    @AfterEach
+    void tearDown() {
+        cleanup();
+    }
 
     @Test
     void testExactOutcodeMatch_returnsSouthamptonClinic() {
-        List<ClinicAccount> results = clinicService.findClinicsNear("SO14 0YG");
+        List<ClinicAccount> results = clinicService.findClinicsNear("QC14 0YG");
 
-        assertEquals(1, results.size(), "Should find exactly one clinic for SO14");
-        assertEquals("ryansclinic", results.get(0).getUsername(), "Should be the Southampton clinic");
+        assertTrue(results.stream().anyMatch(clinic -> southamptonClinicUsername.equals(clinic.getUsername())),
+                "Should include the exact-match clinic for QC14");
     }
 
     @Test
     void testBroadPrefixMatch_returnsPortsmouthClinic() {
-        // Portsmouth supports just "PO", so "PO5" should match
-        List<ClinicAccount> results = clinicService.findClinicsNear("PO5 3QT");
+        List<ClinicAccount> results = clinicService.findClinicsNear("QB5 3QT");
 
-        assertEquals(1, results.size(), "Should find exactly one clinic for PO5");
-        assertEquals("pompey_clinic", results.get(0).getUsername(), "Should be the Portsmouth clinic");
+        assertTrue(results.stream().anyMatch(clinic -> portsmouthClinicUsername.equals(clinic.getUsername())),
+                "Should include the broad-prefix clinic for QB");
     }
 
     @Test
     void testCaseInsensitiveAndWhitespace_returnsLondonClinic() {
-        // Testing messy input to ensure the formatting logic works
-        List<ClinicAccount> result1 = clinicService.findClinicsNear("  sw1a 1aa  ");
-        List<ClinicAccount> result2 = clinicService.findClinicsNear("sw1a1aa");
+        List<ClinicAccount> result1 = clinicService.findClinicsNear("  qa1a 1aa  ");
+        List<ClinicAccount> result2 = clinicService.findClinicsNear("qa1a1aa");
 
-        assertEquals(1, result1.size(), "Should handle lowercase and padding");
-        assertEquals("london_central", result1.get(0).getUsername());
-
-        assertEquals(1, result2.size(), "Should handle missing middle space");
-        assertEquals("london_central", result2.get(0).getUsername());
+        assertTrue(result1.stream().anyMatch(clinic -> londonClinicUsername.equals(clinic.getUsername())),
+                "Should handle lowercase and padding");
+        assertTrue(result2.stream().anyMatch(clinic -> londonClinicUsername.equals(clinic.getUsername())),
+                "Should handle missing middle space");
     }
-
-    // ─── 2. Graceful Degradation (Triggering the NHS Fallback) ───────────────
 
     @Test
     void testUnregisteredArea_returnsEmptyToTriggerNhsFallback() {
-        // Birmingham is not in our mock database.
-        // Returning an empty list is the correct behaviour so the UI displays the NHS
-        // link.
-        List<ClinicAccount> results = clinicService.findClinicsNear("B1 1AA");
+        List<ClinicAccount> results = clinicService.findClinicsNear("QZ1 1AA");
 
         assertTrue(results.isEmpty(), "Should return an empty list for unsupported areas to trigger NHS fallback");
     }
 
     @Test
     void testFalsePositiveOverlap_returnsEmptyToTriggerNhsFallback() {
-        // "M14" starts with "M1", but they are entirely different districts.
-        // It is better to show the NHS fallback than to incorrectly route them to M1.
-        List<ClinicAccount> results = clinicService.findClinicsNear("M14 5TE");
+        List<ClinicAccount> results = clinicService.findClinicsNear("QD14 5TE");
 
         assertTrue(results.isEmpty(),
-                "M14 should NOT falsely trigger the M1 clinic; should return empty for NHS fallback");
+                "QD14 should NOT falsely trigger the QD1 clinic; should return empty for NHS fallback");
     }
 
     @Test
     void testSubstringTrap_returnsEmptyToTriggerNhsFallback() {
-        // "SW17" starts with "SW1", but London Central only covers SW1/SW1A.
-        List<ClinicAccount> results = clinicService.findClinicsNear("SW17 8XZ");
+        List<ClinicAccount> results = clinicService.findClinicsNear("QA17 8XZ");
 
         assertTrue(results.isEmpty(),
-                "SW17 should NOT falsely trigger the SW1 clinic; should return empty for NHS fallback");
+                "QA17 should NOT falsely trigger the QA1 clinic; should return empty for NHS fallback");
     }
 
     @Test
@@ -103,5 +109,44 @@ class ClinicServiceTest {
         assertTrue(clinicService.findClinicsNear(null).isEmpty(), "Null input should return empty list");
         assertTrue(clinicService.findClinicsNear("").isEmpty(), "Empty string should return empty list");
         assertTrue(clinicService.findClinicsNear("   ").isEmpty(), "Blank string should return empty list");
+    }
+
+    private void registerClinic(String username, String displayName, String... postcodePrefixes) {
+        assertTrue(DatabaseHandler.registerUser(username, "testpass", "CLINIC"),
+                "Expected clinic registration to succeed for " + username);
+
+        ClinicAccount clinic = new ClinicAccount(username, "testpass", "", displayName);
+        for (String postcodePrefix : postcodePrefixes) {
+            clinic.addCoveredPostcodePrefix(postcodePrefix);
+        }
+        DatabaseHandler.updateClinicAccount(clinic);
+    }
+
+    private void cleanup() {
+        try (Connection conn = DriverManager.getConnection(DB_URL)) {
+            deleteClinic(conn, manchesterClinicUsername);
+            deleteClinic(conn, southamptonClinicUsername);
+            deleteClinic(conn, portsmouthClinicUsername);
+            deleteClinic(conn, londonClinicUsername);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void deleteClinic(Connection conn, String username) throws Exception {
+        if (username == null || username.isBlank()) {
+            return;
+        }
+
+        try (PreparedStatement deletePostcodes = conn.prepareStatement(
+                "DELETE FROM clinic_postcodes WHERE clinic_username = ?")) {
+            deletePostcodes.setString(1, username);
+            deletePostcodes.executeUpdate();
+        }
+
+        try (PreparedStatement deleteClinics = conn.prepareStatement(
+                "DELETE FROM clinics WHERE username = ?")) {
+            deleteClinics.setString(1, username);
+            deleteClinics.executeUpdate();
+        }
     }
 }
