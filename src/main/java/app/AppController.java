@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -748,5 +749,38 @@ public final class AppController {
         assertInitialised();
         Properties props = loadProperties();
         return props.getProperty(clinicUsername + "_end", "17:00");
+    }
+
+    public static void applyWorkingHoursToAllFutureDates(String startTime, String endTime) {
+        assertInitialised();
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
+        LocalTime start = LocalTime.parse(startTime, fmt);
+        LocalTime end = LocalTime.parse(endTime, fmt);
+
+        // Build the new slot list from the updated hours
+        List<String> newSlots = new ArrayList<>();
+        LocalTime current = start;
+        while (!current.isAfter(end)) {
+            newSlots.add(current.format(fmt));
+            current = current.plusMinutes(30);
+        }
+
+        // Apply to every future date that already has slots saved
+        List<String> futureDates = DatabaseHandler.getFutureDatesWithSlots(currentUser);
+
+        for (String date : futureDates) {
+            // Keep any already-booked slots so appointments aren't lost
+            List<String> booked = DatabaseHandler.getBookedTimesForDate(date, currentUser);
+
+            List<String> merged = new ArrayList<>(newSlots);
+            for (String bookedSlot : booked) {
+                if (!merged.contains(bookedSlot)) {
+                    merged.add(bookedSlot);
+                }
+            }
+
+            DatabaseHandler.saveAvailableTimesForDate(currentUser, date, merged);
+        }
     }
 }
