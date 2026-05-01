@@ -257,14 +257,19 @@ public final class DatabaseHandler {
                     + ");";
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(dataAccessLogSql);
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
 
             // Migration: convert old retention values to new 30/90/180 day options
             try (Statement stmt = conn.createStatement()) {
-                stmt.execute("UPDATE privacy_settings SET data_retention = '180 days' WHERE data_retention = '6 months'");
-                stmt.execute("UPDATE privacy_settings SET data_retention = 'While account is active' WHERE data_retention = '1 year'");
-                stmt.execute("UPDATE privacy_settings SET data_retention = 'While account is active' WHERE data_retention = 'Delete immediately'");
-            } catch (SQLException ignored) {}
+                stmt.execute(
+                        "UPDATE privacy_settings SET data_retention = '180 days' WHERE data_retention = '6 months'");
+                stmt.execute(
+                        "UPDATE privacy_settings SET data_retention = 'While account is active' WHERE data_retention = '1 year'");
+                stmt.execute(
+                        "UPDATE privacy_settings SET data_retention = 'While account is active' WHERE data_retention = 'Delete immediately'");
+            } catch (SQLException ignored) {
+            }
 
         } catch (SQLException e) {
             System.out.println("Error initialising database: " + e.getMessage());
@@ -608,7 +613,8 @@ public final class DatabaseHandler {
         String normalizedAddress = normalizeAddress(address);
 
         // Dynamic table name insertion
-        String sql = "INSERT INTO " + tableName + "(username, password, email, address, email_verified) VALUES(?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO " + tableName
+                + "(username, password, email, address, email_verified) VALUES(?, ?, ?, ?, ?)";
 
         try (Connection conn = connect()) {
             if (conn == null) {
@@ -1175,11 +1181,13 @@ public final class DatabaseHandler {
     public static String getTermsAcceptedDate(String username) {
         String sql = "SELECT terms_accepted_date FROM privacy_settings WHERE username = ?";
         try (Connection conn = connect()) {
-            if (conn == null) return null;
+            if (conn == null)
+                return null;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, username);
                 ResultSet rs = p.executeQuery();
-                if (rs.next()) return rs.getString("terms_accepted_date");
+                if (rs.next())
+                    return rs.getString("terms_accepted_date");
             }
         } catch (SQLException e) {
             System.out.println("getTermsAcceptedDate error: " + e.getMessage());
@@ -1188,7 +1196,7 @@ public final class DatabaseHandler {
     }
 
     public static void logDataAccess(String patientUsername, String accessorUsername,
-                                     String accessorType, String accessType, String details) {
+            String accessorType, String accessType, String details) {
         String timestamp = java.time.LocalDateTime.now().format(TIMESTAMP_FMT);
         String sql = "INSERT INTO data_access_log (patient_username, accessor_username, accessor_type, access_type, access_timestamp, details) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
@@ -1210,7 +1218,8 @@ public final class DatabaseHandler {
                 + "FROM data_access_log WHERE patient_username = ? ORDER BY id DESC LIMIT 50";
         List<DataAccessLogEntry> entries = new ArrayList<>();
         try (Connection conn = connect()) {
-            if (conn == null) return entries;
+            if (conn == null)
+                return entries;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, patientUsername);
                 ResultSet rs = p.executeQuery();
@@ -1222,8 +1231,7 @@ public final class DatabaseHandler {
                             rs.getString("accessor_type"),
                             rs.getString("access_type"),
                             rs.getString("access_timestamp"),
-                            rs.getString("details")
-                    ));
+                            rs.getString("details")));
                 }
             }
         } catch (SQLException e) {
@@ -1232,10 +1240,10 @@ public final class DatabaseHandler {
         return entries;
     }
 
-
     public static void enforceDataRetention(String username) {
         String retention = getDataRetention(username);
-        if ("While account is active".equals(retention)) return;
+        if ("While account is active".equals(retention))
+            return;
 
         int days = switch (retention) {
             case "30 days" -> 30;
@@ -1244,7 +1252,8 @@ public final class DatabaseHandler {
             default -> -1;
         };
 
-        if (days <= 0) return;
+        if (days <= 0)
+            return;
 
         LocalDate cutoff = LocalDate.now().minusDays(days);
 
@@ -1254,7 +1263,8 @@ public final class DatabaseHandler {
         String deleteTreatmentsSql = "DELETE FROM treatment_plans WHERE id = ? AND username = ?";
 
         try (Connection conn = connect()) {
-            if (conn == null) return;
+            if (conn == null)
+                return;
 
             boolean originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
@@ -1269,7 +1279,8 @@ public final class DatabaseHandler {
                             if (testDate.isBefore(cutoff)) {
                                 testIdsToDelete.add(rs.getInt("id"));
                             }
-                        } catch (DateTimeParseException ignored) {}
+                        } catch (DateTimeParseException ignored) {
+                        }
                     }
                 }
 
@@ -1283,7 +1294,8 @@ public final class DatabaseHandler {
                             if (startDate.isBefore(cutoff)) {
                                 treatmentIdsToDelete.add(rs.getInt("id"));
                             }
-                        } catch (DateTimeParseException ignored) {}
+                        } catch (DateTimeParseException ignored) {
+                        }
                     }
                 }
 
@@ -1296,7 +1308,8 @@ public final class DatabaseHandler {
                         }
                         p.executeBatch();
                     }
-                    System.out.println("Data retention: deleted " + testIdsToDelete.size() + " old STI tests for " + username);
+                    System.out.println(
+                            "Data retention: deleted " + testIdsToDelete.size() + " old STI tests for " + username);
                 }
 
                 if (!treatmentIdsToDelete.isEmpty()) {
@@ -1308,7 +1321,8 @@ public final class DatabaseHandler {
                         }
                         p.executeBatch();
                     }
-                    System.out.println("Data retention: deleted " + treatmentIdsToDelete.size() + " old inactive treatments for " + username);
+                    System.out.println("Data retention: deleted " + treatmentIdsToDelete.size()
+                            + " old inactive treatments for " + username);
                 }
 
                 conn.commit();
@@ -1359,11 +1373,12 @@ public final class DatabaseHandler {
 
     private static PrivacySettingsSnapshot getPrivacySettingsSnapshot(String username) {
         String sql = "SELECT terms_accepted_date, data_retention, " +
-                     "allow_internal_staff, allow_analytics, allow_trusted_partners " +
-                     "FROM privacy_settings WHERE username = ?";
+                "allow_internal_staff, allow_analytics, allow_trusted_partners " +
+                "FROM privacy_settings WHERE username = ?";
         try (Connection conn = connect()) {
             if (conn == null) {
-                return new PrivacySettingsSnapshot(null, new boolean[]{false, false, false}, "While account is active");
+                return new PrivacySettingsSnapshot(null, new boolean[] { false, false, false },
+                        "While account is active");
             }
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, username);
@@ -1371,8 +1386,9 @@ public final class DatabaseHandler {
                 if (rs.next()) {
                     String termsDate = rs.getString("terms_accepted_date");
                     String retention = rs.getString("data_retention");
-                    if (retention == null) retention = "While account is active";
-                    boolean[] permissions = new boolean[]{
+                    if (retention == null)
+                        retention = "While account is active";
+                    boolean[] permissions = new boolean[] {
                             rs.getInt("allow_internal_staff") == 1,
                             rs.getInt("allow_analytics") == 1,
                             rs.getInt("allow_trusted_partners") == 1
@@ -1384,7 +1400,7 @@ public final class DatabaseHandler {
             System.err.println("getPrivacySettingsSnapshot error: " + e.getMessage());
         }
         // Defaults if no row found
-        return new PrivacySettingsSnapshot(null, new boolean[]{false, false, false}, "While account is active");
+        return new PrivacySettingsSnapshot(null, new boolean[] { false, false, false }, "While account is active");
     }
 
     public static List<TreatmentEntry> getAllTreatments(String username) {
@@ -1393,7 +1409,8 @@ public final class DatabaseHandler {
                 + "FROM treatment_plans WHERE username = ? ORDER BY id DESC";
         List<TreatmentEntry> entries = new ArrayList<>();
         try (Connection conn = connect()) {
-            if (conn == null) return entries;
+            if (conn == null)
+                return entries;
             try (PreparedStatement p = conn.prepareStatement(sql)) {
                 p.setString(1, username);
                 ResultSet rs = p.executeQuery();
@@ -1606,7 +1623,8 @@ public final class DatabaseHandler {
             System.out.println("getClinicAccount email lookup error: " + e.getMessage());
         }
 
-        app.model.ClinicAccount account = new app.model.ClinicAccount(username, "", clinicEmail, clinicAddress, username);
+        app.model.ClinicAccount account = new app.model.ClinicAccount(username, "", clinicEmail, clinicAddress,
+                username);
 
         String sql = "SELECT postcode_prefix FROM clinic_postcodes WHERE clinic_username = ?";
         try (Connection conn = connect()) {
@@ -1623,6 +1641,39 @@ public final class DatabaseHandler {
             System.out.println("getClinicAccount error: " + e.getMessage());
         }
         return account;
+    }
+
+    /**
+     * Returns all distinct future dates that have saved availability slots for a
+     * clinic.
+     */
+    public static List<String> getFutureDatesWithSlots(String clinicUsername) {
+        String sql = "SELECT DISTINCT appointment_date FROM clinic_availability "
+                + "WHERE clinic_username = ?";
+        List<String> dates = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        try (Connection conn = connect()) {
+            if (conn == null)
+                return dates;
+            try (PreparedStatement p = conn.prepareStatement(sql)) {
+                p.setString(1, normalizeClinicUsername(clinicUsername));
+                ResultSet rs = p.executeQuery();
+                while (rs.next()) {
+                    String dateStr = rs.getString("appointment_date");
+                    try {
+                        LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd MMM yyyy"));
+                        if (!date.isBefore(today)) {
+                            dates.add(dateStr);
+                        }
+                    } catch (DateTimeParseException ignored) {
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("getFutureDatesWithSlots error: " + e.getMessage());
+        }
+        return dates;
     }
 
     /**

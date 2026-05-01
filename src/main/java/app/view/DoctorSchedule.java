@@ -102,8 +102,8 @@ public class DoctorSchedule {
         workingEnd = LocalTime.parse(newEnd, TIME_FMT);
 
         AppController.saveClinicDefaultWorkingHours(newStart, newEnd);
+        AppController.applyWorkingHoursToAllFutureDates(newStart, newEnd);
 
-        // Immediately apply these new hours to the currently viewed day
         offeredTimes.clear();
         autoFillDefaultHours();
         populateTimetable();
@@ -111,7 +111,7 @@ public class DoctorSchedule {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setHeaderText("Working Hours Saved");
         alert.setContentText("Your default working hours have been updated to " + newStart + " - " + newEnd
-                + ". \n\nThe timetable below has been updated to reflect this. Don't forget to click 'Confirm Daily Changes' to save today's schedule.");
+                + ".\n\nAll future days have been updated. Don't forget to click 'Confirm Daily Changes' to save today's schedule.");
         alert.showAndWait();
     }
 

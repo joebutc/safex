@@ -99,18 +99,21 @@ public class BookAppointmentPage {
 
         String dateStr = date.format(DATE_FMT);
 
-        // 1. Ask the database what is explicitly booked or offered
         List<String> booked = AppController.getBookedTimesForDate(dateStr, clinicUsername);
         List<String> offered = AppController.getAvailableTimesForDate(dateStr, clinicUsername);
 
-        // 2. Fetch the specific clinic's custom working hours
+        // Fetch the patient's own appointments so we can show Cancel on their slots
+        List<String[]> myAppointments = AppController.getMyAppointments();
+        List<String> myBookedTimes = myAppointments.stream()
+                .filter(a -> a[1].equals(dateStr) && "booked".equals(a[3]))
+                .map(a -> a[2])
+                .collect(Collectors.toList());
+
         String startTimeStr = AppController.getClinicWorkingStartTime(clinicUsername);
         String endTimeStr = AppController.getClinicWorkingEndTime(clinicUsername);
         LocalTime dynamicStart = LocalTime.parse(startTimeStr, TIME_FMT);
         LocalTime dynamicEnd = LocalTime.parse(endTimeStr, TIME_FMT);
 
-        // 3. NEW FEATURE: Auto-fill default hours if the clinic hasn't touched this
-        // date yet
         if (offered.isEmpty() && booked.isEmpty()) {
             LocalTime autoFillTemp = dynamicStart;
             while (!autoFillTemp.isAfter(dynamicEnd)) {
@@ -119,15 +122,23 @@ public class BookAppointmentPage {
             }
         }
 
-        // 4. Generate the UI rows
         LocalTime current = dynamicStart;
         while (!current.isAfter(dynamicEnd)) {
             String timeStr = current.format(TIME_FMT);
+            boolean isMyBooking = myBookedTimes.contains(timeStr);
             boolean isBooked = booked.contains(timeStr);
             boolean isPast = date.isEqual(LocalDate.now()) && current.isBefore(LocalTime.now());
             boolean isOffered = offered.contains(timeStr);
 
-            if (isBooked) {
+            if (isMyBooking) {
+                // Patient's own booking — show Cancel button
+                final String finalTime = timeStr;
+                final String finalDate = dateStr;
+                final String finalClinic = clinicUsername;
+                slotListContainer.getChildren().add(loadSlotRow(
+                        timeStr, "My Booking", "slot-status-booked", "Cancel",
+                        () -> handleCancel(finalClinic, finalDate, finalTime), "secondary-button"));
+            } else if (isBooked) {
                 slotListContainer.getChildren().add(loadSlotRow(
                         timeStr, "Booked", "slot-status-booked", null, null, "primary-button"));
             } else if (isPast) {
@@ -159,6 +170,40 @@ public class BookAppointmentPage {
             return row;
         } catch (IOException e) {
             throw new RuntimeException("Could not load appointment slot row", e);
+        }
+    }
+
+    private void handleCancel(String clinicUsername, String date, String time) {
+        // Look up the appointment id from the patient's appointments
+        List<String[]> myAppointments = AppController.getMyAppointments();
+        Optional<String[]> match = myAppointments.stream()
+                .filter(a -> a[1].equals(date) && a[2].equals(time) && "booked".equals(a[3]))
+                .findFirst();
+
+        if (match.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("Appointment Not Found");
+            alert.setContentText("We couldn't find this appointment to cancel. It may have already been cancelled.");
+            alert.showAndWait();
+            loadSlots();
+            return;
+        }
+
+        int appointmentId = Integer.parseInt(match.get()[0]);
+
+        if (AppController.cancelAppointment(appointmentId)) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("Appointment Cancelled");
+            alert.setContentText("Your appointment with " + clinicUsername + " on " + date + " at " + time
+                    + " has been cancelled.");
+            alert.showAndWait();
+            loadSlots();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Cancellation Failed");
+            alert.setContentText("We couldn't cancel this appointment. Please try again.");
+            alert.showAndWait();
+            loadSlots();
         }
     }
 
