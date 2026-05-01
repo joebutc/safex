@@ -1,4 +1,6 @@
 #Clinic Working Hours Configuration
-#Mon Apr 20 23:46:19 BST 2026
+#Tue Apr 21 10:12:48 BST 2026
+Useradmin_end=17\:00
+Useradmin_start=09\:00
 ryansclinic_end=22\:00
 ryansclinic_start=03\:00
