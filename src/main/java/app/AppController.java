@@ -754,23 +754,25 @@ public final class AppController {
     public static void applyWorkingHoursToAllFutureDates(String startTime, String endTime) {
         assertInitialised();
 
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
-        LocalTime start = LocalTime.parse(startTime, fmt);
-        LocalTime end = LocalTime.parse(endTime, fmt);
+        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm");
+        DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("dd MMM yyyy");
+        LocalTime start = LocalTime.parse(startTime, timeFmt);
+        LocalTime end = LocalTime.parse(endTime, timeFmt);
 
         // Build the new slot list from the updated hours
         List<String> newSlots = new ArrayList<>();
         LocalTime current = start;
         while (!current.isAfter(end)) {
-            newSlots.add(current.format(fmt));
+            newSlots.add(current.format(timeFmt));
             current = current.plusMinutes(30);
         }
 
-        // Apply to every future date that already has slots saved
-        List<String> futureDates = DatabaseHandler.getFutureDatesWithSlots(currentUser);
-
-        for (String date : futureDates) {
-            // Keep any already-booked slots so appointments aren't lost
+        // Seed every day in the booking horizon (1 year) so the clinic does not
+        // need to manually open and confirm each day. Existing booked slots are
+        // preserved so live appointments are not lost.
+        LocalDate today = LocalDate.now();
+        for (int i = 0; i < DEFAULT_HOURS_HORIZON_DAYS; i++) {
+            String date = today.plusDays(i).format(dateFmt);
             List<String> booked = DatabaseHandler.getBookedTimesForDate(date, currentUser);
 
             List<String> merged = new ArrayList<>(newSlots);
@@ -783,4 +785,6 @@ public final class AppController {
             DatabaseHandler.saveAvailableTimesForDate(currentUser, date, merged);
         }
     }
+
+    private static final int DEFAULT_HOURS_HORIZON_DAYS = 365;
 }
